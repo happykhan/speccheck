@@ -1,0 +1,2 @@
+Bin Id	Marker lineage	# genomes	# markers	# marker sets	Completeness	Contamination	Strain heterogeneity	Genome size (bp)	# ambiguous bases	# scaffolds	# contigs	N50 (scaffolds)	N50 (contigs)	Mean scaffold length (bp)	Mean contig length (bp)	Longest scaffold (bp)	Longest contig (bp)	GC	GC std (scaffolds > 1kbp)	Coding density	Translation table	# predicted genes	0	1	2	3	4	5+
+test_sample1.short	Mycoplasma genitalium (6)	2	435	21	98.00	0.00	0.00	578634	0	7	7	182446	182446	82662	82662	214755	214755	31.7	3.33	94.04	4	551	6	429	0	0	0	0

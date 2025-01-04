@@ -1,0 +1,23 @@
+Assembly	test_2.long
+# contigs (>= 0 bp)	1
+# contigs (>= 1000 bp)	1
+# contigs (>= 5000 bp)	1
+# contigs (>= 10000 bp)	1
+# contigs (>= 25000 bp)	1
+# contigs (>= 50000 bp)	1
+Total length (>= 0 bp)	579729
+Total length (>= 1000 bp)	579729
+Total length (>= 5000 bp)	579729
+Total length (>= 10000 bp)	579729
+Total length (>= 25000 bp)	579729
+Total length (>= 50000 bp)	579729
+# contigs	1
+Largest contig	579729
+Total length	579729
+GC (%)	31.68
+N50	579729
+N90	579729
+auN	579729.0
+L50	1
+L90	1
+# N's per 100 kbp	0.00
