@@ -144,6 +144,7 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
 
 def summary(directory, output, species, sample_name, plot = False):
 
+    csv_files = []
     # collect all csv files
     for root, dirs, files in os.walk(directory):
         csv_files = [os.path.join(root, file) for file in files if file.endswith('.csv')]
