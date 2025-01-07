@@ -52,7 +52,6 @@ Mycoplasma genitalium,all,Quast,Ns per 100 kbp,<=,100,
 Mycoplasma genitalium,all,Speciator,speciesName,regex,^Mycoplasma genitalium,species_field
 Mycoplasma genitalium,all,Speciator,confidence,regex,^good$,
 Mycoplasma genitalium,all,Speciator,genusName,regex,^Mycoplasma,
-Mycoplasma genitalium,all,Speciator,taxId,=,663918,
 Mycoplasma genitalium,short,CheckM,# contigs,<=,7,
 Mycoplasma genitalium,short,CheckM,N50 (scaffolds),>,182446,
 Mycoplasma genitalium,short,Quast,N50,>,182446,

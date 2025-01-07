@@ -1,45 +1,75 @@
-
-
-import matplotlib.pyplot as plt
+import os
+import importlib
+import logging
 import pandas as pd
+from jinja2 import Template
 
-def plot_charts(csv_file):
-    # Load the CSV file into a DataFrame
-    df = pd.read_csv(csv_file)
+def summary_table(df):
+    # select sample_name column and all collumns ending with all_checks_passed
+    sum_table = df[[col for col in df.columns if col.endswith("all_checks_passed")]]
+    # Create a new column that is True if all checks passed
+    sum_table["QC_PASS"] = sum_table.all(axis=1)
+    # Change True/False to Pass / Fail
+    sum_table = sum_table.replace({True: "Pass", False: "Fail"})
+    # Rename columns to remove the all_checks_passed suffix
+    sum_table.columns = sum_table.columns.str.replace(".all_checks_passed", "")
+    return sum_table.to_html()
 
-    # Plotting functions
-    def plot_mash_distance():
-        plt.figure(figsize=(10, 6))
-        plt.plot(df['Speciator.Sample_id'], df['Speciator.mashDistance'], marker='o')
-        plt.title('Mash Distance per Sample')
-        plt.xlabel('Sample ID')
-        plt.ylabel('Mash Distance')
-        plt.grid(True)
-        plt.show()
 
-    def plot_gc_content():
-        plt.figure(figsize=(10, 6))
-        df.boxplot(column='Quast.GC (%)', by='Speciator.Sample_id', grid=False)
-        plt.title('GC Content per Sample')
-        plt.suptitle('')  # Suppress the automatic title to avoid redundancy
-        plt.xlabel('Sample ID')
-        plt.ylabel('GC Content (%)')
-        plt.xticks(rotation=90)
-        plt.show()
+def plot_charts(merged_dict, species, output_html_path='yes.html', input_template_path='templates/report.html'):
+    software_modules = load_modules_with_checks()
 
-    def plot_contig_lengths():
-        plt.figure(figsize=(10, 6))
-        plt.plot(df['Speciator.Sample_id'], df['Quast.Total length'], marker='o', color='r')
-        plt.title('Total Contig Length per Sample')
-        plt.xlabel('Sample ID')
-        plt.ylabel('Total Contig Length')
-        plt.grid(True)
-        plt.show()
+    df = pd.DataFrame.from_dict(merged_dict, orient="index")
+    # plot the data
+    # split columns into groups based on the column name before the first dot
+    groups = df.columns.to_series().str.split(".").str[0]
+    # seperate each group into a new dataframe
+    unique_groups = groups.unique()
+    unique_groups = unique_groups[unique_groups != "sample_name"]
+    plotly_jinja_data = {'summary_table' : summary_table(df)}
+    plotly_jinja_data['software_charts'] = ""
+    for software in unique_groups:
+        # Also include species column in the group
+        group_df = df[[col for col in df.columns if col.startswith(software)]]
+        # TODO: Species column is a protected column in this case. Need to make sure it doesn't exist prior.
+        group_df = group_df.join(df[species].rename("species"))
+        group_df.columns = group_df.columns.str.replace(f"{software}.", "", regex=False)
+        if software in software_modules:
+            plotly_jinja_data['software_charts'] += software_modules[software](group_df).plot()
+        else:
+            logging.warning("No plot module found for %s. Skipping plotting.", software)
 
-    # Set the style for the plots
-    plt.style.use('ggplot')
+    with open(output_html_path, "w", encoding="utf-8") as output_file:
+        with open(input_template_path, encoding='utf-8') as template_file:
+            j2_template = Template(template_file.read())
+            output_file.write(j2_template.render(plotly_jinja_data))
 
-    # Call plotting functions
-    plot_mash_distance()
-    plot_gc_content()
-    plot_contig_lengths()
+def load_modules_with_checks():
+    """Load Python modules with required checks from the 'plot_modules' directory."""
+    module_dict = {}
+    modules_file_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "plot_modules"
+    )
+
+    for filename in os.listdir(modules_file_path):
+        if not filename.endswith(".py"):
+            continue
+
+        curr_module_path = os.path.join(modules_file_path, filename)
+        if not os.path.isfile(curr_module_path):
+            continue
+
+        module_name = os.path.splitext(filename)[0]
+        spec = importlib.util.spec_from_file_location(module_name, curr_module_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        class_name = module_name.title()
+        if hasattr(module, class_name):
+            cla = getattr(module, class_name)
+            if hasattr(cla, "plot"):
+                module_dict[class_name.split("_")[1]] = cla
+
+    loaded_classes = ", ".join([cls.__name__ for cls in module_dict.values()])
+    logging.debug("Loaded modules: %s", loaded_classes)
+    return module_dict

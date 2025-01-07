@@ -101,6 +101,8 @@ def summary(directory, output, species, sample_name, plot = False):
         merged_data.update(df.to_dict(orient='index'))
     # write merged data to a csv file
     output_file = output + '.csv'
+    if plot: 
+        plot_dict = merged_data.copy()
     with open(output_file, 'w', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=["sample_name"] + list(next(iter(merged_data.values())).keys()))
         writer.writeheader()
@@ -108,9 +110,11 @@ def summary(directory, output, species, sample_name, plot = False):
             row = {"sample_name": sample_id}
             row.update(values)
             writer.writerow(row)
+            if plot:
+                plot_dict[sample_id]["sample_name"] = sample_id
     # run plotting for each software (if available)
     if plot:
-        plot_charts(csv_files[0])
+        plot_charts(plot_dict, species)
         logging.info("Plots generated.")
 
 def check(criteria_file):
