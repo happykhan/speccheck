@@ -21,7 +21,7 @@ Usage:
 """
 import argparse
 import logging
-from speccheck.main import collect, summary
+from speccheck.main import collect, summary, check
 
 
 logging.basicConfig(
@@ -99,6 +99,15 @@ def main():
         "--plot", action="store_true", help="Enable plotting", default=False
     )
     summary_parser.set_defaults(func=lambda args: summary(args.directory, args.output, args.species, args.sample, args.plot))
+    check_parser = subparsers.add_parser("check", help="Check criteria file integrity")
+    check_parser.add_argument(
+        "--criteria-file", type=str, help="File with criteria for processing", 
+        default='criteria.csv'
+    )    
+    check_parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable verbose output"
+    )        
+    check_parser.set_defaults(func=lambda args: check(args.criteria_file))
 
     args = parser.parse_args()
     if hasattr(args, "func"):

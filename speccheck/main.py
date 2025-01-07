@@ -169,3 +169,54 @@ def summary(directory, output, species, sample_name, plot = False):
     if plot:
         plot_charts(csv_files[0])
 
+def check(criteria_file):
+    # Check criteria file if it has all the required fields
+    # Use the 'all' species to template which fields are required
+    errors = []
+    warnings = []
+    # Check its a valid csv file
+    if not os.path.isfile(criteria_file):
+        logging.error("Criteria file not found: %s", criteria_file)
+        return
+    
+    # check if the file is a valid csv file
+    if not criteria_file.endswith('.csv'):
+        errors.append("Criteria file is not a valid csv file.")
+    
+    # check if the file has the required fields
+    columns = ['assembly_type', 'software', 'field', 'operator', 'value', 'species', 'special_field']
+    with open(criteria_file, 'r', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        header = next(reader)
+        for column in columns:
+            if column not in header:
+                errors.append(f"Missing required column: {column}")
+
+    with open(criteria_file, 'r', encoding='utf-8') as f:
+        criteria = csv.DictReader(f)
+        required = {} 
+        species_rules = {}
+        for row in criteria:
+            required_name = row['assembly_type'] + '.' + row['software'] + '.' + row['field']
+            if row['species'] == 'all':
+                required[required_name] = {'operator': row['operator'], 'value': row['value'], 'special_field': row['special_field']}
+            else:
+                if row['species'] in species_rules:
+                    species_rules[row['species']].append({required_name: {'operator': row['operator'], 'value': row['value'], 'special_field': row['special_field']}})
+                else:
+                    species_rules[row['species']] = [{required_name: {'operator': row['operator'], 'value': row['value'], 'special_field': row['special_field']}}]
+
+        for species, rules in species_rules.items():
+            for field, rule in required.items():
+                if field not in [list(x.keys())[0] for x in rules]:
+                    errors.append(f"Required field {field} not found for species {species}. 'all' value is {rule['operator']} {rule['value']} {rule['special_field']}")
+        
+
+    if not required:
+        errors.append("No criteria found for species 'all'.")
+    if warnings:
+        for warning in warnings:
+            logging.warning(warning)        
+    if errors:
+        for error in errors:
+            logging.error(error)
