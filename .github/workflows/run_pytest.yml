@@ -20,10 +20,10 @@ jobs:
           python -m pip install --upgrade pip  
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi  
           pip install coverage 
-      - name: Lint with Ruff  
+      - name: Lint with Pylint  
         run: |  
-          pip install ruff  
-          ruff --format=github --target-version=py310 .  
+          pip install pylint  
+          pylint **/*.py  
         continue-on-error: true  
       - name: Test with pytest  
         run: |  
