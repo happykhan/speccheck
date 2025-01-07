@@ -66,7 +66,7 @@ def main():
     collect_parser.add_argument(
         "--sample", type=str, 
         help="sample name"
-    )    
+    )
     collect_parser.add_argument(
         "filepaths", type=str, nargs="+", help="File paths with wildcards"
     )

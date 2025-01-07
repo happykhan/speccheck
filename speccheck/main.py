@@ -14,14 +14,12 @@ Returns:
 import os
 import sys
 import logging
-import re
 import csv
-import operator as op_from_module
 import pandas as pd
-import matplotlib.pyplot as plt
 from speccheck.util import get_all_files, load_modules_with_checks
 from speccheck.criteria import validate_criteria, get_species_field, get_criteria
 from speccheck.report import plot_charts
+from speccheck.collect import collect_files, write_to_file, check_criteria
 
 def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
     """Collect and run checks from modules on input files."""
@@ -42,24 +40,10 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
     print(all_files)
     # Discover and load valid modules dynamically
     module_list = load_modules_with_checks()
-
-    # Execute checks for each file using discovered modules
-    recovered_values = {}
-    for filepath in all_files:
-        logging.debug("Checking %s", filepath)
-        for module in module_list:
-            current_module = module(filepath)
-            if (
-                current_module.has_valid_filename
-                and current_module.has_valid_fileformat
-            ):
-                logging.debug(
-                    "File %s passed checks from %s", filepath, module.__name__
-                )
-                # Fetch values and criteria
-                recovered_values[module.__name__] = current_module.fetch_values()
+    recovered_values = collect_files(all_files, module_list)
     if not recovered_values:
         logging.warning("No files passed the checks.")
+        return
 
     # Need to resolve species if not provided
     if not organism:
@@ -85,44 +69,9 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
             if field["software"] == software:
                 all_fields_passed = True
                 if field["field"] in result:
-                    test_result = True
-                    print(field)
-                    if field["operator"] == "regex":
-                        if not re.match(field["value"], result[field["field"]]):
-                            logging.warning(
-                                "Failed check for %s: %s does not match regex %s",
-                                field["software"],
-                                field["field"],
-                                field["value"],
-                            )
-                            test_result = False
-                            all_fields_passed = False
-                    else:
-                        field_value = result[field["field"]]
-                        operator = field["operator"]
-                        criteria_value = field["value"]
-
-                        if operator == "=":
-                            operator = "=="
-                        ops = {
-                            "==": op_from_module.eq,
-                            "!=": op_from_module.ne,
-                            "<": op_from_module.lt,
-                            "<=": op_from_module.le,
-                            ">": op_from_module.gt,
-                            ">=": op_from_module.ge,
-                        }
-                        if not ops[operator](field_value, criteria_value):
-                            logging.warning(
-                                "Failed check for %s: %s %s %s",
-                                field["software"],
-                                field["field"],
-                                field["operator"],
-                                field["value"],
-                            )
-                            test_result = False
-                            all_fields_passed = False
-                        col_name = field["software"] + "." + field["field"] + ".check"
+                    col_name = field["software"] + "." + field["field"] + ".check"
+                    test_result = check_criteria(field, result)
+                    all_fields_passed = all_fields_passed and test_result
                     if col_name not in qc_report:
                         qc_report[col_name] = test_result
                     elif not test_result:
@@ -132,13 +81,7 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
     # Write qc_report to file
     qc_report['Sample'] = sample_name
     logging.info("Writing results to file.")
-    if os.path.dirname(output_file):
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, "w", encoding="utf-8") as f:
-        # write as csv where field is the column name and value is the value
-        f.write(",".join(qc_report.keys()) + "\n")
-        f.write(",".join(str(value) for value in qc_report.values()) + "\n")
-        logging.info("Results written to %s", output_file)
+    write_to_file(output_file, qc_report)
     logging.info("All checks completed.")
 
 
@@ -168,6 +111,7 @@ def summary(directory, output, species, sample_name, plot = False):
     # run plotting for each software (if available)
     if plot:
         plot_charts(csv_files[0])
+        logging.info("Plots generated.")
 
 def check(criteria_file):
     # Check criteria file if it has all the required fields

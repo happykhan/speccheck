@@ -1,16 +1,26 @@
 import re
+import csv 
 
-class Quast():
+class CheckM():
 
     def __init__(self, file_path):
         self.file_path = file_path
-
+    
     @property
     def has_valid_filename(self):
         return self.file_path.endswith(".tsv")
 
     @property
     def has_valid_fileformat(self):
+
+        required_headers = [
+            'Bin Id', 'Marker lineage', '# genomes', '# markers', '# marker sets', 
+            'Completeness', 'Contamination', 'Strain heterogeneity', 'Genome size (bp)', 
+            '# ambiguous bases', '# scaffolds', '# contigs', 'N50 (scaffolds)', 
+            'N50 (contigs)', 'Mean scaffold length (bp)', 'Mean contig length (bp)', 
+            'Longest scaffold (bp)', 'Longest contig (bp)', 'GC', 'GC std (scaffolds > 1kbp)', 
+            'Coding density', 'Translation table', '# predicted genes', '0', '1', '2', '3', '4', '5+'
+        ]
         with open(self.file_path, "r", encoding="utf-8") as file:
             first_line = file.readline()
             if "\t" not in first_line:
@@ -19,54 +29,31 @@ class Quast():
         with open(self.file_path, "r", encoding="utf-8") as file:
             lines = file.readlines()
             lines = [line for line in lines if line.strip()]
-        expected_lines = [
-            r"Assembly\t+\S+",
-            r"# contigs \(>= 0 bp\)\t+\d+",
-            r"# contigs \(>= 1000 bp\)\t+\d+",
-            r"# contigs \(>= 5000 bp\)\t+\d+",
-            r"# contigs \(>= 10000 bp\)\t+\d+",
-            r"# contigs \(>= 25000 bp\)\t+\d+",
-            r"# contigs \(>= 50000 bp\)\t+\d+",
-            r"Total length \(>= 0 bp\)\t+\d+",
-            r"Total length \(>= 1000 bp\)\t+\d+",
-            r"Total length \(>= 5000 bp\)\t+\d+",
-            r"Total length \(>= 10000 bp\)\t+\d+",
-            r"Total length \(>= 25000 bp\)\t+\d+",
-            r"Total length \(>= 50000 bp\)\t+\d+",
-            r"# contigs\t+\d+",
-            r"Largest contig\t+\d+",
-            r"Total length\t+\d+",
-            r"GC \(\%\)\t+\d+\.\d+",
-            r"N50\t+\d+",
-            r"N90\t+\d+",
-            r"auN\t+\d+\.\d+",
-            r"L50\t+\d+",
-            r"L90\t+\d+",
-            r"# N's per 100 kbp\t+\d+\.\d+",
-        ]
-
-        if len(lines) != len(expected_lines):
+        # Check if the first line is the header and has the required headers
+        if first_line.strip().split("\t") != required_headers:
             return False
-
-        for line, pattern in zip(lines, expected_lines):
-            if not re.match(pattern, line.strip()):
-                return False
 
         return True
 
     def fetch_values(self):
         with open(self.file_path, "r", encoding="utf-8") as file:
-            lines = file.readlines()
-
-        values = {}
-        for line in lines:
-            key, value = line.strip().split("\t")
-            # A float will have a decimal point, so we try to convert the value to float
-            if "." in value and value.replace(".", "").isdigit():
-                value = float(value)
-            # If the value is not a float, we try to convert it to an integer
-            elif value.isdigit():
-                value = int(value)
-            values[key] = value
-
-        return values
+            reader = csv.DictReader(file, delimiter='\t')
+            row_count = 0
+            for row in reader:
+                parsed_row = {}
+                row_count += 1
+                for key, value in row.items():
+                    if value is None:
+                        continue
+                    # Try to parse float if possible
+                    try:
+                        if '.' in value or 'e' in value.lower():
+                            parsed_row[key] = float(value)
+                        else:
+                            parsed_row[key] = int(value)
+                    except ValueError:
+                        parsed_row[key] = value.strip()
+            if row_count != 1:
+                raise ValueError("The file must contain exactly one row of values.")                
+            
+        return parsed_row

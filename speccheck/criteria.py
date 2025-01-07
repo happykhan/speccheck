@@ -111,8 +111,14 @@ def get_species_field(criteria_file):
         str: The field name for the species.
     """
     rows = []
+    
     with open(criteria_file, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
+        try:
+            csv.Sniffer().sniff(f.read(2048))
+            f.seek(0)
+        except csv.Error as exc:
+            raise csv.Error(f"File is not a valid CSV: {criteria_file}") from exc
         for row in reader:
             if (
                 row.get("special_field") == "species_field"
