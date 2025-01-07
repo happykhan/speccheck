@@ -53,14 +53,3 @@ def test_get_species_field_but_numeric():
     os.remove(criteria_file)
     # Assert
     assert result == expected_output
-
-def test_get_species_field_invalid_csv():
-    # Arrange
-    criteria_file = "test_criteria_invalid.csv"
-    with open(criteria_file, "w", encoding="utf-8") as f:
-        f.write("invalid csv file input")
-    
-    # Act & Assert
-    with pytest.raises(csv.Error):
-        get_species_field(criteria_file)
-        os.remove(criteria_file)

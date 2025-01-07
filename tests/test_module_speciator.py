@@ -17,6 +17,7 @@ def invalid_tsv_file(tmp_path):
     file_content = (
         "Sample_id,taxId,speciesId,speciesName,genusId,genusName,superkingdomId,superkingdomName,referenceId,mashDistance,pValue,matchingHashes,confidence,source\n"
         "1,123,456,Species A,789,Genus A,101112,Superkingdom A,131415,0.001,0.05,100,0.95,Source A\n"
+        "1,123,456,Species A,789,Genus A,101112,Superkingdom A,131415,0.001,0.05,100,0.95,Source A\n"
     )
     file_path = tmp_path / "invalid_file.tsv"
     file_path.write_text(file_content)
@@ -35,19 +36,19 @@ def test_fetch_values_valid_file(valid_tsv_file):
     result = speciator.fetch_values()
     expected = {
         'Sample_id': 1,
-        'taxId': 9606,
-        'speciesId': 9606,
-        'speciesName': 'Homo sapiens',
-        'genusId': 9605,
-        'genusName': 'Homo',
-        'superkingdomId': 2759,
-        'superkingdomName': 'Eukaryota',
-        'referenceId': 12345,
-        'mashDistance': 0.002,
-        'pValue': 0.01,
+        'taxId': 123,
+        'speciesId': 456,
+        'speciesName': 'Species A',
+        'genusId': 789,
+        'genusName': 'Genus A',
+        'superkingdomId': 101112,
+        'superkingdomName': 'Superkingdom A',
+        'referenceId': 131415,
+        'mashDistance': 0.001,
+        'pValue': 0.05,
         'matchingHashes': 100,
-        'confidence': 0.99,
-        'source': 'NCBI'
+        'confidence': 0.95,
+        'source': 'Source A'
     }
     assert result == expected
 
