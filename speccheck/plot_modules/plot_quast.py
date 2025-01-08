@@ -47,7 +47,15 @@ class Plot_Quast:
         )
         fig.update_xaxes(title_text="Species")
         html_fragment += pyo.plot(fig, include_plotlyjs=False, output_type="div")
-
+        fig = px.box(
+            self.df,
+            x="species",
+            y="Total length (>= 0 bp)",
+            color="species",
+            title="Box and Whisker Plot of Total Length (>= 0 bp) by Species",
+        )
+        fig.update_xaxes(title_text="Species")
+        html_fragment += pyo.plot(fig, include_plotlyjs=False, output_type="div")
 
 
         return html_fragment
