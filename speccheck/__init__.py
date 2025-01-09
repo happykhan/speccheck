@@ -1,4 +1,4 @@
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Nabil-Fareed Alikhan"
 __email__ = "nabil@happykhan.com"
 __license__ = "GPLv3"
