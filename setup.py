@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
+from speccheck import __version__, __name__
 
 setup(
-    name='speccheck',
-    version='0.1',
+    name=__name__,
+    version=__version__,
     packages=find_packages(),
     install_requires=[
         # Add your dependencies here

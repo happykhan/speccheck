@@ -22,7 +22,7 @@ Usage:
 import argparse
 import logging
 from speccheck.main import collect, summary, check
-
+from speccheck import __version__
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -59,6 +59,9 @@ def main():
         "-v", "--verbose", action="store_true", help="Enable verbose output"
     )
     collect_parser.add_argument(
+        "--version", action="store_true", help="Prints version number", default=False
+    )    
+    collect_parser.add_argument(
         "--organism", type=str, 
         help="Organism name. If not given, the organism name will " +
         "be extracted from the file paths."
@@ -84,6 +87,9 @@ def main():
     summary_parser = subparsers.add_parser("summary", help="Generate summary")
     summary_parser.add_argument("directory", type=str, help="Directory with reports")
     summary_parser.add_argument(
+        "--version", action="store_true", help="Prints version number", default=False
+    )        
+    summary_parser.add_argument(
         "--output", type=str, help="Output file prefix for summary", 
         default='qc_report')
     summary_parser.add_argument(
@@ -105,6 +111,9 @@ def main():
     summary_parser.set_defaults(func=lambda args: summary(args.directory, args.output, args.species, args.sample, args.templates, args.plot))
     check_parser = subparsers.add_parser("check", help="Check criteria file integrity")
     check_parser.add_argument(
+        "--version", action="store_true", help="Prints version number", default=False
+    )        
+    check_parser.add_argument(
         "--criteria-file", type=str, help="File with criteria for processing", 
         default='criteria.csv'
     )    
@@ -115,6 +124,9 @@ def main():
 
     args = parser.parse_args()
     if hasattr(args, "func"):
+        if args.version:
+            print(__version__)
+            return
         if args.verbose:
             logging.getLogger().setLevel(logging.DEBUG)
         args.func(args)

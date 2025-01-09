@@ -37,7 +37,6 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
             logging.warning(warning)
     # Get all files from the input paths
     all_files = get_all_files(input_filepaths)
-    print(all_files)
     # Discover and load valid modules dynamically
     module_list = load_modules_with_checks()
     recovered_values = collect_files(all_files, module_list)
