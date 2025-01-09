@@ -98,7 +98,11 @@ def main():
     summary_parser.add_argument(
         "--plot", action="store_true", help="Enable plotting", default=False
     )
-    summary_parser.set_defaults(func=lambda args: summary(args.directory, args.output, args.species, args.sample, args.plot))
+    summary_parser.add_argument(
+        "--templates", type=str, help="Template HTML file", 
+        default='templates/report.html'
+    )    
+    summary_parser.set_defaults(func=lambda args: summary(args.directory, args.output, args.species, args.sample, args.templates, args.plot))
     check_parser = subparsers.add_parser("check", help="Check criteria file integrity")
     check_parser.add_argument(
         "--criteria-file", type=str, help="File with criteria for processing", 

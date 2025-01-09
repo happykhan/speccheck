@@ -85,7 +85,7 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
     logging.info("All checks completed.")
 
 
-def summary(directory, output, species, sample_name, plot = False):
+def summary(directory, output, species, sample_name, template, plot = False):
 
     csv_files = []
     # collect all csv files
@@ -104,7 +104,12 @@ def summary(directory, output, species, sample_name, plot = False):
     if plot: 
         plot_dict = merged_data.copy()
     with open(output_file, 'w', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=["sample_name"] + list(next(iter(merged_data.values())).keys()))
+        fieldnames = ["sample_name"] + list(next(iter(merged_data.values())).keys())
+        for sample_id, values in merged_data.items():
+            for key in values.keys():
+                if key not in fieldnames:
+                    fieldnames.append(key)
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for sample_id, values in merged_data.items():
             row = {"sample_name": sample_id}
@@ -114,7 +119,7 @@ def summary(directory, output, species, sample_name, plot = False):
                 plot_dict[sample_id]["sample_name"] = sample_id
     # run plotting for each software (if available)
     if plot:
-        plot_charts(plot_dict, species)
+        plot_charts(plot_dict, species, input_template_path=template)
         logging.info("Plots generated.")
 
 def check(criteria_file):
