@@ -18,6 +18,8 @@ all,all,Quast,Ns per 100 kbp,<=,1000,
 all,all,Speciator,speciesName,regex,^.+,species_field
 all,all,Speciator,confidence,regex,^good$,
 all,all,Speciator,genusName,regex,^.+,
+all,all,Sylph,number_of_genomes,=,1,
+all,short,Ariba,percent,=,100,
 Klebsiella pneumoniae,all,Quast,Total length (>= 0 bp),>,4700000,
 Klebsiella pneumoniae,all,Quast,Total length (>= 0 bp),<,6700000,
 Klebsiella pneumoniae,all,Quast,GC (%),>,56.1,

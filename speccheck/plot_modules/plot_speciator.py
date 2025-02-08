@@ -19,7 +19,7 @@ class Plot_Speciator:
             color='all_checks_passed',
             color_discrete_map={True: 'light green', False: 'light red'}
         )
-
+        
         html_fragment += pyo.plot(fig_pass_fail, include_plotlyjs=False, output_type="div")
 
         # Create a stacked bar chart for all_checks_passed grouped by species
@@ -34,7 +34,7 @@ class Plot_Speciator:
             labels={'speciesName': 'Species Name', 'count': 'Count'},
             color='speciesName'
         )
-
+        species_fig.update_layout(hovermode="x unified")
         html_fragment += pyo.plot(species_fig, include_plotlyjs=False, output_type="div")
 
         return html_fragment

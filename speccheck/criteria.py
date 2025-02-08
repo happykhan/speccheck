@@ -33,7 +33,7 @@ def validate_criteria(criteria_file):
         "value",
         "special_field",
     ]
-    valid_software = ["Quast", "CheckM", "Speciator"]
+    valid_software = ["Quast", "Checkm", "Speciator", 'Sylph', 'Ariba']
     valid_operators = {">", "<", ">=", "<=", "=", "regex"}
     errors = []
     warnings = []
