@@ -64,9 +64,10 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
         for res_name, res_value in result.items():
             col_name = software + "." + res_name
             qc_report[col_name] = res_value
+
+        all_fields_passed = True
         for field in criteria:
             if field["software"] == software:
-                all_fields_passed = True
                 if field["field"] in result:
                     col_name = field["software"] + "." + field["field"] + ".check"
                     test_result = check_criteria(field, result)
@@ -75,7 +76,7 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
                         qc_report[col_name] = test_result
                     elif not test_result:
                         qc_report[col_name] = test_result
-                qc_report[field["software"] + ".all_checks_passed"] = all_fields_passed
+        qc_report[field["software"] + ".all_checks_passed"] = all_fields_passed
     # log results
     # Write qc_report to file
     qc_report['Sample'] = sample_name
@@ -118,7 +119,7 @@ def summary(directory, output, species, sample_name, template, plot = False):
                 plot_dict[sample_id]["sample_name"] = sample_id
     # run plotting for each software (if available)
     if plot:
-        plot_charts(plot_dict, species, input_template_path=template)
+        plot_charts(plot_dict, species, output_html_path=output + '.html', input_template_path=template)
         logging.info("Plots generated.")
 
 def check(criteria_file):
