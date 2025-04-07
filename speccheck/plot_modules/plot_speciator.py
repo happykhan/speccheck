@@ -8,20 +8,6 @@ class Plot_Speciator:
 
     def plot(self):
         html_fragment = "<h2>Speciator</h2>"
-        pass_fail_count = self.df['all_checks_passed'].value_counts().reset_index()
-        pass_fail_count.columns = ['all_checks_passed', 'count']
-
-        fig_pass_fail = px.pie(
-            pass_fail_count,
-            names='all_checks_passed',
-            values='count',
-            title='Proportion of Pass/Fail Samples',
-            color='all_checks_passed',
-            color_discrete_map={True: 'light green', False: 'light red'}
-        )
-        
-        html_fragment += pyo.plot(fig_pass_fail, include_plotlyjs=False, output_type="div")
-
         # Create a stacked bar chart for all_checks_passed grouped by species
         species_count = self.df['speciesName'].value_counts().reset_index()
         species_count.columns = ['speciesName', 'count']

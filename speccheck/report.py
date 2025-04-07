@@ -18,7 +18,13 @@ def summary_table(df):
 
 def plot_charts(merged_dict, species, output_html_path='yes.html', input_template_path='templates/report.html'):
     software_modules = load_modules_with_checks()
-
+    # make sure sample_name has a value, if its nan, just put sample01 ... sampleN
+    for idx, (key, value) in enumerate(merged_dict.items(), start=1):
+        if not isinstance(value, dict):
+            merged_dict[key] = {}
+        if "sample_name" not in merged_dict[key] or pd.isna(merged_dict[key]["sample_name"]):
+            merged_dict[key]["sample_name"] = f"sample{idx}"
+    # convert the dictionary to a pandas dataframe
     df = pd.DataFrame.from_dict(merged_dict, orient="index")
     # plot the data
     # split columns into groups based on the column name before the first dot

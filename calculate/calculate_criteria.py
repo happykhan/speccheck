@@ -28,11 +28,10 @@ from scipy.stats import normaltest
 import numpy as np
 import matplotlib.pyplot as plt
 from refseq import get_metrics
-from scipy.stats.mstats import winsorize
 import seaborn as sns
 import statsmodels.api as sm
 from scipy.stats import ks_2samp, wasserstein_distance
-from sklearn.metrics import silhouette_score
+from sklearn.ensemble import IsolationForest
 from sklearn.cluster import DBSCAN
 import logging
 from sklearn.neighbors import LocalOutlierFactor
@@ -49,32 +48,16 @@ def basic_stats(metric, metric_data):
     metric_summary["mean"] = np.mean(metric_data)
     metric_summary["std"] = np.std(metric_data)
     metric_summary["median"] = np.median(metric_data)
+    metric_summary['q1'] = np.percentile(metric_data, 25)
+    metric_summary["q3"] = np.percentile(metric_data, 75)
     metric_summary["iqr"] = np.percentile(metric_data, 75) - np.percentile(
         metric_data, 25
     )
     metric_summary["min"] = metric_data.min()
-    metric_summary["max"] = metric_data.max()    
-    if len(metric_data) > 10000:
-        metric_data = np.random.choice(metric_data, size=10000, replace=False)
-    metric_data = np.array(metric_data)
-    lof = LocalOutlierFactor(n_neighbors=100, contamination='auto')  # Adjust contamination for sensitivity
-    outlier_scores = lof.fit_predict(metric_data.reshape(-1, 1))  # -1 = Outlier, 1 = Inlier
-
-    # Filter: Keep only inliers
-    kde_density_filtered = metric_data[outlier_scores == 1].flatten()
-    metric_data = metric_data[outlier_scores == 1]
-    if kde_density_filtered.size > 0:
-        metric_summary["lof_upper_bound"] = np.percentile(kde_density_filtered, 98)
-        metric_summary["lof_lower_bound"] = np.percentile(kde_density_filtered, 2)
-        metric_summary["kde_upper_bound"] = np.percentile(kde_density_filtered, 98)
-        metric_summary["kde_lower_bound"] = np.percentile(kde_density_filtered, 2)
-
-    if metric_summary.get("kde_upper_bound") is None:
-        metric_summary["kde_upper_bound"] = np.max(metric_data)
-        metric_summary["kde_lower_bound"] = np.min(metric_data)
+    metric_summary["max"] = metric_data.max()
+    metric_summary["lower_bound"] = np.percentile(metric_data, 0.5)
+    metric_summary["upper_bound"] = np.percentile(metric_data, 99.5)
     return metric_summary, metric_data
-
-
 
 def plot_histogram(metric, sra_values, refseq_values, workdir):
     # Overlayed Histogram and KDE
@@ -133,287 +116,266 @@ def get_cluster_stats(metric, this_metric_data, eps, min_samples=5):
     metric_cluster_stats, metric_cluster = basic_stats(metric, largest_cluster_data[metric])
     return metric_cluster_stats, metric_cluster
 
-def plot_comparison(metric, data_1, data_2, workdir):
+def get_species_list(species_file):
+    """
+    Reads a file containing species names and returns a list of species.
+    """
+    with open(species_file, "r", encoding="utf-8") as f:
+        species_list = [line.strip() for line in f.readlines()]
+    return species_list
 
-    # plot histogram comparison of species_data[metric] and metric_data_array
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+def make_metric_stats_including_refseq(metric, refseq_metric_values, species_data, species_dir):
+    # We cannot have refseq genomes not included in the ranges
+    # So the metric range must be min/max of the refseq genomes OR "winsorized" SRA values, 
+    # Which ever is more extreme.
+    refseq_metric_values = np.array(refseq_metric_values)
+    metric_stats, metric_data = basic_stats(metric, species_data[metric])
+    metric_data_array = np.array(metric_data)
 
-    sns.histplot(data_1, bins=50, color="green", stat="density", kde=True, alpha=0.6, label="Original", ax=axes[0])
-    axes[0].set_title(f"Original Data")
-    axes[0].set_xlabel("Value")
-    axes[0].set_ylabel("Density")
-    axes[0].legend()
+    ks_statistic, ks_p_value = ks_2samp(metric_data_array, refseq_metric_values)
+    w_distance = wasserstein_distance(metric_data_array, refseq_metric_values)
+    refseq_metric_stats, _ = basic_stats(metric, refseq_metric_values)
+    refseq_metric_stats.pop("metric", None)
+    refseq_metric_stats = {f"refseq_{k}": v for k, v in refseq_metric_stats.items()}
+    metric_stats.update(refseq_metric_stats)
+    metric_stats["KS_statistic"] = ks_statistic
+    metric_stats["KS_p_value"] = ks_p_value
+    metric_stats["Wasserstein_Distance"] = w_distance
+    metric_stats["MY_LOWER"] = round(min(metric_stats['lower_bound'], refseq_metric_stats["refseq_min"]), 2)
+    metric_stats["MY_UPPER"] = round(max(metric_stats["upper_bound"], refseq_metric_stats["refseq_max"]), 2)
+    plot_histogram(metric, metric_data, refseq_metric_values, species_dir)
+    return metric_stats
 
-    sns.histplot(data_2, bins=50, color="purple", stat="density", kde=True, alpha=0.6, label="Filtered", ax=axes[1])
-    axes[1].set_title(f"Filtered Data")
-    axes[1].set_xlabel("Value")
-    axes[1].set_ylabel("Density")
-    axes[1].legend()    
-    plt.suptitle(f"Histogram Comparison ({metric})")
-    plt.tight_layout(rect=[0, 0, 1, 0.96])
-    plt.savefig(os.path.join(workdir, f"{metric}_comparison_histogram.png"))
-    plt.close('all')
+def make_metric_stats(metric, species_data):
+    this_metric_data = species_data[metric].values.flatten()
 
+    metricdict, metric_data = basic_stats(metric, this_metric_data)
+    metricdict["MY_LOWER"] = round(metricdict['lower_bound'], 2)
+    metricdict["MY_UPPER"] = round(metricdict["upper_bound"], 2)
+    return metricdict
 
+def apply_outlier_filter(species_data):
+        # What if we applied the LOF filter here? 
+        # LOF = Local Outlier Factor
+        outlier_data = species_data[['total_length', 'GC_Content', 'N50', 'number', 'longest' , 'Completeness_Specific', 'Contamination']]
+        # Train Isolation Forest
+        # Parameters
+        iso_forest = IsolationForest(random_state=42)
+        iso_forest.fit(outlier_data)
+        # Calculate anomaly scores and classify anomalies
+        species_data['anomaly_score'] = iso_forest.decision_function(outlier_data)
+        species_data['anomaly'] = iso_forest.predict(outlier_data)
+        species_data['anomaly'].value_counts()
+        return species_data
+
+def plot_outliers(species, species_data, output_dir):
+        # Create a directory for the species
+        os.makedirs(output_dir, exist_ok=True)
+        # Subsample the data: Randomly select a fraction of the data
+        if len(species_data) > 10000:
+            subsampled_data = species_data.sample(n=10000, random_state=42)
+        else: 
+            subsampled_data = species_data
+#        outlier_functions = {'LOF': 'LOF', 'IsolationForest': 'anomaly', 'IsolationForest_score': 'anomaly_score'}
+        axis_pairs = [
+            ("total_length", "N50"),
+            ("total_length", "GC_Content"),
+            ("total_length", "number"),
+            ("total_length", "longest"),
+            ("total_length", "Completeness_Specific"),
+            ("total_length", "Contamination"),
+            ("N50", "number"),
+            ("N50", "longest"),
+            ("N50", "Completeness_Specific"),
+            ("N50", "Contamination"),
+            ("number", "longest"),
+            ("number", "Completeness_Specific"),
+            ("number", "Contamination"),
+            ("longest", "Completeness_Specific"),
+            ("longest", "Contamination"),
+            ]
+        for x_col, y_col in axis_pairs:
+            # Show the full distribution of the data with hex binning
+            g = sns.jointplot(
+                x=x_col,
+                y=y_col,
+                data=species_data,
+                kind="hex",
+                palette="viridis",
+            )
+            # Save the figure
+            output_path = os.path.join(output_dir, f"{species}_all_{x_col}_{y_col}.png")
+            g.figure.savefig(output_path)
+            plt.close('all')            
+            # Show a subsample with the anomaly category - with a kde 
+            g = sns.jointplot(
+                x=x_col,
+                y=y_col,
+                data=subsampled_data,
+                hue="anomaly",
+                palette="viridis",
+            )
+            g.plot_joint(sns.kdeplot, color="r", zorder=0, levels=6)
+            # Save the figure
+            output_path = os.path.join(output_dir, f"{species}_sample_{x_col}_{y_col}.png")
+            g.figure.savefig(output_path)
+            plt.close('all')   
+            # Show the distribution of score post filtering 
+            filtered_data = subsampled_data[subsampled_data["anomaly"] == 1]
+            g = special_score_plot(filtered_data, x_col, y_col)
+            plt.suptitle(f"Scatter plot of {y_col} vs {x_col} colored by Anomaly Score", y=1.05)            
+            # Save the figure
+            output_path = os.path.join(output_dir, f"{species}_filt_{x_col}_{y_col}.png")
+            g.figure.savefig(output_path)
+            plt.close('all')
+
+def special_score_plot(filtered_data, x_col, y_col):
+
+    # Assuming 'filtered_data' is your DataFrame
+    # 'x_col' and 'y_col' are the column names for x and y axes
+    # 'anomaly_score' is the continuous variable for color coding
+
+    # Initialize a JointGrid
+    g = sns.JointGrid(data=filtered_data, x=x_col, y=y_col, height=8)
+
+    # Create a scatter plot with a continuous hue
+    g.plot_joint(
+        sns.scatterplot,
+        hue=filtered_data["anomaly_score"],
+        palette="viridis",
+        s=50,
+        alpha=0.7
+    )
+    # Overlay the KDE plot
+    g.plot_joint(
+        sns.kdeplot,
+        levels=5,
+        color='k',
+        alpha=0.5
+    )    
+
+    # Add marginal histograms
+    g.plot_marginals(sns.histplot, kde=True)
+
+    # Adjust the position of the colorbar
+    cbar_ax = g.figure.add_axes([1.02, 0.25, 0.02, 0.5])
+    norm = plt.Normalize(filtered_data["anomaly_score"].min(), filtered_data["anomaly_score"].max())
+    sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+    sm.set_array([])
+    g.figure.colorbar(sm, cax=cbar_ax, label="Anomaly Score")
+
+    # Set axis labels and title
+    g.set_axis_labels(x_col, y_col)
+    return g
 
 def main(args):
     workdir = args.workdir
-    species_list = args.species
-    min_genome_count = args.min_genome_count
+    species_list = get_species_list(args.species_file)
     metrics_list = args.metrics_list
-    assembly_stats = prepare(workdir)    
+    assembly_stats = prepare(workdir)
     # Handle species with underscores
     # Rename species according to ^([A-Za-z]+)_?[A-Za-z]*\s([a-z]+) 
-    assembly_stats = filter_assembly_data(assembly_stats, min_genome_count, species_list)
-    species_list = set(assembly_stats["species_sylph"])
+    assembly_stats = filter_assembly_data(assembly_stats, species_list=species_list)
+    species_list = assembly_stats["species_sylph"].unique()
     all_metrics_for_all_species = []
-    # Look at refseq first, calibrate contamination and completeness cutoffs
+    # Look at refseq first
     for species in species_list:
-        species_data = assembly_stats[assembly_stats["species_sylph"] == species]
-        if len(species_data) < min_genome_count:
-            print(f"Skipping {species} due to insufficient genomes.")
-            continue        
-        refseq_data = get_metrics(species)
+        print(f"Processing {species}")
         species_dir = os.path.join(workdir, species.replace(" ", "_"))
+        species_data = assembly_stats[assembly_stats["species_sylph"] == species]
+        assigned_species_data = apply_outlier_filter(species_data)
+        filtered_plots_dir = os.path.join(species_dir, "filtered_plots")
+        plot_outliers(species, assigned_species_data, filtered_plots_dir)
+        filtered_species_data = assigned_species_data[assigned_species_data["anomaly"] == 1]
+        refseq_data = get_metrics(species)
         os.makedirs(species_dir, exist_ok=True)
         metric_summary = []
-        remaining_metrics = []
         for metric in metrics_list:
             refseq_metric_values = refseq_data.get(metric)
             if refseq_metric_values is not None:
-                refseq_metric_values = np.array(refseq_metric_values)
-                metric_stats, metric_data = basic_stats(metric, species_data[metric])
-                metric_data_array = np.array(metric_data)
-                plot_comparison(metric, species_data[metric], metric_data_array, species_dir)
-
-                ks_statistic, ks_p_value = ks_2samp(metric_data_array, refseq_metric_values)
-                w_distance = wasserstein_distance(metric_data_array, refseq_metric_values)
-                refseq_metric_stats, refseq_filtered_values = basic_stats(metric, refseq_metric_values)
-                plot_comparison(metric + '_refseq', refseq_metric_values, refseq_filtered_values, species_dir)
-                refseq_metric_stats.pop("metric", None)
-                refseq_metric_stats = {f"refseq_{k}": v for k, v in refseq_metric_stats.items()}
-                metric_stats.update(refseq_metric_stats)
-                metric_stats["KS_statistic"] = ks_statistic
-                metric_stats["KS_p_value"] = ks_p_value
-                metric_stats["Wasserstein_Distance"] = w_distance
-                # Adjusted ranges
-                if metric == 'GC_Content':
-                    metric_stats["upper_bound"] = metric_stats["refseq_max"]
-                    metric_stats["lower_bound"] = metric_stats["refseq_min"]
-                    if metric_stats["upper_bound"] == metric_stats["lower_bound"]:
-                        metric_stats["upper_bound"] += 0.01
-                        metric_stats["lower_bound"] -= 0.01
-                else:
-                    metric_stats["upper_bound"] = round(max(metric_stats['kde_upper_bound'], metric_stats["refseq_kde_upper_bound"]), 2)
-                    metric_stats["lower_bound"] = round(min(metric_stats["kde_lower_bound"], metric_stats["refseq_kde_lower_bound"]), 2)
-                    # metric_stats["lower_bound"] = max(0, metric_stats["lower_bound"])
-                # Overlayed Histogram and KDE
-                metric_data_win = winsorize(metric_data, limits=[0.0001, 0.0001])
-                plot_histogram(metric, metric_data_win, refseq_metric_values, species_dir)
-                metric_summary.append(metric_stats)
-                metric_stats['species'] = species
-                metric_stats['count'] = len(species_data)
-                all_metrics_for_all_species.append(metric_stats)
+                metric_stats = make_metric_stats_including_refseq(metric, refseq_metric_values, filtered_species_data, species_dir)
             else:
-                remaining_metrics.append(metric)
+                metric_stats = make_metric_stats(metric, filtered_species_data)
+            metric_summary.append(metric_stats)
+            metric_stats['species'] = species
+            metric_stats['count'] = len(filtered_species_data)
+            all_metrics_for_all_species.append(metric_stats)
         # Plot Total_Coding_Sequences vs Genome_Size
         plt.figure()
+        subsample = filtered_species_data.sample(n=min(20000, len(filtered_species_data)), random_state=42)
         sns.scatterplot(
-            y="Total_Coding_Sequences",
             x="Genome_Size",
-            data=species_data,
+            y="Total_Coding_Sequences",
+            data=subsample,
             hue="Completeness_Specific",
             palette="viridis",
         )
-        plt.savefig(os.path.join(species_dir, f"CDS_vs_Genome_Size.png"))
+        plt.savefig(os.path.join(species_dir, f"{species}_CDS_vs_Genome_Size.png"))
         plt.close('all')
-
-        genome_size_lower = float([x for x in metric_summary if x['metric'] == 'Genome_Size'][0]['lower_bound'])
-        genome_size_upper = float([x for x in metric_summary if x['metric'] == 'Genome_Size'][0]['upper_bound'])
-        gc_content_lower = float([x for x in metric_summary if x['metric'] == 'GC_Content'][0]['lower_bound'])
-        gc_content_upper = float([x for x in metric_summary if x['metric'] == 'GC_Content'][0]['upper_bound'])
-
-        lof = LocalOutlierFactor(n_neighbors=20, contamination='auto')  # Adjust contamination for sensitivity
-        X_with_outliers = species_data[['number', 'N50', 'longest', 'Genome_Size']]
-
-        # Plotting
-        y_pred = lof.fit_predict(X_with_outliers)
-
-        # -1 indicates outliers, 1 indicates inliers
-        X_with_outliers['Outlier'] = ['Outlier' if x == -1 else 'Inlier' for x in y_pred]
-
-        # Pair plot
-        # sns.pairplot(X_with_outliers, hue='Outlier', palette={'Inlier': 'blue', 'Outlier': 'red'})
-        # plt.suptitle('Pair Plot of Species Data with LOF Outliers', y=1.02)
-        # plt.show()
-
-        for metric in remaining_metrics:
-            # filter species_data with Genome_Size upper_bound and lower_bound
-            all_metric_data = species_data[
-                (species_data["Genome_Size"] >= genome_size_lower) &
-                (species_data["Genome_Size"] <= genome_size_upper) &
-                (species_data["GC_Content"] >= gc_content_lower) &
-                (species_data["GC_Content"] <= gc_content_upper) 
-            ]
-            # Plot Total_Coding_Sequences vs Genome_Size
-            plt.figure()
-            sns.scatterplot(
-                x="Genome_Size",
-                y="Total_Coding_Sequences",
-                data=all_metric_data,
-                hue="Completeness_Specific",
-                palette="viridis",
-            )
-            plt.savefig(os.path.join(species_dir, f"filt_CDS_vs_Genome_Size.png"))
-            plt.close('all')            
-
-            this_metric_data = species_data[
-                (species_data["Genome_Size"] >= genome_size_lower) &
-                (species_data["Genome_Size"] <= genome_size_upper) &
-                (species_data["GC_Content"] >= gc_content_lower) &
-                (species_data["GC_Content"] <= gc_content_upper)
-            ][[metric]]
-            this_metric_data = species_data[[metric]]
-            # EPS for DBSCAN clustering
-            # should a fraction of the range of the metric
-            SUBSAMPLE_ITERATIONS = 10
-            # randomly subsample down to 50,000 points if more than that
-            cluster_stats_list = [ ]
-            db_scan_output_dir = os.path.join(species_dir, "dbscan")
-            os.makedirs(db_scan_output_dir, exist_ok=True)
-            if len(this_metric_data) > 1000:
-                this_metric_data_sub = this_metric_data.sample(n=1000, random_state=None)
-            else:
-                this_metric_data_sub = this_metric_data
-            if metric == 'number':
-                eps_values = np.linspace(1, 100, 20)  # Try a range of eps values
-            elif metric == 'longest':
-                eps_values = np.linspace(100, 20000, 20)  # Try a range of eps values
-            elif metric == 'N50':
-                eps_values = np.linspace(100, 5000, 20)
-            else:
-                eps_values = np.linspace(1, 1000, 20)
-            best_eps, best_score = 0, -1
-            
-            for eps in eps_values:
-                dbscan = DBSCAN(eps=eps, min_samples=4).fit(this_metric_data_sub)
-                labels = dbscan.labels_
-                
-                # Ignore cases where all points are noise
-                if len(set(labels)) > 1:
-                    score = silhouette_score(this_metric_data_sub, labels)
-                    if score > best_score:
-                        best_eps, best_score = eps, score
-
-            print(f"Optimal eps {metric} - {species}: {best_eps}")
-            if best_eps == 0:
-                if metric in ["N50"]:
-                    best_eps = 1000
-                elif metric in ['longest']:
-                    best_eps = 10000
-                else:
-                    best_eps = 50
-
-            if len(this_metric_data) > 10000:
-                for i in range(SUBSAMPLE_ITERATIONS):
-                    this_metric_data_sub = this_metric_data.sample(n=10000, random_state=None)
-                    cluster_stats, cluster = get_cluster_stats(metric, this_metric_data_sub, best_eps)
-                    cluster_stats.pop("metric", None)
-                    cluster_stats.pop("distribution", None)                    
-                    cluster_stats_list.append(cluster_stats)
-                    if i % 2 == 0:
-                        plot_dbscan(metric, this_metric_data_sub, db_scan_output_dir, f"subsample_{i}")
-
-            else:
-                cluster_stats, cluster = get_cluster_stats(metric, this_metric_data, best_eps)
-                cluster_stats.pop("metric", None)
-                cluster_stats.pop("distribution", None)
-                cluster_stats_list.append(cluster_stats)
-                plot_dbscan(metric, this_metric_data, db_scan_output_dir, "full")
-            cluster_stats_df = pd.DataFrame(cluster_stats_list)
-            # average the cluster stats
-            cluster_stats_summary = cluster_stats_df.mean().to_dict()
-            cluster_stats_summary["metric"] = metric
-            cluster_stats_summary["distribution"] = "clustered"
-
-            # plot original and filtered distributions 
-            metricdict, filt_data = basic_stats(metric, this_metric_data[metric])
-            fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-            plot_comparison(metric, this_metric_data[metric], filt_data, species_dir)
-
-            # Adjusted ranges
-            # upper bound cannot be higher than max
-            cluster_stats_summary["upper_bound"] = round(min(float(cluster_stats_summary["max"]), float(cluster_stats_summary["kde_upper_bound"])), 2)
-            # lower bound cannot be lower than min
-            cluster_stats_summary["lower_bound"] = round(max(0, float(cluster_stats_summary["min"]), float(cluster_stats_summary["kde_lower_bound"])), 2)
-            metric_summary.append(cluster_stats_summary)
-            cluster_stats_summary['species'] = species
-            cluster_stats_summary['count'] = len(species_data)
-            all_metrics_for_all_species.append(cluster_stats_summary)
         # write the summary to a file
         # Convert the list of dictionaries to a DataFrame and save it as a CSV file
         summary_df = pd.DataFrame(metric_summary)
         summary_df.to_csv(os.path.join(species_dir, "summary.csv"), index=False)
         # Create a summary DataFrame with selected columns
-        selected_columns = ["metric", "median", "iqr", "min", "max", "upper_bound", "lower_bound"]
+        selected_columns = ["metric", "median", "q1", "q3", "min", "max", "upper_bound", "lower_bound", "MY_LOWER", "MY_UPPER"]
         selected_summary_df = summary_df[selected_columns]
         selected_summary_df.to_csv(os.path.join(species_dir, "selected_summary.csv"), index=False)
     # Save all metrics for all species
+    all_summary_output_dir = os.path.join(workdir, "all_summary")
+    os.makedirs(all_summary_output_dir, exist_ok=True)
     all_metrics_df = pd.DataFrame(all_metrics_for_all_species)
-    all_metrics_df.to_csv(os.path.join(workdir, "all_metrics.csv"), index=False)
-    selected_columns = ["species", "metric","count", "median", "iqr", "min", "max", "upper_bound", "lower_bound"]
+    all_metrics_df.to_csv(os.path.join(all_summary_output_dir, "all_metrics.csv"), index=False)
+    selected_columns = ["species", "metric","count", "median", "q1", "q3", "min", "max", "upper_bound", "lower_bound", "MY_LOWER", "MY_UPPER"]
     selected_summary_df = all_metrics_df[selected_columns]
-    selected_summary_df.to_csv(os.path.join(workdir, "all_metrics_summary.csv"), index=False)
+    selected_summary_df.to_csv(os.path.join(all_summary_output_dir, "all_metrics_summary.csv"), index=False)
     for metric in metrics_list:
+        plot_summary_plot(metric, all_metrics_df, all_summary_output_dir)
+
+def plot_summary_plot(metric, all_metrics_df, workdir):
         # Prepare box plot data
         box_data = []
         labels = []
-        extra_lines = [] 
+        extra_lines = []
         for species, group in all_metrics_df.groupby("species"):
             metric_data = group[group["metric"] == metric]
             if not metric_data.empty:
                 median = metric_data["median"].values[0]
-                iqr = metric_data["iqr"].values[0]
-                q1 = median - (iqr / 2)  # 25th percentile
-                q3 = median + (iqr / 2)  # 75th percentile
+                q1 = metric_data["q1"].values[0]  # 25th percentile
+                q3 = metric_data["q3"].values[0]  # 75th percentile
                 whisker_low = metric_data["min"].values[0]  # Lower whisker
                 whisker_high = metric_data["max"].values[0]  # Upper whisker
                 # Store five-number summary
                 box_data.append([whisker_low, q1, median, q3, whisker_high])
                 labels.append(species)
-                extra_lines.append((metric_data['lower_bound'], metric_data['upper_bound']))
-                
-
-        # Plot box plots for all groups
-        plt.figure(figsize=(7, 9))
-        plt.boxplot(box_data, vert=True, patch_artist=True, labels=labels)
-        # Add extra lines per species
-        for i, (lower_bounds, upper_bounds) in enumerate(extra_lines, start=1):
-            plt.hlines(y=lower_bounds, xmin=i-0.3, xmax=i+0.3, colors='red', linestyles='dashed', label="Upper bounds" if i == 1 else "")
-            plt.hlines(y=upper_bounds, xmin=i-0.3, xmax=i+0.3, colors='blue', linestyles='dashed', label="Lower bounds" if i == 1 else "")
-
-        plt.ylabel("Value")
-        plt.title(f"Distribution of cutoffs - {metric}")
-        plt.grid(axis="y", linestyle="--", alpha=0.6)
-        # Convert x labels to "First letter. Second word" format
-        new_labels = [f"{label.split()[0][0]}. {label.split()[1]}" for label in labels]
-        plt.xticks(ticks=range(1, len(new_labels) + 1), labels=new_labels, rotation=45)
-        plt.savefig(os.path.join(workdir, f"{metric}_boxplot.png"))
-        plt.close('all')
-
-
-def plot_dbscan(metric, data, workdir, suffix):
-    plt.figure()
-    sns.histplot(data, x=metric, hue="cluster", multiple="stack", palette="tab10", bins=50)
-    plt.title(f"Histogram of {metric} colored by DBSCAN clusters")
-    plt.xlabel(metric)
-    plt.ylabel("Count")
-    plt.savefig(os.path.join(workdir, f"{metric}_dbscan_histogram_{suffix}.png"))
-    plt.close('all')
-
+                extra_lines.append((metric_data['MY_LOWER'], metric_data['MY_UPPER']))
+        # We need to chunk these into groups of 10 
+        # and plot them separately
+        # Create a box plot for each group
+        # We need to chunk these into groups of 10
+        num_groups = len(box_data) // 10 + (len(box_data) % 10 > 0)
+        for z in range(num_groups):
+            start = z * 10
+            end = start + 10
+            group_data = box_data[start:end]
+            group_labels = labels[start:end]
+            group_extra_lines = extra_lines[start:end]
+            # Create a box plot for the current group
+            plt.figure(figsize=(7, 9))
+            plt.boxplot(group_data, vert=True, patch_artist=True, tick_labels=group_labels)
+            # Add extra lines per species
+            for i, (lower_bounds, upper_bounds) in enumerate(group_extra_lines, start=1):
+                plt.hlines(y=lower_bounds, xmin=i-0.3, xmax=i+0.3, colors='red', linestyles='dashed', label="Upper bounds" if i == 1 else "")
+                plt.hlines(y=upper_bounds, xmin=i-0.3, xmax=i+0.3, colors='blue', linestyles='dashed', label="Lower bounds" if i == 1 else "")
+            plt.ylabel("Value")
+            plt.title(f"Distribution of cutoffs - {metric}")
+            plt.grid(axis="y", linestyle="--", alpha=0.6)
+            # Convert x labels to "First letter. Second word" format
+            new_labels = [f"{label.split()[0][0]}. {label.split()[1]}" for label in group_labels]
+            plt.xticks(ticks=range(1, len(new_labels) + 1), labels=new_labels, rotation=45)
+            plt.savefig(os.path.join(workdir, f"{metric}_boxplot_{start}.png"))
+            plt.close('all')
 
 if __name__ == "__main__":
-    MIN_GENOME_COUNT = 1000  # Minimum number of genomes per species
     METRICS_LIST = [
         "N50",
         "number",
@@ -424,23 +386,6 @@ if __name__ == "__main__":
         "Total_Coding_Sequences",
         "Genome_Size",
     ]
-    SPECIES_LIST = [
-        "Salmonella enterica",
-        "Escherichia coli",
-        "Staphylococcus aureus",
-        "Listeria monocytogenes",
-        "Campylobacter jejuni",
-        "Clostridium difficile",
-        "Enterococcus faecalis",
-        "Enterococcus faecium",
-        "Klebsiella pneumoniae",
-        "Acinetobacter baumannii",
-        "Pseudomonas aeruginosa",
-        "Neisseria gonorrhoeae",
-        "Vibrio cholerae",
-        "Haemophilus influenzae",
-    ]
-    SPECIES_LIST = ['Listeria monocytogenes', 'Salmonella enterica', 'Escherichia coli', 'Klesiella pneumoniae']
     parser = argparse.ArgumentParser(
         description="Process assembly stats and generate plots."
     )
@@ -448,17 +393,10 @@ if __name__ == "__main__":
         "--workdir", type=str, default="calculate_workdir", help="Working directory"
     )
     parser.add_argument(
-        "--species",
+        "--species_file",
         type=str,
-        nargs="+",
-        default=SPECIES_LIST,
-        help="List of species to include",
-    )
-    parser.add_argument(
-        "--min_genome_count",
-        type=int,
-        default=MIN_GENOME_COUNT,
-        help="Minimum number of genomes per species",
+        default="calculate_workdir/test_species.tsv",
+        help="Path to a file containing the list of species to include, one species per line",
     )
     parser.add_argument(
         "--metrics_list",

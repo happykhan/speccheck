@@ -114,7 +114,7 @@ def main():
         "--version", action="store_true", help="Prints version number", default=False
     )        
     check_parser.add_argument(
-        "--criteria-file", type=str, help="File with criteria for processing", 
+        "--criteria-file", type=str, help="File with criteria for processing, default is criteria.csv", 
         default='criteria.csv'
     )    
     check_parser.add_argument(

@@ -99,6 +99,14 @@ def summary(directory, output, species, sample_name, template, plot = False):
         df = pd.read_csv(file)
         df.set_index(sample_name, inplace=True)
         merged_data.update(df.to_dict(orient='index'))
+    # check if the sample field is present in the data
+    if not merged_data:
+        logging.error("No data found in the merged files.")
+        return
+    if any(pd.isna(sample_id) for sample_id in merged_data.keys()):
+        logging.error("Sample names not found in the data.")
+        return
+
     # write merged data to a csv file
     output_file = output + '.csv'
     if plot: 
@@ -123,6 +131,7 @@ def summary(directory, output, species, sample_name, template, plot = False):
         logging.info("Plots generated.")
 
 def check(criteria_file):
+    logging.info("Checking criteria file: %s", criteria_file)
     # Check criteria file if it has all the required fields
     # Use the 'all' species to template which fields are required
     errors = []
@@ -173,3 +182,5 @@ def check(criteria_file):
     if errors:
         for error in errors:
             logging.error(error)
+    if not errors or warnings:
+        logging.info("Criteria file is valid.")

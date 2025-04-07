@@ -38,7 +38,7 @@ def get_file(url, workdir, prefix):
     return file_list_path
 
 
-def filter_assembly_data(assembly_stats, min_genome_count, species_list):
+def filter_assembly_data(assembly_stats, min_genome_count=None, species_list=None):
     assembly_stats["species_sylph"] = assembly_stats["species_sylph"].apply(rename_species)
     # Rename Clostridioides difficile to Clostridium difficile
     assembly_stats["species_sylph"] = assembly_stats["species_sylph"].replace(
@@ -48,16 +48,19 @@ def filter_assembly_data(assembly_stats, min_genome_count, species_list):
     excluded_species = ["Salmonella diarizonae", "Sarcina perfringens"]
     assembly_stats = assembly_stats[~assembly_stats["species_sylph"].isin(excluded_species)]
     # filter on species list
-    assembly_stats = assembly_stats[assembly_stats["species_sylph"].isin(species_list)]
+    if species_list is not None:
+        # Remove any species that are not in the list
+        assembly_stats = assembly_stats[assembly_stats["species_sylph"].isin(species_list)]
     assembly_stats = assembly_stats[~assembly_stats["species_sylph"].str.contains(";")]
     # filter species == unknown
     assembly_stats = assembly_stats[
         ~assembly_stats["species_sylph"].str.contains("unknown")
     ]    
-    # Do not include rows where number per species < MIN_GENOME_COUNT
-    assembly_stats = assembly_stats.groupby("species_sylph").filter(
-        lambda x: len(x) >= min_genome_count
-    )
+    if min_genome_count is not None:
+        # Do not include rows where number per species < MIN_GENOME_COUNT
+        assembly_stats = assembly_stats.groupby("species_sylph").filter(
+            lambda x: len(x) >= min_genome_count
+        )
     return assembly_stats
 
 
