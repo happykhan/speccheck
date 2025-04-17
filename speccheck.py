@@ -90,7 +90,7 @@ def main():
         "--version", action="store_true", help="Prints version number", default=False
     )        
     summary_parser.add_argument(
-        "--output", type=str, help="Output file prefix for summary", 
+        "--output", type=str, help="Output folder for summary", 
         default='qc_report')
     summary_parser.add_argument(
         "--species", type=str, help="Field for species", 

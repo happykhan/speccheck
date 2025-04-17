@@ -1,0 +1,23 @@
+Assembly	Sample_178db692semb.short
+# contigs (>= 0 bp)	90
+# contigs (>= 1000 bp)	82
+# contigs (>= 5000 bp)	60
+# contigs (>= 10000 bp)	53
+# contigs (>= 25000 bp)	39
+# contigs (>= 50000 bp)	31
+Total length (>= 0 bp)	5624724
+Total length (>= 1000 bp)	5618648
+Total length (>= 5000 bp)	5572767
+Total length (>= 10000 bp)	5524242
+Total length (>= 25000 bp)	5280660
+Total length (>= 50000 bp)	5024430
+# contigs	90
+Largest contig	543613
+Total length	5624724
+GC (%)	57.17
+N50	203890
+N90	41371
+auN	217448.0
+L50	10
+L90	32
+# N's per 100 kbp	0.00

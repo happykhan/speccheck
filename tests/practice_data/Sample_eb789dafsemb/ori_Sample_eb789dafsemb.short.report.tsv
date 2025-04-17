@@ -1,0 +1,23 @@
+Assembly	Sample_eb789dafsemb.short
+# contigs (>= 0 bp)	87
+# contigs (>= 1000 bp)	77
+# contigs (>= 5000 bp)	52
+# contigs (>= 10000 bp)	46
+# contigs (>= 25000 bp)	38
+# contigs (>= 50000 bp)	29
+Total length (>= 0 bp)	5593240
+Total length (>= 1000 bp)	5586003
+Total length (>= 5000 bp)	5526220
+Total length (>= 10000 bp)	5487295
+Total length (>= 25000 bp)	5356052
+Total length (>= 50000 bp)	5031561
+# contigs	87
+Largest contig	393979
+Total length	5593240
+GC (%)	57.10
+N50	194617
+N90	47972
+auN	200412.1
+L50	10
+L90	30
+# N's per 100 kbp	0.00

@@ -1,0 +1,23 @@
+Assembly	Sample_6d8e0e28ntam.short
+# contigs (>= 0 bp)	992
+# contigs (>= 1000 bp)	884
+# contigs (>= 5000 bp)	452
+# contigs (>= 10000 bp)	236
+# contigs (>= 25000 bp)	52
+# contigs (>= 50000 bp)	28
+Total length (>= 0 bp)	10620805
+Total length (>= 1000 bp)	10541965
+Total length (>= 5000 bp)	9350929
+Total length (>= 10000 bp)	7850609
+Total length (>= 25000 bp)	5120007
+Total length (>= 50000 bp)	4343267
+# contigs	992
+Largest contig	359509
+Total length	10620805
+GC (%)	53.92
+N50	22731
+N90	4417
+auN	92689.2
+L50	60
+L90	497
+# N's per 100 kbp	0.00

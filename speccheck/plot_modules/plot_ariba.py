@@ -11,7 +11,7 @@ class Plot_Ariba:
         html_fragment = "<h2>Ariba Plots</h2>"
         fig = px.bar(
             self.df,
-            x="species",
+            x=self.df.index,
             y="percent",
             color="species",
             title="Bar Chart of Allele Percent by Species",

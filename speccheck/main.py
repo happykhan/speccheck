@@ -15,6 +15,7 @@ import os
 import sys
 import logging
 import csv
+import shutil
 import pandas as pd
 from speccheck.util import get_all_files, load_modules_with_checks
 from speccheck.criteria import validate_criteria, get_species_field, get_criteria
@@ -45,10 +46,19 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
         return
 
     # Need to resolve species if not provided
+    org_list = []
     if not organism:
         species_fields = get_species_field(criteria_file)
         for field in species_fields:
-            organism = recovered_values.get(field["software"], {}).get(field["field"])
+            org_list.append(recovered_values.get(field["software"], {}).get(field["field"]))
+        # remove None values
+        org_list = [x for x in org_list if x is not None]
+        organism = set(org_list)
+        if len(organism) == 1:
+            organism = list(organism)[0]
+        else:
+            organism = None
+            logging.error('Mixed species found in the files.')
     if not organism:
         logging.warning(
             "Organism name not provided and could not be resolved from the files. Using default values which are VERY leinient."
@@ -59,6 +69,7 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
     criteria = get_criteria(criteria_file, organism)
     # run checks
     qc_report = {}  # dict to store results
+    all_checks_passed = True
     for software, result in recovered_values.items():
         logging.info("Running checks for %s", software)
         for res_name, res_value in result.items():
@@ -76,7 +87,10 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
                         qc_report[col_name] = test_result
                     elif not test_result:
                         qc_report[col_name] = test_result
-        qc_report[field["software"] + ".all_checks_passed"] = all_fields_passed
+        qc_report[software + ".all_checks_passed"] = all_fields_passed
+        print(all_checks_passed)
+        all_checks_passed = all_checks_passed and all_fields_passed
+    qc_report['all_checks_passed'] = all_checks_passed
     # log results
     # Write qc_report to file
     qc_report['Sample'] = sample_name
@@ -87,6 +101,7 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
 
 def summary(directory, output, species, sample_name, template, plot = False):
 
+    os.makedirs(output, exist_ok=True)
     csv_files = []
     # collect all csv files
     for root, dirs, files in os.walk(directory):
@@ -108,7 +123,7 @@ def summary(directory, output, species, sample_name, template, plot = False):
         return
 
     # write merged data to a csv file
-    output_file = output + '.csv'
+    output_file = os.path.join(output, 'report.csv')
     if plot: 
         plot_dict = merged_data.copy()
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -127,7 +142,8 @@ def summary(directory, output, species, sample_name, template, plot = False):
                 plot_dict[sample_id]["sample_name"] = sample_id
     # run plotting for each software (if available)
     if plot:
-        plot_charts(plot_dict, species, output_html_path=output + '.html', input_template_path=template)
+        plot_charts(plot_dict, species, output_html_path=os.path.join(output, 'report.html'), input_template_path=template)
+        shutil.copy(os.path.join(os.path.dirname(template), 'bulma.css'), os.path.join(output, 'bulma.css'))
         logging.info("Plots generated.")
 
 def check(criteria_file):

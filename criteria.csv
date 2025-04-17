@@ -5,7 +5,7 @@ Acinetobacter baumannii,all,Checkm,GC,<=,40.0,
 Acinetobacter baumannii,all,Checkm,GC,>=,38.0,
 Acinetobacter baumannii,all,Checkm,Genome size (bp),<=,4600000,
 Acinetobacter baumannii,all,Checkm,Genome size (bp),>=,3600000,
-Acinetobacter baumannii,all,Checkm,Marker lineage,regex,^Acinetobacter baumannii.+,species_field
+Acinetobacter baumannii,all,Checkm,Marker lineage,regex,^Acinetobacter baumannii,species_field
 Acinetobacter baumannii,all,Quast,GC (%),<=,40.0,
 Acinetobacter baumannii,all,Quast,GC (%),>=,38.0,
 Acinetobacter baumannii,all,Quast,Ns per 100 kbp,<=,1000,
@@ -15,7 +15,7 @@ Acinetobacter baumannii,all,Speciator,confidence,regex,^good$,
 Acinetobacter baumannii,all,Speciator,genusName,regex,^Acinetobacter,
 Acinetobacter baumannii,all,Speciator,speciesName,regex,^Acinetobacter baumannii,species_field
 Acinetobacter baumannii,all,Sylph,number_of_genomes,=,1,
-Acinetobacter baumannii,all,Sylph,species_name,regex,^.+,species_field
+Acinetobacter baumannii,all,Sylph,species_name,regex,^,species_field
 Acinetobacter baumannii,short,Ariba,percent,=,100,
 Acinetobacter baumannii,short,Checkm,# contigs,<=,600,
 Acinetobacter baumannii,short,Checkm,# contigs,>=,32,
@@ -29,7 +29,7 @@ Bacillus anthracis,all,Checkm,GC,<=,36.0,
 Bacillus anthracis,all,Checkm,GC,>=,35.0,
 Bacillus anthracis,all,Checkm,Genome size (bp),<=,5900000,
 Bacillus anthracis,all,Checkm,Genome size (bp),>=,5100000,
-Bacillus anthracis,all,Checkm,Marker lineage,regex,^Bacillus anthracis.+,species_field
+Bacillus anthracis,all,Checkm,Marker lineage,regex,^Bacillus anthracis,species_field
 Bacillus anthracis,all,Quast,GC (%),<=,36.0,
 Bacillus anthracis,all,Quast,GC (%),>=,35.0,
 Bacillus anthracis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -39,7 +39,7 @@ Bacillus anthracis,all,Speciator,confidence,regex,^good$,
 Bacillus anthracis,all,Speciator,genusName,regex,^Bacillus,
 Bacillus anthracis,all,Speciator,speciesName,regex,^Bacillus anthracis,species_field
 Bacillus anthracis,all,Sylph,number_of_genomes,=,1,
-Bacillus anthracis,all,Sylph,species_name,regex,^.+,species_field
+Bacillus anthracis,all,Sylph,species_name,regex,^,species_field
 Bacillus anthracis,short,Ariba,percent,=,100,
 Bacillus anthracis,short,Checkm,# contigs,<=,800,
 Bacillus anthracis,short,Checkm,# contigs,>=,30,
@@ -53,7 +53,7 @@ Bacillus subtilis,all,Checkm,GC,<=,44.0,
 Bacillus subtilis,all,Checkm,GC,>=,43.0,
 Bacillus subtilis,all,Checkm,Genome size (bp),<=,4600000,
 Bacillus subtilis,all,Checkm,Genome size (bp),>=,3600000,
-Bacillus subtilis,all,Checkm,Marker lineage,regex,^Bacillus subtilis.+,species_field
+Bacillus subtilis,all,Checkm,Marker lineage,regex,^Bacillus subtilis,species_field
 Bacillus subtilis,all,Quast,GC (%),<=,44.0,
 Bacillus subtilis,all,Quast,GC (%),>=,43.0,
 Bacillus subtilis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -63,7 +63,7 @@ Bacillus subtilis,all,Speciator,confidence,regex,^good$,
 Bacillus subtilis,all,Speciator,genusName,regex,^Bacillus,
 Bacillus subtilis,all,Speciator,speciesName,regex,^Bacillus subtilis,species_field
 Bacillus subtilis,all,Sylph,number_of_genomes,=,1,
-Bacillus subtilis,all,Sylph,species_name,regex,^.+,species_field
+Bacillus subtilis,all,Sylph,species_name,regex,^,species_field
 Bacillus subtilis,short,Ariba,percent,=,100,
 Bacillus subtilis,short,Checkm,# contigs,<=,300,
 Bacillus subtilis,short,Checkm,# contigs,>=,18,
@@ -77,7 +77,7 @@ Bacteroides fragilis,all,Checkm,GC,<=,44.0,
 Bacteroides fragilis,all,Checkm,GC,>=,43.0,
 Bacteroides fragilis,all,Checkm,Genome size (bp),<=,5800000,
 Bacteroides fragilis,all,Checkm,Genome size (bp),>=,4800000,
-Bacteroides fragilis,all,Checkm,Marker lineage,regex,^Bacteroides fragilis.+,species_field
+Bacteroides fragilis,all,Checkm,Marker lineage,regex,^Bacteroides fragilis,species_field
 Bacteroides fragilis,all,Quast,GC (%),<=,44.0,
 Bacteroides fragilis,all,Quast,GC (%),>=,43.0,
 Bacteroides fragilis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -87,7 +87,7 @@ Bacteroides fragilis,all,Speciator,confidence,regex,^good$,
 Bacteroides fragilis,all,Speciator,genusName,regex,^Bacteroides,
 Bacteroides fragilis,all,Speciator,speciesName,regex,^Bacteroides fragilis,species_field
 Bacteroides fragilis,all,Sylph,number_of_genomes,=,1,
-Bacteroides fragilis,all,Sylph,species_name,regex,^.+,species_field
+Bacteroides fragilis,all,Sylph,species_name,regex,^,species_field
 Bacteroides fragilis,short,Ariba,percent,=,100,
 Bacteroides fragilis,short,Checkm,# contigs,<=,500,
 Bacteroides fragilis,short,Checkm,# contigs,>=,26,
@@ -101,7 +101,7 @@ Bacteroides uniformis,all,Checkm,GC,<=,47.0,
 Bacteroides uniformis,all,Checkm,GC,>=,46.0,
 Bacteroides uniformis,all,Checkm,Genome size (bp),<=,5500000,
 Bacteroides uniformis,all,Checkm,Genome size (bp),>=,4200000,
-Bacteroides uniformis,all,Checkm,Marker lineage,regex,^Bacteroides uniformis.+,species_field
+Bacteroides uniformis,all,Checkm,Marker lineage,regex,^Bacteroides uniformis,species_field
 Bacteroides uniformis,all,Quast,GC (%),<=,47.0,
 Bacteroides uniformis,all,Quast,GC (%),>=,46.0,
 Bacteroides uniformis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -111,7 +111,7 @@ Bacteroides uniformis,all,Speciator,confidence,regex,^good$,
 Bacteroides uniformis,all,Speciator,genusName,regex,^Bacteroides,
 Bacteroides uniformis,all,Speciator,speciesName,regex,^Bacteroides uniformis,species_field
 Bacteroides uniformis,all,Sylph,number_of_genomes,=,1,
-Bacteroides uniformis,all,Sylph,species_name,regex,^.+,species_field
+Bacteroides uniformis,all,Sylph,species_name,regex,^,species_field
 Bacteroides uniformis,short,Ariba,percent,=,100,
 Bacteroides uniformis,short,Checkm,# contigs,<=,500,
 Bacteroides uniformis,short,Checkm,# contigs,>=,29,
@@ -125,7 +125,7 @@ Bifidobacterium adolescentis,all,Checkm,GC,<=,60.0,
 Bifidobacterium adolescentis,all,Checkm,GC,>=,59.0,
 Bifidobacterium adolescentis,all,Checkm,Genome size (bp),<=,2500000,
 Bifidobacterium adolescentis,all,Checkm,Genome size (bp),>=,2000000,
-Bifidobacterium adolescentis,all,Checkm,Marker lineage,regex,^Bifidobacterium adolescentis.+,species_field
+Bifidobacterium adolescentis,all,Checkm,Marker lineage,regex,^Bifidobacterium adolescentis,species_field
 Bifidobacterium adolescentis,all,Quast,GC (%),<=,60.0,
 Bifidobacterium adolescentis,all,Quast,GC (%),>=,59.0,
 Bifidobacterium adolescentis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -135,7 +135,7 @@ Bifidobacterium adolescentis,all,Speciator,confidence,regex,^good$,
 Bifidobacterium adolescentis,all,Speciator,genusName,regex,^Bifidobacterium,
 Bifidobacterium adolescentis,all,Speciator,speciesName,regex,^Bifidobacterium adolescentis,species_field
 Bifidobacterium adolescentis,all,Sylph,number_of_genomes,=,1,
-Bifidobacterium adolescentis,all,Sylph,species_name,regex,^.+,species_field
+Bifidobacterium adolescentis,all,Sylph,species_name,regex,^,species_field
 Bifidobacterium adolescentis,short,Ariba,percent,=,100,
 Bifidobacterium adolescentis,short,Checkm,# contigs,<=,100,
 Bifidobacterium adolescentis,short,Checkm,# contigs,>=,11,
@@ -149,7 +149,7 @@ Bifidobacterium longum,all,Checkm,GC,<=,60.0,
 Bifidobacterium longum,all,Checkm,GC,>=,59.0,
 Bifidobacterium longum,all,Checkm,Genome size (bp),<=,2900000,
 Bifidobacterium longum,all,Checkm,Genome size (bp),>=,2200000,
-Bifidobacterium longum,all,Checkm,Marker lineage,regex,^Bifidobacterium longum.+,species_field
+Bifidobacterium longum,all,Checkm,Marker lineage,regex,^Bifidobacterium longum,species_field
 Bifidobacterium longum,all,Quast,GC (%),<=,60.0,
 Bifidobacterium longum,all,Quast,GC (%),>=,59.0,
 Bifidobacterium longum,all,Quast,Ns per 100 kbp,<=,1000,
@@ -159,7 +159,7 @@ Bifidobacterium longum,all,Speciator,confidence,regex,^good$,
 Bifidobacterium longum,all,Speciator,genusName,regex,^Bifidobacterium,
 Bifidobacterium longum,all,Speciator,speciesName,regex,^Bifidobacterium longum,species_field
 Bifidobacterium longum,all,Sylph,number_of_genomes,=,1,
-Bifidobacterium longum,all,Sylph,species_name,regex,^.+,species_field
+Bifidobacterium longum,all,Sylph,species_name,regex,^,species_field
 Bifidobacterium longum,short,Ariba,percent,=,100,
 Bifidobacterium longum,short,Checkm,# contigs,<=,200,
 Bifidobacterium longum,short,Checkm,# contigs,>=,17,
@@ -173,7 +173,7 @@ Bordetella pertussis,all,Checkm,GC,<=,68.0,
 Bordetella pertussis,all,Checkm,GC,>=,68.0,
 Bordetella pertussis,all,Checkm,Genome size (bp),<=,4400000,
 Bordetella pertussis,all,Checkm,Genome size (bp),>=,3700000,
-Bordetella pertussis,all,Checkm,Marker lineage,regex,^Bordetella pertussis.+,species_field
+Bordetella pertussis,all,Checkm,Marker lineage,regex,^Bordetella pertussis,species_field
 Bordetella pertussis,all,Quast,GC (%),<=,68.0,
 Bordetella pertussis,all,Quast,GC (%),>=,68.0,
 Bordetella pertussis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -183,7 +183,7 @@ Bordetella pertussis,all,Speciator,confidence,regex,^good$,
 Bordetella pertussis,all,Speciator,genusName,regex,^Bordetella,
 Bordetella pertussis,all,Speciator,speciesName,regex,^Bordetella pertussis,species_field
 Bordetella pertussis,all,Sylph,number_of_genomes,=,1,
-Bordetella pertussis,all,Sylph,species_name,regex,^.+,species_field
+Bordetella pertussis,all,Sylph,species_name,regex,^,species_field
 Bordetella pertussis,short,Ariba,percent,=,100,
 Bordetella pertussis,short,Checkm,# contigs,<=,600,
 Bordetella pertussis,short,Checkm,# contigs,>=,269,
@@ -197,7 +197,7 @@ Brucella melitensis,all,Checkm,GC,<=,57.0,
 Brucella melitensis,all,Checkm,GC,>=,57.0,
 Brucella melitensis,all,Checkm,Genome size (bp),<=,3400000,
 Brucella melitensis,all,Checkm,Genome size (bp),>=,3200000,
-Brucella melitensis,all,Checkm,Marker lineage,regex,^Brucella melitensis.+,species_field
+Brucella melitensis,all,Checkm,Marker lineage,regex,^Brucella melitensis,species_field
 Brucella melitensis,all,Quast,GC (%),<=,57.0,
 Brucella melitensis,all,Quast,GC (%),>=,57.0,
 Brucella melitensis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -207,7 +207,7 @@ Brucella melitensis,all,Speciator,confidence,regex,^good$,
 Brucella melitensis,all,Speciator,genusName,regex,^Brucella,
 Brucella melitensis,all,Speciator,speciesName,regex,^Brucella melitensis,species_field
 Brucella melitensis,all,Sylph,number_of_genomes,=,1,
-Brucella melitensis,all,Sylph,species_name,regex,^.+,species_field
+Brucella melitensis,all,Sylph,species_name,regex,^,species_field
 Brucella melitensis,short,Ariba,percent,=,100,
 Brucella melitensis,short,Checkm,# contigs,<=,100,
 Brucella melitensis,short,Checkm,# contigs,>=,21,
@@ -221,7 +221,7 @@ Burkholderia mallei,all,Checkm,GC,<=,68.0,
 Burkholderia mallei,all,Checkm,GC,>=,68.0,
 Burkholderia mallei,all,Checkm,Genome size (bp),<=,7500000,
 Burkholderia mallei,all,Checkm,Genome size (bp),>=,5200000,
-Burkholderia mallei,all,Checkm,Marker lineage,regex,^Burkholderia mallei.+,species_field
+Burkholderia mallei,all,Checkm,Marker lineage,regex,^Burkholderia mallei,species_field
 Burkholderia mallei,all,Quast,GC (%),<=,68.0,
 Burkholderia mallei,all,Quast,GC (%),>=,68.0,
 Burkholderia mallei,all,Quast,Ns per 100 kbp,<=,1000,
@@ -231,7 +231,7 @@ Burkholderia mallei,all,Speciator,confidence,regex,^good$,
 Burkholderia mallei,all,Speciator,genusName,regex,^Burkholderia,
 Burkholderia mallei,all,Speciator,speciesName,regex,^Burkholderia mallei,species_field
 Burkholderia mallei,all,Sylph,number_of_genomes,=,1,
-Burkholderia mallei,all,Sylph,species_name,regex,^.+,species_field
+Burkholderia mallei,all,Sylph,species_name,regex,^,species_field
 Burkholderia mallei,short,Ariba,percent,=,100,
 Burkholderia mallei,short,Checkm,# contigs,<=,800,
 Burkholderia mallei,short,Checkm,# contigs,>=,126,
@@ -245,7 +245,7 @@ Campylobacter coli,all,Checkm,GC,<=,32.0,
 Campylobacter coli,all,Checkm,GC,>=,30.0,
 Campylobacter coli,all,Checkm,Genome size (bp),<=,2200000,
 Campylobacter coli,all,Checkm,Genome size (bp),>=,1600000,
-Campylobacter coli,all,Checkm,Marker lineage,regex,^Campylobacter coli.+,species_field
+Campylobacter coli,all,Checkm,Marker lineage,regex,^Campylobacter coli,species_field
 Campylobacter coli,all,Quast,GC (%),<=,32.0,
 Campylobacter coli,all,Quast,GC (%),>=,30.0,
 Campylobacter coli,all,Quast,Ns per 100 kbp,<=,1000,
@@ -255,7 +255,7 @@ Campylobacter coli,all,Speciator,confidence,regex,^good$,
 Campylobacter coli,all,Speciator,genusName,regex,^Campylobacter,
 Campylobacter coli,all,Speciator,speciesName,regex,^Campylobacter coli,species_field
 Campylobacter coli,all,Sylph,number_of_genomes,=,1,
-Campylobacter coli,all,Sylph,species_name,regex,^.+,species_field
+Campylobacter coli,all,Sylph,species_name,regex,^,species_field
 Campylobacter coli,short,Ariba,percent,=,100,
 Campylobacter coli,short,Checkm,# contigs,<=,200,
 Campylobacter coli,short,Checkm,# contigs,>=,14,
@@ -269,7 +269,7 @@ Campylobacter jejuni,all,Checkm,GC,<=,31.0,
 Campylobacter jejuni,all,Checkm,GC,>=,30.0,
 Campylobacter jejuni,all,Checkm,Genome size (bp),<=,2000000,
 Campylobacter jejuni,all,Checkm,Genome size (bp),>=,1500000,
-Campylobacter jejuni,all,Checkm,Marker lineage,regex,^Campylobacter jejuni.+,species_field
+Campylobacter jejuni,all,Checkm,Marker lineage,regex,^Campylobacter jejuni,species_field
 Campylobacter jejuni,all,Quast,GC (%),<=,31.0,
 Campylobacter jejuni,all,Quast,GC (%),>=,30.0,
 Campylobacter jejuni,all,Quast,Ns per 100 kbp,<=,1000,
@@ -279,7 +279,7 @@ Campylobacter jejuni,all,Speciator,confidence,regex,^good$,
 Campylobacter jejuni,all,Speciator,genusName,regex,^Campylobacter,
 Campylobacter jejuni,all,Speciator,speciesName,regex,^Campylobacter jejuni,species_field
 Campylobacter jejuni,all,Sylph,number_of_genomes,=,1,
-Campylobacter jejuni,all,Sylph,species_name,regex,^.+,species_field
+Campylobacter jejuni,all,Sylph,species_name,regex,^,species_field
 Campylobacter jejuni,short,Ariba,percent,=,100,
 Campylobacter jejuni,short,Checkm,# contigs,<=,200,
 Campylobacter jejuni,short,Checkm,# contigs,>=,13,
@@ -293,7 +293,7 @@ Chlamydia trachomatis,all,Checkm,GC,<=,42.0,
 Chlamydia trachomatis,all,Checkm,GC,>=,41.0,
 Chlamydia trachomatis,all,Checkm,Genome size (bp),<=,1300000,
 Chlamydia trachomatis,all,Checkm,Genome size (bp),>=,1000000,
-Chlamydia trachomatis,all,Checkm,Marker lineage,regex,^Chlamydia trachomatis.+,species_field
+Chlamydia trachomatis,all,Checkm,Marker lineage,regex,^Chlamydia trachomatis,species_field
 Chlamydia trachomatis,all,Quast,GC (%),<=,42.0,
 Chlamydia trachomatis,all,Quast,GC (%),>=,41.0,
 Chlamydia trachomatis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -303,7 +303,7 @@ Chlamydia trachomatis,all,Speciator,confidence,regex,^good$,
 Chlamydia trachomatis,all,Speciator,genusName,regex,^Chlamydia,
 Chlamydia trachomatis,all,Speciator,speciesName,regex,^Chlamydia trachomatis,species_field
 Chlamydia trachomatis,all,Sylph,number_of_genomes,=,1,
-Chlamydia trachomatis,all,Sylph,species_name,regex,^.+,species_field
+Chlamydia trachomatis,all,Sylph,species_name,regex,^,species_field
 Chlamydia trachomatis,short,Ariba,percent,=,100,
 Chlamydia trachomatis,short,Checkm,# contigs,<=,600,
 Chlamydia trachomatis,short,Checkm,# contigs,>=,2,
@@ -317,7 +317,7 @@ Citrobacter freundii,all,Checkm,GC,<=,52.0,
 Citrobacter freundii,all,Checkm,GC,>=,51.0,
 Citrobacter freundii,all,Checkm,Genome size (bp),<=,6100000,
 Citrobacter freundii,all,Checkm,Genome size (bp),>=,4600000,
-Citrobacter freundii,all,Checkm,Marker lineage,regex,^Citrobacter freundii.+,species_field
+Citrobacter freundii,all,Checkm,Marker lineage,regex,^Citrobacter freundii,species_field
 Citrobacter freundii,all,Quast,GC (%),<=,52.0,
 Citrobacter freundii,all,Quast,GC (%),>=,51.0,
 Citrobacter freundii,all,Quast,Ns per 100 kbp,<=,1000,
@@ -327,7 +327,7 @@ Citrobacter freundii,all,Speciator,confidence,regex,^good$,
 Citrobacter freundii,all,Speciator,genusName,regex,^Citrobacter,
 Citrobacter freundii,all,Speciator,speciesName,regex,^Citrobacter freundii,species_field
 Citrobacter freundii,all,Sylph,number_of_genomes,=,1,
-Citrobacter freundii,all,Sylph,species_name,regex,^.+,species_field
+Citrobacter freundii,all,Sylph,species_name,regex,^,species_field
 Citrobacter freundii,short,Ariba,percent,=,100,
 Citrobacter freundii,short,Checkm,# contigs,<=,400,
 Citrobacter freundii,short,Checkm,# contigs,>=,36,
@@ -341,7 +341,7 @@ Clostridium botulinum,all,Checkm,GC,<=,28.0,
 Clostridium botulinum,all,Checkm,GC,>=,27.0,
 Clostridium botulinum,all,Checkm,Genome size (bp),<=,4500000,
 Clostridium botulinum,all,Checkm,Genome size (bp),>=,2500000,
-Clostridium botulinum,all,Checkm,Marker lineage,regex,^Clostridium botulinum.+,species_field
+Clostridium botulinum,all,Checkm,Marker lineage,regex,^Clostridium botulinum,species_field
 Clostridium botulinum,all,Quast,GC (%),<=,28.0,
 Clostridium botulinum,all,Quast,GC (%),>=,27.0,
 Clostridium botulinum,all,Quast,Ns per 100 kbp,<=,1000,
@@ -351,7 +351,7 @@ Clostridium botulinum,all,Speciator,confidence,regex,^good$,
 Clostridium botulinum,all,Speciator,genusName,regex,^Clostridium,
 Clostridium botulinum,all,Speciator,speciesName,regex,^Clostridium botulinum,species_field
 Clostridium botulinum,all,Sylph,number_of_genomes,=,1,
-Clostridium botulinum,all,Sylph,species_name,regex,^.+,species_field
+Clostridium botulinum,all,Sylph,species_name,regex,^,species_field
 Clostridium botulinum,short,Ariba,percent,=,100,
 Clostridium botulinum,short,Checkm,# contigs,<=,500,
 Clostridium botulinum,short,Checkm,# contigs,>=,32,
@@ -365,7 +365,7 @@ Clostridium difficile,all,Checkm,GC,<=,30.0,
 Clostridium difficile,all,Checkm,GC,>=,28.0,
 Clostridium difficile,all,Checkm,Genome size (bp),<=,4600000,
 Clostridium difficile,all,Checkm,Genome size (bp),>=,3800000,
-Clostridium difficile,all,Checkm,Marker lineage,regex,^Clostridium difficile.+,species_field
+Clostridium difficile,all,Checkm,Marker lineage,regex,^Clostridium difficile,species_field
 Clostridium difficile,all,Quast,GC (%),<=,30.0,
 Clostridium difficile,all,Quast,GC (%),>=,28.0,
 Clostridium difficile,all,Quast,Ns per 100 kbp,<=,1000,
@@ -375,7 +375,7 @@ Clostridium difficile,all,Speciator,confidence,regex,^good$,
 Clostridium difficile,all,Speciator,genusName,regex,^Clostridium,
 Clostridium difficile,all,Speciator,speciesName,regex,^Clostridium difficile,species_field
 Clostridium difficile,all,Sylph,number_of_genomes,=,1,
-Clostridium difficile,all,Sylph,species_name,regex,^.+,species_field
+Clostridium difficile,all,Sylph,species_name,regex,^,species_field
 Clostridium difficile,short,Ariba,percent,=,100,
 Clostridium difficile,short,Checkm,# contigs,<=,900,
 Clostridium difficile,short,Checkm,# contigs,>=,50,
@@ -389,7 +389,7 @@ Corynebacterium diphtheriae,all,Checkm,GC,<=,54.0,
 Corynebacterium diphtheriae,all,Checkm,GC,>=,53.0,
 Corynebacterium diphtheriae,all,Checkm,Genome size (bp),<=,2600000,
 Corynebacterium diphtheriae,all,Checkm,Genome size (bp),>=,2300000,
-Corynebacterium diphtheriae,all,Checkm,Marker lineage,regex,^Corynebacterium diphtheriae.+,species_field
+Corynebacterium diphtheriae,all,Checkm,Marker lineage,regex,^Corynebacterium diphtheriae,species_field
 Corynebacterium diphtheriae,all,Quast,GC (%),<=,54.0,
 Corynebacterium diphtheriae,all,Quast,GC (%),>=,53.0,
 Corynebacterium diphtheriae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -399,7 +399,7 @@ Corynebacterium diphtheriae,all,Speciator,confidence,regex,^good$,
 Corynebacterium diphtheriae,all,Speciator,genusName,regex,^Corynebacterium,
 Corynebacterium diphtheriae,all,Speciator,speciesName,regex,^Corynebacterium diphtheriae,species_field
 Corynebacterium diphtheriae,all,Sylph,number_of_genomes,=,1,
-Corynebacterium diphtheriae,all,Sylph,species_name,regex,^.+,species_field
+Corynebacterium diphtheriae,all,Sylph,species_name,regex,^,species_field
 Corynebacterium diphtheriae,short,Ariba,percent,=,100,
 Corynebacterium diphtheriae,short,Checkm,# contigs,<=,100,
 Corynebacterium diphtheriae,short,Checkm,# contigs,>=,26,
@@ -413,7 +413,7 @@ Cronobacter sakazakii,all,Checkm,GC,<=,57.0,
 Cronobacter sakazakii,all,Checkm,GC,>=,56.0,
 Cronobacter sakazakii,all,Checkm,Genome size (bp),<=,5000000,
 Cronobacter sakazakii,all,Checkm,Genome size (bp),>=,4200000,
-Cronobacter sakazakii,all,Checkm,Marker lineage,regex,^Cronobacter sakazakii.+,species_field
+Cronobacter sakazakii,all,Checkm,Marker lineage,regex,^Cronobacter sakazakii,species_field
 Cronobacter sakazakii,all,Quast,GC (%),<=,57.0,
 Cronobacter sakazakii,all,Quast,GC (%),>=,56.0,
 Cronobacter sakazakii,all,Quast,Ns per 100 kbp,<=,1000,
@@ -423,7 +423,7 @@ Cronobacter sakazakii,all,Speciator,confidence,regex,^good$,
 Cronobacter sakazakii,all,Speciator,genusName,regex,^Cronobacter,
 Cronobacter sakazakii,all,Speciator,speciesName,regex,^Cronobacter sakazakii,species_field
 Cronobacter sakazakii,all,Sylph,number_of_genomes,=,1,
-Cronobacter sakazakii,all,Sylph,species_name,regex,^.+,species_field
+Cronobacter sakazakii,all,Sylph,species_name,regex,^,species_field
 Cronobacter sakazakii,short,Ariba,percent,=,100,
 Cronobacter sakazakii,short,Checkm,# contigs,<=,200,
 Cronobacter sakazakii,short,Checkm,# contigs,>=,24,
@@ -437,7 +437,7 @@ Enterobacter cloacae,all,Checkm,GC,<=,56.0,
 Enterobacter cloacae,all,Checkm,GC,>=,53.0,
 Enterobacter cloacae,all,Checkm,Genome size (bp),<=,5800000,
 Enterobacter cloacae,all,Checkm,Genome size (bp),>=,4600000,
-Enterobacter cloacae,all,Checkm,Marker lineage,regex,^Enterobacter cloacae.+,species_field
+Enterobacter cloacae,all,Checkm,Marker lineage,regex,^Enterobacter cloacae,species_field
 Enterobacter cloacae,all,Quast,GC (%),<=,56.0,
 Enterobacter cloacae,all,Quast,GC (%),>=,53.0,
 Enterobacter cloacae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -447,7 +447,7 @@ Enterobacter cloacae,all,Speciator,confidence,regex,^good$,
 Enterobacter cloacae,all,Speciator,genusName,regex,^Enterobacter,
 Enterobacter cloacae,all,Speciator,speciesName,regex,^Enterobacter cloacae,species_field
 Enterobacter cloacae,all,Sylph,number_of_genomes,=,1,
-Enterobacter cloacae,all,Sylph,species_name,regex,^.+,species_field
+Enterobacter cloacae,all,Sylph,species_name,regex,^,species_field
 Enterobacter cloacae,short,Ariba,percent,=,100,
 Enterobacter cloacae,short,Checkm,# contigs,<=,500,
 Enterobacter cloacae,short,Checkm,# contigs,>=,32,
@@ -461,7 +461,7 @@ Enterobacter hormaechei,all,Checkm,GC,<=,56.0,
 Enterobacter hormaechei,all,Checkm,GC,>=,55.0,
 Enterobacter hormaechei,all,Checkm,Genome size (bp),<=,5700000,
 Enterobacter hormaechei,all,Checkm,Genome size (bp),>=,4500000,
-Enterobacter hormaechei,all,Checkm,Marker lineage,regex,^Enterobacter hormaechei.+,species_field
+Enterobacter hormaechei,all,Checkm,Marker lineage,regex,^Enterobacter hormaechei,species_field
 Enterobacter hormaechei,all,Quast,GC (%),<=,56.0,
 Enterobacter hormaechei,all,Quast,GC (%),>=,55.0,
 Enterobacter hormaechei,all,Quast,Ns per 100 kbp,<=,1000,
@@ -471,7 +471,7 @@ Enterobacter hormaechei,all,Speciator,confidence,regex,^good$,
 Enterobacter hormaechei,all,Speciator,genusName,regex,^Enterobacter,
 Enterobacter hormaechei,all,Speciator,speciesName,regex,^Enterobacter hormaechei,species_field
 Enterobacter hormaechei,all,Sylph,number_of_genomes,=,1,
-Enterobacter hormaechei,all,Sylph,species_name,regex,^.+,species_field
+Enterobacter hormaechei,all,Sylph,species_name,regex,^,species_field
 Enterobacter hormaechei,short,Ariba,percent,=,100,
 Enterobacter hormaechei,short,Checkm,# contigs,<=,300,
 Enterobacter hormaechei,short,Checkm,# contigs,>=,34,
@@ -485,7 +485,7 @@ Enterobacter kobei,all,Checkm,GC,<=,56.0,
 Enterobacter kobei,all,Checkm,GC,>=,54.0,
 Enterobacter kobei,all,Checkm,Genome size (bp),<=,5800000,
 Enterobacter kobei,all,Checkm,Genome size (bp),>=,4600000,
-Enterobacter kobei,all,Checkm,Marker lineage,regex,^Enterobacter kobei.+,species_field
+Enterobacter kobei,all,Checkm,Marker lineage,regex,^Enterobacter kobei,species_field
 Enterobacter kobei,all,Quast,GC (%),<=,56.0,
 Enterobacter kobei,all,Quast,GC (%),>=,54.0,
 Enterobacter kobei,all,Quast,Ns per 100 kbp,<=,1000,
@@ -495,7 +495,7 @@ Enterobacter kobei,all,Speciator,confidence,regex,^good$,
 Enterobacter kobei,all,Speciator,genusName,regex,^Enterobacter,
 Enterobacter kobei,all,Speciator,speciesName,regex,^Enterobacter kobei,species_field
 Enterobacter kobei,all,Sylph,number_of_genomes,=,1,
-Enterobacter kobei,all,Sylph,species_name,regex,^.+,species_field
+Enterobacter kobei,all,Sylph,species_name,regex,^,species_field
 Enterobacter kobei,short,Ariba,percent,=,100,
 Enterobacter kobei,short,Checkm,# contigs,<=,400,
 Enterobacter kobei,short,Checkm,# contigs,>=,32,
@@ -509,7 +509,7 @@ Enterococcus faecalis,all,Checkm,GC,<=,38.0,
 Enterococcus faecalis,all,Checkm,GC,>=,37.0,
 Enterococcus faecalis,all,Checkm,Genome size (bp),<=,3600000,
 Enterococcus faecalis,all,Checkm,Genome size (bp),>=,2600000,
-Enterococcus faecalis,all,Checkm,Marker lineage,regex,^Enterococcus faecalis.+,species_field
+Enterococcus faecalis,all,Checkm,Marker lineage,regex,^Enterococcus faecalis,species_field
 Enterococcus faecalis,all,Quast,GC (%),<=,38.0,
 Enterococcus faecalis,all,Quast,GC (%),>=,37.0,
 Enterococcus faecalis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -519,7 +519,7 @@ Enterococcus faecalis,all,Speciator,confidence,regex,^good$,
 Enterococcus faecalis,all,Speciator,genusName,regex,^Enterococcus,
 Enterococcus faecalis,all,Speciator,speciesName,regex,^Enterococcus faecalis,species_field
 Enterococcus faecalis,all,Sylph,number_of_genomes,=,1,
-Enterococcus faecalis,all,Sylph,species_name,regex,^.+,species_field
+Enterococcus faecalis,all,Sylph,species_name,regex,^,species_field
 Enterococcus faecalis,short,Ariba,percent,=,100,
 Enterococcus faecalis,short,Checkm,# contigs,<=,300,
 Enterococcus faecalis,short,Checkm,# contigs,>=,17,
@@ -533,7 +533,7 @@ Enterococcus faecium,all,Checkm,GC,<=,38.0,
 Enterococcus faecium,all,Checkm,GC,>=,37.0,
 Enterococcus faecium,all,Checkm,Genome size (bp),<=,3500000,
 Enterococcus faecium,all,Checkm,Genome size (bp),>=,2400000,
-Enterococcus faecium,all,Checkm,Marker lineage,regex,^Enterococcus faecium.+,species_field
+Enterococcus faecium,all,Checkm,Marker lineage,regex,^Enterococcus faecium,species_field
 Enterococcus faecium,all,Quast,GC (%),<=,38.0,
 Enterococcus faecium,all,Quast,GC (%),>=,37.0,
 Enterococcus faecium,all,Quast,Ns per 100 kbp,<=,1000,
@@ -543,7 +543,7 @@ Enterococcus faecium,all,Speciator,confidence,regex,^good$,
 Enterococcus faecium,all,Speciator,genusName,regex,^Enterococcus,
 Enterococcus faecium,all,Speciator,speciesName,regex,^Enterococcus faecium,species_field
 Enterococcus faecium,all,Sylph,number_of_genomes,=,1,
-Enterococcus faecium,all,Sylph,species_name,regex,^.+,species_field
+Enterococcus faecium,all,Sylph,species_name,regex,^,species_field
 Enterococcus faecium,short,Ariba,percent,=,100,
 Enterococcus faecium,short,Checkm,# contigs,<=,600,
 Enterococcus faecium,short,Checkm,# contigs,>=,100,
@@ -557,7 +557,7 @@ Enterococcus lactis,all,Checkm,GC,<=,38.0,
 Enterococcus lactis,all,Checkm,GC,>=,38.0,
 Enterococcus lactis,all,Checkm,Genome size (bp),<=,3100000,
 Enterococcus lactis,all,Checkm,Genome size (bp),>=,2500000,
-Enterococcus lactis,all,Checkm,Marker lineage,regex,^Enterococcus lactis.+,species_field
+Enterococcus lactis,all,Checkm,Marker lineage,regex,^Enterococcus lactis,species_field
 Enterococcus lactis,all,Quast,GC (%),<=,38.0,
 Enterococcus lactis,all,Quast,GC (%),>=,38.0,
 Enterococcus lactis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -567,7 +567,7 @@ Enterococcus lactis,all,Speciator,confidence,regex,^good$,
 Enterococcus lactis,all,Speciator,genusName,regex,^Enterococcus,
 Enterococcus lactis,all,Speciator,speciesName,regex,^Enterococcus lactis,species_field
 Enterococcus lactis,all,Sylph,number_of_genomes,=,1,
-Enterococcus lactis,all,Sylph,species_name,regex,^.+,species_field
+Enterococcus lactis,all,Sylph,species_name,regex,^,species_field
 Enterococcus lactis,short,Ariba,percent,=,100,
 Enterococcus lactis,short,Checkm,# contigs,<=,300,
 Enterococcus lactis,short,Checkm,# contigs,>=,27,
@@ -581,7 +581,7 @@ Escherichia coli,all,Checkm,GC,<=,51.0,
 Escherichia coli,all,Checkm,GC,>=,50.0,
 Escherichia coli,all,Checkm,Genome size (bp),<=,6200000,
 Escherichia coli,all,Checkm,Genome size (bp),>=,4100000,
-Escherichia coli,all,Checkm,Marker lineage,regex,^Escherichia coli.+,species_field
+Escherichia coli,all,Checkm,Marker lineage,regex,^Escherichia coli,species_field
 Escherichia coli,all,Quast,GC (%),<=,51.0,
 Escherichia coli,all,Quast,GC (%),>=,50.0,
 Escherichia coli,all,Quast,Ns per 100 kbp,<=,1000,
@@ -591,7 +591,7 @@ Escherichia coli,all,Speciator,confidence,regex,^good$,
 Escherichia coli,all,Speciator,genusName,regex,^Escherichia,
 Escherichia coli,all,Speciator,speciesName,regex,^Escherichia coli,species_field
 Escherichia coli,all,Sylph,number_of_genomes,=,1,
-Escherichia coli,all,Sylph,species_name,regex,^.+,species_field
+Escherichia coli,all,Sylph,species_name,regex,^,species_field
 Escherichia coli,short,Ariba,percent,=,100,
 Escherichia coli,short,Checkm,# contigs,<=,700,
 Escherichia coli,short,Checkm,# contigs,>=,67,
@@ -605,7 +605,7 @@ Francisella tularensis,all,Checkm,GC,<=,32.0,
 Francisella tularensis,all,Checkm,GC,>=,32.0,
 Francisella tularensis,all,Checkm,Genome size (bp),<=,2100000,
 Francisella tularensis,all,Checkm,Genome size (bp),>=,1700000,
-Francisella tularensis,all,Checkm,Marker lineage,regex,^Francisella tularensis.+,species_field
+Francisella tularensis,all,Checkm,Marker lineage,regex,^Francisella tularensis,species_field
 Francisella tularensis,all,Quast,GC (%),<=,32.0,
 Francisella tularensis,all,Quast,GC (%),>=,32.0,
 Francisella tularensis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -615,7 +615,7 @@ Francisella tularensis,all,Speciator,confidence,regex,^good$,
 Francisella tularensis,all,Speciator,genusName,regex,^Francisella,
 Francisella tularensis,all,Speciator,speciesName,regex,^Francisella tularensis,species_field
 Francisella tularensis,all,Sylph,number_of_genomes,=,1,
-Francisella tularensis,all,Sylph,species_name,regex,^.+,species_field
+Francisella tularensis,all,Sylph,species_name,regex,^,species_field
 Francisella tularensis,short,Ariba,percent,=,100,
 Francisella tularensis,short,Checkm,# contigs,<=,200,
 Francisella tularensis,short,Checkm,# contigs,>=,69,
@@ -629,7 +629,7 @@ Haemophilus influenzae,all,Checkm,GC,<=,38.0,
 Haemophilus influenzae,all,Checkm,GC,>=,38.0,
 Haemophilus influenzae,all,Checkm,Genome size (bp),<=,2100000,
 Haemophilus influenzae,all,Checkm,Genome size (bp),>=,1700000,
-Haemophilus influenzae,all,Checkm,Marker lineage,regex,^Haemophilus influenzae.+,species_field
+Haemophilus influenzae,all,Checkm,Marker lineage,regex,^Haemophilus influenzae,species_field
 Haemophilus influenzae,all,Quast,GC (%),<=,38.0,
 Haemophilus influenzae,all,Quast,GC (%),>=,38.0,
 Haemophilus influenzae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -639,7 +639,7 @@ Haemophilus influenzae,all,Speciator,confidence,regex,^good$,
 Haemophilus influenzae,all,Speciator,genusName,regex,^Haemophilus,
 Haemophilus influenzae,all,Speciator,speciesName,regex,^Haemophilus influenzae,species_field
 Haemophilus influenzae,all,Sylph,number_of_genomes,=,1,
-Haemophilus influenzae,all,Sylph,species_name,regex,^.+,species_field
+Haemophilus influenzae,all,Sylph,species_name,regex,^,species_field
 Haemophilus influenzae,short,Ariba,percent,=,100,
 Haemophilus influenzae,short,Checkm,# contigs,<=,200,
 Haemophilus influenzae,short,Checkm,# contigs,>=,16,
@@ -653,7 +653,7 @@ Helicobacter pylori,all,Checkm,GC,<=,40.0,
 Helicobacter pylori,all,Checkm,GC,>=,38.0,
 Helicobacter pylori,all,Checkm,Genome size (bp),<=,1800000,
 Helicobacter pylori,all,Checkm,Genome size (bp),>=,1500000,
-Helicobacter pylori,all,Checkm,Marker lineage,regex,^Helicobacter pylori.+,species_field
+Helicobacter pylori,all,Checkm,Marker lineage,regex,^Helicobacter pylori,species_field
 Helicobacter pylori,all,Quast,GC (%),<=,40.0,
 Helicobacter pylori,all,Quast,GC (%),>=,38.0,
 Helicobacter pylori,all,Quast,Ns per 100 kbp,<=,1000,
@@ -663,7 +663,7 @@ Helicobacter pylori,all,Speciator,confidence,regex,^good$,
 Helicobacter pylori,all,Speciator,genusName,regex,^Helicobacter,
 Helicobacter pylori,all,Speciator,speciesName,regex,^Helicobacter pylori,species_field
 Helicobacter pylori,all,Sylph,number_of_genomes,=,1,
-Helicobacter pylori,all,Sylph,species_name,regex,^.+,species_field
+Helicobacter pylori,all,Sylph,species_name,regex,^,species_field
 Helicobacter pylori,short,Ariba,percent,=,100,
 Helicobacter pylori,short,Checkm,# contigs,<=,200,
 Helicobacter pylori,short,Checkm,# contigs,>=,22,
@@ -677,7 +677,7 @@ Klebsiella aerogenes,all,Checkm,GC,<=,55.0,
 Klebsiella aerogenes,all,Checkm,GC,>=,54.0,
 Klebsiella aerogenes,all,Checkm,Genome size (bp),<=,6000000,
 Klebsiella aerogenes,all,Checkm,Genome size (bp),>=,4900000,
-Klebsiella aerogenes,all,Checkm,Marker lineage,regex,^Klebsiella aerogenes.+,species_field
+Klebsiella aerogenes,all,Checkm,Marker lineage,regex,^Klebsiella aerogenes,species_field
 Klebsiella aerogenes,all,Quast,GC (%),<=,55.0,
 Klebsiella aerogenes,all,Quast,GC (%),>=,54.0,
 Klebsiella aerogenes,all,Quast,Ns per 100 kbp,<=,1000,
@@ -687,7 +687,7 @@ Klebsiella aerogenes,all,Speciator,confidence,regex,^good$,
 Klebsiella aerogenes,all,Speciator,genusName,regex,^Klebsiella,
 Klebsiella aerogenes,all,Speciator,speciesName,regex,^Klebsiella aerogenes,species_field
 Klebsiella aerogenes,all,Sylph,number_of_genomes,=,1,
-Klebsiella aerogenes,all,Sylph,species_name,regex,^.+,species_field
+Klebsiella aerogenes,all,Sylph,species_name,regex,^,species_field
 Klebsiella aerogenes,short,Ariba,percent,=,100,
 Klebsiella aerogenes,short,Checkm,# contigs,<=,300,
 Klebsiella aerogenes,short,Checkm,# contigs,>=,31,
@@ -701,7 +701,7 @@ Klebsiella michiganensis,all,Checkm,GC,<=,56.0,
 Klebsiella michiganensis,all,Checkm,GC,>=,55.0,
 Klebsiella michiganensis,all,Checkm,Genome size (bp),<=,7000000,
 Klebsiella michiganensis,all,Checkm,Genome size (bp),>=,5700000,
-Klebsiella michiganensis,all,Checkm,Marker lineage,regex,^Klebsiella michiganensis.+,species_field
+Klebsiella michiganensis,all,Checkm,Marker lineage,regex,^Klebsiella michiganensis,species_field
 Klebsiella michiganensis,all,Quast,GC (%),<=,56.0,
 Klebsiella michiganensis,all,Quast,GC (%),>=,55.0,
 Klebsiella michiganensis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -711,7 +711,7 @@ Klebsiella michiganensis,all,Speciator,confidence,regex,^good$,
 Klebsiella michiganensis,all,Speciator,genusName,regex,^Klebsiella,
 Klebsiella michiganensis,all,Speciator,speciesName,regex,^Klebsiella michiganensis,species_field
 Klebsiella michiganensis,all,Sylph,number_of_genomes,=,1,
-Klebsiella michiganensis,all,Sylph,species_name,regex,^.+,species_field
+Klebsiella michiganensis,all,Sylph,species_name,regex,^,species_field
 Klebsiella michiganensis,short,Ariba,percent,=,100,
 Klebsiella michiganensis,short,Checkm,# contigs,<=,400,
 Klebsiella michiganensis,short,Checkm,# contigs,>=,61,
@@ -725,7 +725,7 @@ Klebsiella oxytoca,all,Checkm,GC,<=,55.0,
 Klebsiella oxytoca,all,Checkm,GC,>=,54.0,
 Klebsiella oxytoca,all,Checkm,Genome size (bp),<=,6700000,
 Klebsiella oxytoca,all,Checkm,Genome size (bp),>=,5300000,
-Klebsiella oxytoca,all,Checkm,Marker lineage,regex,^Klebsiella oxytoca.+,species_field
+Klebsiella oxytoca,all,Checkm,Marker lineage,regex,^Klebsiella oxytoca,species_field
 Klebsiella oxytoca,all,Quast,GC (%),<=,55.0,
 Klebsiella oxytoca,all,Quast,GC (%),>=,54.0,
 Klebsiella oxytoca,all,Quast,Ns per 100 kbp,<=,1000,
@@ -735,7 +735,7 @@ Klebsiella oxytoca,all,Speciator,confidence,regex,^good$,
 Klebsiella oxytoca,all,Speciator,genusName,regex,^Klebsiella,
 Klebsiella oxytoca,all,Speciator,speciesName,regex,^Klebsiella oxytoca,species_field
 Klebsiella oxytoca,all,Sylph,number_of_genomes,=,1,
-Klebsiella oxytoca,all,Sylph,species_name,regex,^.+,species_field
+Klebsiella oxytoca,all,Sylph,species_name,regex,^,species_field
 Klebsiella oxytoca,short,Ariba,percent,=,100,
 Klebsiella oxytoca,short,Checkm,# contigs,<=,400,
 Klebsiella oxytoca,short,Checkm,# contigs,>=,53,
@@ -749,7 +749,7 @@ Klebsiella pneumoniae,all,Checkm,GC,<=,58.0,
 Klebsiella pneumoniae,all,Checkm,GC,>=,56.0,
 Klebsiella pneumoniae,all,Checkm,Genome size (bp),<=,6400000,
 Klebsiella pneumoniae,all,Checkm,Genome size (bp),>=,4900000,
-Klebsiella pneumoniae,all,Checkm,Marker lineage,regex,^Klebsiella pneumoniae.+,species_field
+Klebsiella pneumoniae,all,Checkm,Marker lineage,regex,^Klebsiella pneumoniae,species_field
 Klebsiella pneumoniae,all,Quast,GC (%),<=,58.0,
 Klebsiella pneumoniae,all,Quast,GC (%),>=,56.0,
 Klebsiella pneumoniae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -759,7 +759,7 @@ Klebsiella pneumoniae,all,Speciator,confidence,regex,^good$,
 Klebsiella pneumoniae,all,Speciator,genusName,regex,^Klebsiella,
 Klebsiella pneumoniae,all,Speciator,speciesName,regex,^Klebsiella pneumoniae,species_field
 Klebsiella pneumoniae,all,Sylph,number_of_genomes,=,1,
-Klebsiella pneumoniae,all,Sylph,species_name,regex,^.+,species_field
+Klebsiella pneumoniae,all,Sylph,species_name,regex,^,species_field
 Klebsiella pneumoniae,short,Ariba,percent,=,100,
 Klebsiella pneumoniae,short,Checkm,# contigs,<=,500,
 Klebsiella pneumoniae,short,Checkm,# contigs,>=,54,
@@ -773,7 +773,7 @@ Klebsiella quasipneumoniae,all,Checkm,GC,<=,58.0,
 Klebsiella quasipneumoniae,all,Checkm,GC,>=,56.0,
 Klebsiella quasipneumoniae,all,Checkm,Genome size (bp),<=,6300000,
 Klebsiella quasipneumoniae,all,Checkm,Genome size (bp),>=,4500000,
-Klebsiella quasipneumoniae,all,Checkm,Marker lineage,regex,^Klebsiella quasipneumoniae.+,species_field
+Klebsiella quasipneumoniae,all,Checkm,Marker lineage,regex,^Klebsiella quasipneumoniae,species_field
 Klebsiella quasipneumoniae,all,Quast,GC (%),<=,58.0,
 Klebsiella quasipneumoniae,all,Quast,GC (%),>=,56.0,
 Klebsiella quasipneumoniae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -783,7 +783,7 @@ Klebsiella quasipneumoniae,all,Speciator,confidence,regex,^good$,
 Klebsiella quasipneumoniae,all,Speciator,genusName,regex,^Klebsiella,
 Klebsiella quasipneumoniae,all,Speciator,speciesName,regex,^Klebsiella quasipneumoniae,species_field
 Klebsiella quasipneumoniae,all,Sylph,number_of_genomes,=,1,
-Klebsiella quasipneumoniae,all,Sylph,species_name,regex,^.+,species_field
+Klebsiella quasipneumoniae,all,Sylph,species_name,regex,^,species_field
 Klebsiella quasipneumoniae,short,Ariba,percent,=,100,
 Klebsiella quasipneumoniae,short,Checkm,# contigs,<=,400,
 Klebsiella quasipneumoniae,short,Checkm,# contigs,>=,35,
@@ -797,7 +797,7 @@ Klebsiella variicola,all,Checkm,GC,<=,58.0,
 Klebsiella variicola,all,Checkm,GC,>=,56.0,
 Klebsiella variicola,all,Checkm,Genome size (bp),<=,6500000,
 Klebsiella variicola,all,Checkm,Genome size (bp),>=,5200000,
-Klebsiella variicola,all,Checkm,Marker lineage,regex,^Klebsiella variicola.+,species_field
+Klebsiella variicola,all,Checkm,Marker lineage,regex,^Klebsiella variicola,species_field
 Klebsiella variicola,all,Quast,GC (%),<=,58.0,
 Klebsiella variicola,all,Quast,GC (%),>=,56.0,
 Klebsiella variicola,all,Quast,Ns per 100 kbp,<=,1000,
@@ -807,7 +807,7 @@ Klebsiella variicola,all,Speciator,confidence,regex,^good$,
 Klebsiella variicola,all,Speciator,genusName,regex,^Klebsiella,
 Klebsiella variicola,all,Speciator,speciesName,regex,^Klebsiella variicola,species_field
 Klebsiella variicola,all,Sylph,number_of_genomes,=,1,
-Klebsiella variicola,all,Sylph,species_name,regex,^.+,species_field
+Klebsiella variicola,all,Sylph,species_name,regex,^,species_field
 Klebsiella variicola,short,Ariba,percent,=,100,
 Klebsiella variicola,short,Checkm,# contigs,<=,400,
 Klebsiella variicola,short,Checkm,# contigs,>=,39,
@@ -821,7 +821,7 @@ Legionella pneumophila,all,Checkm,GC,<=,38.0,
 Legionella pneumophila,all,Checkm,GC,>=,38.0,
 Legionella pneumophila,all,Checkm,Genome size (bp),<=,3800000,
 Legionella pneumophila,all,Checkm,Genome size (bp),>=,3200000,
-Legionella pneumophila,all,Checkm,Marker lineage,regex,^Legionella pneumophila.+,species_field
+Legionella pneumophila,all,Checkm,Marker lineage,regex,^Legionella pneumophila,species_field
 Legionella pneumophila,all,Quast,GC (%),<=,38.0,
 Legionella pneumophila,all,Quast,GC (%),>=,38.0,
 Legionella pneumophila,all,Quast,Ns per 100 kbp,<=,1000,
@@ -831,7 +831,7 @@ Legionella pneumophila,all,Speciator,confidence,regex,^good$,
 Legionella pneumophila,all,Speciator,genusName,regex,^Legionella,
 Legionella pneumophila,all,Speciator,speciesName,regex,^Legionella pneumophila,species_field
 Legionella pneumophila,all,Sylph,number_of_genomes,=,1,
-Legionella pneumophila,all,Sylph,species_name,regex,^.+,species_field
+Legionella pneumophila,all,Sylph,species_name,regex,^,species_field
 Legionella pneumophila,short,Ariba,percent,=,100,
 Legionella pneumophila,short,Checkm,# contigs,<=,300,
 Legionella pneumophila,short,Checkm,# contigs,>=,20,
@@ -845,7 +845,7 @@ Listeria innocua,all,Checkm,GC,<=,38.0,
 Listeria innocua,all,Checkm,GC,>=,37.0,
 Listeria innocua,all,Checkm,Genome size (bp),<=,3100000,
 Listeria innocua,all,Checkm,Genome size (bp),>=,2700000,
-Listeria innocua,all,Checkm,Marker lineage,regex,^Listeria innocua.+,species_field
+Listeria innocua,all,Checkm,Marker lineage,regex,^Listeria innocua,species_field
 Listeria innocua,all,Quast,GC (%),<=,38.0,
 Listeria innocua,all,Quast,GC (%),>=,37.0,
 Listeria innocua,all,Quast,Ns per 100 kbp,<=,1000,
@@ -855,7 +855,7 @@ Listeria innocua,all,Speciator,confidence,regex,^good$,
 Listeria innocua,all,Speciator,genusName,regex,^Listeria,
 Listeria innocua,all,Speciator,speciesName,regex,^Listeria innocua,species_field
 Listeria innocua,all,Sylph,number_of_genomes,=,1,
-Listeria innocua,all,Sylph,species_name,regex,^.+,species_field
+Listeria innocua,all,Sylph,species_name,regex,^,species_field
 Listeria innocua,short,Ariba,percent,=,100,
 Listeria innocua,short,Checkm,# contigs,<=,200,
 Listeria innocua,short,Checkm,# contigs,>=,12,
@@ -869,7 +869,7 @@ Listeria monocytogenes,all,Checkm,GC,<=,38.0,
 Listeria monocytogenes,all,Checkm,GC,>=,38.0,
 Listeria monocytogenes,all,Checkm,Genome size (bp),<=,3300000,
 Listeria monocytogenes,all,Checkm,Genome size (bp),>=,2800000,
-Listeria monocytogenes,all,Checkm,Marker lineage,regex,^Listeria monocytogenes.+,species_field
+Listeria monocytogenes,all,Checkm,Marker lineage,regex,^Listeria monocytogenes,species_field
 Listeria monocytogenes,all,Quast,GC (%),<=,38.0,
 Listeria monocytogenes,all,Quast,GC (%),>=,38.0,
 Listeria monocytogenes,all,Quast,Ns per 100 kbp,<=,1000,
@@ -879,7 +879,7 @@ Listeria monocytogenes,all,Speciator,confidence,regex,^good$,
 Listeria monocytogenes,all,Speciator,genusName,regex,^Listeria,
 Listeria monocytogenes,all,Speciator,speciesName,regex,^Listeria monocytogenes,species_field
 Listeria monocytogenes,all,Sylph,number_of_genomes,=,1,
-Listeria monocytogenes,all,Sylph,species_name,regex,^.+,species_field
+Listeria monocytogenes,all,Sylph,species_name,regex,^,species_field
 Listeria monocytogenes,short,Ariba,percent,=,100,
 Listeria monocytogenes,short,Checkm,# contigs,<=,200,
 Listeria monocytogenes,short,Checkm,# contigs,>=,14,
@@ -893,7 +893,7 @@ Mannheimia haemolytica,all,Checkm,GC,<=,42.0,
 Mannheimia haemolytica,all,Checkm,GC,>=,41.0,
 Mannheimia haemolytica,all,Checkm,Genome size (bp),<=,2900000,
 Mannheimia haemolytica,all,Checkm,Genome size (bp),>=,2300000,
-Mannheimia haemolytica,all,Checkm,Marker lineage,regex,^Mannheimia haemolytica.+,species_field
+Mannheimia haemolytica,all,Checkm,Marker lineage,regex,^Mannheimia haemolytica,species_field
 Mannheimia haemolytica,all,Quast,GC (%),<=,42.0,
 Mannheimia haemolytica,all,Quast,GC (%),>=,41.0,
 Mannheimia haemolytica,all,Quast,Ns per 100 kbp,<=,1000,
@@ -903,7 +903,7 @@ Mannheimia haemolytica,all,Speciator,confidence,regex,^good$,
 Mannheimia haemolytica,all,Speciator,genusName,regex,^Mannheimia,
 Mannheimia haemolytica,all,Speciator,speciesName,regex,^Mannheimia haemolytica,species_field
 Mannheimia haemolytica,all,Sylph,number_of_genomes,=,1,
-Mannheimia haemolytica,all,Sylph,species_name,regex,^.+,species_field
+Mannheimia haemolytica,all,Sylph,species_name,regex,^,species_field
 Mannheimia haemolytica,short,Ariba,percent,=,100,
 Mannheimia haemolytica,short,Checkm,# contigs,<=,300,
 Mannheimia haemolytica,short,Checkm,# contigs,>=,79,
@@ -917,7 +917,7 @@ Moraxella catarrhalis,all,Checkm,GC,<=,42.0,
 Moraxella catarrhalis,all,Checkm,GC,>=,41.0,
 Moraxella catarrhalis,all,Checkm,Genome size (bp),<=,2100000,
 Moraxella catarrhalis,all,Checkm,Genome size (bp),>=,1800000,
-Moraxella catarrhalis,all,Checkm,Marker lineage,regex,^Moraxella catarrhalis.+,species_field
+Moraxella catarrhalis,all,Checkm,Marker lineage,regex,^Moraxella catarrhalis,species_field
 Moraxella catarrhalis,all,Quast,GC (%),<=,42.0,
 Moraxella catarrhalis,all,Quast,GC (%),>=,41.0,
 Moraxella catarrhalis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -927,7 +927,7 @@ Moraxella catarrhalis,all,Speciator,confidence,regex,^good$,
 Moraxella catarrhalis,all,Speciator,genusName,regex,^Moraxella,
 Moraxella catarrhalis,all,Speciator,speciesName,regex,^Moraxella catarrhalis,species_field
 Moraxella catarrhalis,all,Sylph,number_of_genomes,=,1,
-Moraxella catarrhalis,all,Sylph,species_name,regex,^.+,species_field
+Moraxella catarrhalis,all,Sylph,species_name,regex,^,species_field
 Moraxella catarrhalis,short,Ariba,percent,=,100,
 Moraxella catarrhalis,short,Checkm,# contigs,<=,100,
 Moraxella catarrhalis,short,Checkm,# contigs,>=,8,
@@ -941,7 +941,7 @@ Mycobacterium abscessus,all,Checkm,GC,<=,64.0,
 Mycobacterium abscessus,all,Checkm,GC,>=,64.0,
 Mycobacterium abscessus,all,Checkm,Genome size (bp),<=,5600000,
 Mycobacterium abscessus,all,Checkm,Genome size (bp),>=,4600000,
-Mycobacterium abscessus,all,Checkm,Marker lineage,regex,^Mycobacterium abscessus.+,species_field
+Mycobacterium abscessus,all,Checkm,Marker lineage,regex,^Mycobacterium abscessus,species_field
 Mycobacterium abscessus,all,Quast,GC (%),<=,64.0,
 Mycobacterium abscessus,all,Quast,GC (%),>=,64.0,
 Mycobacterium abscessus,all,Quast,Ns per 100 kbp,<=,1000,
@@ -951,7 +951,7 @@ Mycobacterium abscessus,all,Speciator,confidence,regex,^good$,
 Mycobacterium abscessus,all,Speciator,genusName,regex,^Mycobacterium,
 Mycobacterium abscessus,all,Speciator,speciesName,regex,^Mycobacterium abscessus,species_field
 Mycobacterium abscessus,all,Sylph,number_of_genomes,=,1,
-Mycobacterium abscessus,all,Sylph,species_name,regex,^.+,species_field
+Mycobacterium abscessus,all,Sylph,species_name,regex,^,species_field
 Mycobacterium abscessus,short,Ariba,percent,=,100,
 Mycobacterium abscessus,short,Checkm,# contigs,<=,200,
 Mycobacterium abscessus,short,Checkm,# contigs,>=,7,
@@ -965,7 +965,7 @@ Mycobacterium avium,all,Checkm,GC,<=,70.0,
 Mycobacterium avium,all,Checkm,GC,>=,68.0,
 Mycobacterium avium,all,Checkm,Genome size (bp),<=,6000000,
 Mycobacterium avium,all,Checkm,Genome size (bp),>=,4700000,
-Mycobacterium avium,all,Checkm,Marker lineage,regex,^Mycobacterium avium.+,species_field
+Mycobacterium avium,all,Checkm,Marker lineage,regex,^Mycobacterium avium,species_field
 Mycobacterium avium,all,Quast,GC (%),<=,70.0,
 Mycobacterium avium,all,Quast,GC (%),>=,68.0,
 Mycobacterium avium,all,Quast,Ns per 100 kbp,<=,1000,
@@ -975,7 +975,7 @@ Mycobacterium avium,all,Speciator,confidence,regex,^good$,
 Mycobacterium avium,all,Speciator,genusName,regex,^Mycobacterium,
 Mycobacterium avium,all,Speciator,speciesName,regex,^Mycobacterium avium,species_field
 Mycobacterium avium,all,Sylph,number_of_genomes,=,1,
-Mycobacterium avium,all,Sylph,species_name,regex,^.+,species_field
+Mycobacterium avium,all,Sylph,species_name,regex,^,species_field
 Mycobacterium avium,short,Ariba,percent,=,100,
 Mycobacterium avium,short,Checkm,# contigs,<=,600,
 Mycobacterium avium,short,Checkm,# contigs,>=,73,
@@ -989,7 +989,7 @@ Mycobacterium intracellulare,all,Checkm,GC,<=,68.0,
 Mycobacterium intracellulare,all,Checkm,GC,>=,67.0,
 Mycobacterium intracellulare,all,Checkm,Genome size (bp),<=,7300000,
 Mycobacterium intracellulare,all,Checkm,Genome size (bp),>=,5200000,
-Mycobacterium intracellulare,all,Checkm,Marker lineage,regex,^Mycobacterium intracellulare.+,species_field
+Mycobacterium intracellulare,all,Checkm,Marker lineage,regex,^Mycobacterium intracellulare,species_field
 Mycobacterium intracellulare,all,Quast,GC (%),<=,68.0,
 Mycobacterium intracellulare,all,Quast,GC (%),>=,67.0,
 Mycobacterium intracellulare,all,Quast,Ns per 100 kbp,<=,1000,
@@ -999,7 +999,7 @@ Mycobacterium intracellulare,all,Speciator,confidence,regex,^good$,
 Mycobacterium intracellulare,all,Speciator,genusName,regex,^Mycobacterium,
 Mycobacterium intracellulare,all,Speciator,speciesName,regex,^Mycobacterium intracellulare,species_field
 Mycobacterium intracellulare,all,Sylph,number_of_genomes,=,1,
-Mycobacterium intracellulare,all,Sylph,species_name,regex,^.+,species_field
+Mycobacterium intracellulare,all,Sylph,species_name,regex,^,species_field
 Mycobacterium intracellulare,short,Ariba,percent,=,100,
 Mycobacterium intracellulare,short,Checkm,# contigs,<=,500,
 Mycobacterium intracellulare,short,Checkm,# contigs,>=,34,
@@ -1013,7 +1013,7 @@ Mycobacterium marinum,all,Checkm,GC,<=,66.0,
 Mycobacterium marinum,all,Checkm,GC,>=,66.0,
 Mycobacterium marinum,all,Checkm,Genome size (bp),<=,6700000,
 Mycobacterium marinum,all,Checkm,Genome size (bp),>=,5200000,
-Mycobacterium marinum,all,Checkm,Marker lineage,regex,^Mycobacterium marinum.+,species_field
+Mycobacterium marinum,all,Checkm,Marker lineage,regex,^Mycobacterium marinum,species_field
 Mycobacterium marinum,all,Quast,GC (%),<=,66.0,
 Mycobacterium marinum,all,Quast,GC (%),>=,66.0,
 Mycobacterium marinum,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1023,7 +1023,7 @@ Mycobacterium marinum,all,Speciator,confidence,regex,^good$,
 Mycobacterium marinum,all,Speciator,genusName,regex,^Mycobacterium,
 Mycobacterium marinum,all,Speciator,speciesName,regex,^Mycobacterium marinum,species_field
 Mycobacterium marinum,all,Sylph,number_of_genomes,=,1,
-Mycobacterium marinum,all,Sylph,species_name,regex,^.+,species_field
+Mycobacterium marinum,all,Sylph,species_name,regex,^,species_field
 Mycobacterium marinum,short,Ariba,percent,=,100,
 Mycobacterium marinum,short,Checkm,# contigs,<=,700,
 Mycobacterium marinum,short,Checkm,# contigs,>=,275,
@@ -1037,7 +1037,7 @@ Mycobacterium tuberculosis,all,Checkm,GC,<=,66.0,
 Mycobacterium tuberculosis,all,Checkm,GC,>=,65.0,
 Mycobacterium tuberculosis,all,Checkm,Genome size (bp),<=,4600000,
 Mycobacterium tuberculosis,all,Checkm,Genome size (bp),>=,4200000,
-Mycobacterium tuberculosis,all,Checkm,Marker lineage,regex,^Mycobacterium tuberculosis.+,species_field
+Mycobacterium tuberculosis,all,Checkm,Marker lineage,regex,^Mycobacterium tuberculosis,species_field
 Mycobacterium tuberculosis,all,Quast,GC (%),<=,66.0,
 Mycobacterium tuberculosis,all,Quast,GC (%),>=,65.0,
 Mycobacterium tuberculosis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1047,7 +1047,7 @@ Mycobacterium tuberculosis,all,Speciator,confidence,regex,^good$,
 Mycobacterium tuberculosis,all,Speciator,genusName,regex,^Mycobacterium,
 Mycobacterium tuberculosis,all,Speciator,speciesName,regex,^Mycobacterium tuberculosis,species_field
 Mycobacterium tuberculosis,all,Sylph,number_of_genomes,=,1,
-Mycobacterium tuberculosis,all,Sylph,species_name,regex,^.+,species_field
+Mycobacterium tuberculosis,all,Sylph,species_name,regex,^,species_field
 Mycobacterium tuberculosis,short,Ariba,percent,=,100,
 Mycobacterium tuberculosis,short,Checkm,# contigs,<=,400,
 Mycobacterium tuberculosis,short,Checkm,# contigs,>=,82,
@@ -1061,7 +1061,7 @@ Mycoplasmopsis bovis,all,Checkm,GC,<=,30.0,
 Mycoplasmopsis bovis,all,Checkm,GC,>=,29.0,
 Mycoplasmopsis bovis,all,Checkm,Genome size (bp),<=,1200000,
 Mycoplasmopsis bovis,all,Checkm,Genome size (bp),>=,800000,
-Mycoplasmopsis bovis,all,Checkm,Marker lineage,regex,^Mycoplasmopsis bovis.+,species_field
+Mycoplasmopsis bovis,all,Checkm,Marker lineage,regex,^Mycoplasmopsis bovis,species_field
 Mycoplasmopsis bovis,all,Quast,GC (%),<=,30.0,
 Mycoplasmopsis bovis,all,Quast,GC (%),>=,29.0,
 Mycoplasmopsis bovis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1071,7 +1071,7 @@ Mycoplasmopsis bovis,all,Speciator,confidence,regex,^good$,
 Mycoplasmopsis bovis,all,Speciator,genusName,regex,^Mycoplasmopsis,
 Mycoplasmopsis bovis,all,Speciator,speciesName,regex,^Mycoplasmopsis bovis,species_field
 Mycoplasmopsis bovis,all,Sylph,number_of_genomes,=,1,
-Mycoplasmopsis bovis,all,Sylph,species_name,regex,^.+,species_field
+Mycoplasmopsis bovis,all,Sylph,species_name,regex,^,species_field
 Mycoplasmopsis bovis,short,Ariba,percent,=,100,
 Mycoplasmopsis bovis,short,Checkm,# contigs,<=,300,
 Mycoplasmopsis bovis,short,Checkm,# contigs,>=,103,
@@ -1085,7 +1085,7 @@ Neisseria gonorrhoeae,all,Checkm,GC,<=,53.0,
 Neisseria gonorrhoeae,all,Checkm,GC,>=,52.0,
 Neisseria gonorrhoeae,all,Checkm,Genome size (bp),<=,2400000,
 Neisseria gonorrhoeae,all,Checkm,Genome size (bp),>=,2000000,
-Neisseria gonorrhoeae,all,Checkm,Marker lineage,regex,^Neisseria gonorrhoeae.+,species_field
+Neisseria gonorrhoeae,all,Checkm,Marker lineage,regex,^Neisseria gonorrhoeae,species_field
 Neisseria gonorrhoeae,all,Quast,GC (%),<=,53.0,
 Neisseria gonorrhoeae,all,Quast,GC (%),>=,52.0,
 Neisseria gonorrhoeae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1095,7 +1095,7 @@ Neisseria gonorrhoeae,all,Speciator,confidence,regex,^good$,
 Neisseria gonorrhoeae,all,Speciator,genusName,regex,^Neisseria,
 Neisseria gonorrhoeae,all,Speciator,speciesName,regex,^Neisseria gonorrhoeae,species_field
 Neisseria gonorrhoeae,all,Sylph,number_of_genomes,=,1,
-Neisseria gonorrhoeae,all,Sylph,species_name,regex,^.+,species_field
+Neisseria gonorrhoeae,all,Sylph,species_name,regex,^,species_field
 Neisseria gonorrhoeae,short,Ariba,percent,=,100,
 Neisseria gonorrhoeae,short,Checkm,# contigs,<=,300,
 Neisseria gonorrhoeae,short,Checkm,# contigs,>=,102,
@@ -1109,7 +1109,7 @@ Neisseria lactamica,all,Checkm,GC,<=,52.0,
 Neisseria lactamica,all,Checkm,GC,>=,52.0,
 Neisseria lactamica,all,Checkm,Genome size (bp),<=,2300000,
 Neisseria lactamica,all,Checkm,Genome size (bp),>=,2100000,
-Neisseria lactamica,all,Checkm,Marker lineage,regex,^Neisseria lactamica.+,species_field
+Neisseria lactamica,all,Checkm,Marker lineage,regex,^Neisseria lactamica,species_field
 Neisseria lactamica,all,Quast,GC (%),<=,52.0,
 Neisseria lactamica,all,Quast,GC (%),>=,52.0,
 Neisseria lactamica,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1119,7 +1119,7 @@ Neisseria lactamica,all,Speciator,confidence,regex,^good$,
 Neisseria lactamica,all,Speciator,genusName,regex,^Neisseria,
 Neisseria lactamica,all,Speciator,speciesName,regex,^Neisseria lactamica,species_field
 Neisseria lactamica,all,Sylph,number_of_genomes,=,1,
-Neisseria lactamica,all,Sylph,species_name,regex,^.+,species_field
+Neisseria lactamica,all,Sylph,species_name,regex,^,species_field
 Neisseria lactamica,short,Ariba,percent,=,100,
 Neisseria lactamica,short,Checkm,# contigs,<=,200,
 Neisseria lactamica,short,Checkm,# contigs,>=,30,
@@ -1133,7 +1133,7 @@ Neisseria meningitidis,all,Checkm,GC,<=,52.0,
 Neisseria meningitidis,all,Checkm,GC,>=,51.0,
 Neisseria meningitidis,all,Checkm,Genome size (bp),<=,2400000,
 Neisseria meningitidis,all,Checkm,Genome size (bp),>=,2000000,
-Neisseria meningitidis,all,Checkm,Marker lineage,regex,^Neisseria meningitidis.+,species_field
+Neisseria meningitidis,all,Checkm,Marker lineage,regex,^Neisseria meningitidis,species_field
 Neisseria meningitidis,all,Quast,GC (%),<=,52.0,
 Neisseria meningitidis,all,Quast,GC (%),>=,51.0,
 Neisseria meningitidis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1143,7 +1143,7 @@ Neisseria meningitidis,all,Speciator,confidence,regex,^good$,
 Neisseria meningitidis,all,Speciator,genusName,regex,^Neisseria,
 Neisseria meningitidis,all,Speciator,speciesName,regex,^Neisseria meningitidis,species_field
 Neisseria meningitidis,all,Sylph,number_of_genomes,=,1,
-Neisseria meningitidis,all,Sylph,species_name,regex,^.+,species_field
+Neisseria meningitidis,all,Sylph,species_name,regex,^,species_field
 Neisseria meningitidis,short,Ariba,percent,=,100,
 Neisseria meningitidis,short,Checkm,# contigs,<=,400,
 Neisseria meningitidis,short,Checkm,# contigs,>=,96,
@@ -1157,7 +1157,7 @@ Paenibacillus larvae,all,Checkm,GC,<=,45.0,
 Paenibacillus larvae,all,Checkm,GC,>=,44.0,
 Paenibacillus larvae,all,Checkm,Genome size (bp),<=,4800000,
 Paenibacillus larvae,all,Checkm,Genome size (bp),>=,3600000,
-Paenibacillus larvae,all,Checkm,Marker lineage,regex,^Paenibacillus larvae.+,species_field
+Paenibacillus larvae,all,Checkm,Marker lineage,regex,^Paenibacillus larvae,species_field
 Paenibacillus larvae,all,Quast,GC (%),<=,45.0,
 Paenibacillus larvae,all,Quast,GC (%),>=,44.0,
 Paenibacillus larvae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1167,7 +1167,7 @@ Paenibacillus larvae,all,Speciator,confidence,regex,^good$,
 Paenibacillus larvae,all,Speciator,genusName,regex,^Paenibacillus,
 Paenibacillus larvae,all,Speciator,speciesName,regex,^Paenibacillus larvae,species_field
 Paenibacillus larvae,all,Sylph,number_of_genomes,=,1,
-Paenibacillus larvae,all,Sylph,species_name,regex,^.+,species_field
+Paenibacillus larvae,all,Sylph,species_name,regex,^,species_field
 Paenibacillus larvae,short,Ariba,percent,=,100,
 Paenibacillus larvae,short,Checkm,# contigs,<=,900,
 Paenibacillus larvae,short,Checkm,# contigs,>=,179,
@@ -1181,7 +1181,7 @@ Parabacteroides distasonis,all,Checkm,GC,<=,46.0,
 Parabacteroides distasonis,all,Checkm,GC,>=,45.0,
 Parabacteroides distasonis,all,Checkm,Genome size (bp),<=,5700000,
 Parabacteroides distasonis,all,Checkm,Genome size (bp),>=,4700000,
-Parabacteroides distasonis,all,Checkm,Marker lineage,regex,^Parabacteroides distasonis.+,species_field
+Parabacteroides distasonis,all,Checkm,Marker lineage,regex,^Parabacteroides distasonis,species_field
 Parabacteroides distasonis,all,Quast,GC (%),<=,46.0,
 Parabacteroides distasonis,all,Quast,GC (%),>=,45.0,
 Parabacteroides distasonis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1191,7 +1191,7 @@ Parabacteroides distasonis,all,Speciator,confidence,regex,^good$,
 Parabacteroides distasonis,all,Speciator,genusName,regex,^Parabacteroides,
 Parabacteroides distasonis,all,Speciator,speciesName,regex,^Parabacteroides distasonis,species_field
 Parabacteroides distasonis,all,Sylph,number_of_genomes,=,1,
-Parabacteroides distasonis,all,Sylph,species_name,regex,^.+,species_field
+Parabacteroides distasonis,all,Sylph,species_name,regex,^,species_field
 Parabacteroides distasonis,short,Ariba,percent,=,100,
 Parabacteroides distasonis,short,Checkm,# contigs,<=,500,
 Parabacteroides distasonis,short,Checkm,# contigs,>=,32,
@@ -1205,7 +1205,7 @@ Pasteurella multocida,all,Checkm,GC,<=,41.0,
 Pasteurella multocida,all,Checkm,GC,>=,40.0,
 Pasteurella multocida,all,Checkm,Genome size (bp),<=,2700000,
 Pasteurella multocida,all,Checkm,Genome size (bp),>=,2100000,
-Pasteurella multocida,all,Checkm,Marker lineage,regex,^Pasteurella multocida.+,species_field
+Pasteurella multocida,all,Checkm,Marker lineage,regex,^Pasteurella multocida,species_field
 Pasteurella multocida,all,Quast,GC (%),<=,41.0,
 Pasteurella multocida,all,Quast,GC (%),>=,40.0,
 Pasteurella multocida,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1215,7 +1215,7 @@ Pasteurella multocida,all,Speciator,confidence,regex,^good$,
 Pasteurella multocida,all,Speciator,genusName,regex,^Pasteurella,
 Pasteurella multocida,all,Speciator,speciesName,regex,^Pasteurella multocida,species_field
 Pasteurella multocida,all,Sylph,number_of_genomes,=,1,
-Pasteurella multocida,all,Sylph,species_name,regex,^.+,species_field
+Pasteurella multocida,all,Sylph,species_name,regex,^,species_field
 Pasteurella multocida,short,Ariba,percent,=,100,
 Pasteurella multocida,short,Checkm,# contigs,<=,200,
 Pasteurella multocida,short,Checkm,# contigs,>=,16,
@@ -1229,7 +1229,7 @@ Proteus mirabilis,all,Checkm,GC,<=,40.0,
 Proteus mirabilis,all,Checkm,GC,>=,38.0,
 Proteus mirabilis,all,Checkm,Genome size (bp),<=,4600000,
 Proteus mirabilis,all,Checkm,Genome size (bp),>=,3700000,
-Proteus mirabilis,all,Checkm,Marker lineage,regex,^Proteus mirabilis.+,species_field
+Proteus mirabilis,all,Checkm,Marker lineage,regex,^Proteus mirabilis,species_field
 Proteus mirabilis,all,Quast,GC (%),<=,40.0,
 Proteus mirabilis,all,Quast,GC (%),>=,38.0,
 Proteus mirabilis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1239,7 +1239,7 @@ Proteus mirabilis,all,Speciator,confidence,regex,^good$,
 Proteus mirabilis,all,Speciator,genusName,regex,^Proteus,
 Proteus mirabilis,all,Speciator,speciesName,regex,^Proteus mirabilis,species_field
 Proteus mirabilis,all,Sylph,number_of_genomes,=,1,
-Proteus mirabilis,all,Sylph,species_name,regex,^.+,species_field
+Proteus mirabilis,all,Sylph,species_name,regex,^,species_field
 Proteus mirabilis,short,Ariba,percent,=,100,
 Proteus mirabilis,short,Checkm,# contigs,<=,500,
 Proteus mirabilis,short,Checkm,# contigs,>=,40,
@@ -1253,7 +1253,7 @@ Pseudomonas aeruginosa,all,Checkm,GC,<=,67.0,
 Pseudomonas aeruginosa,all,Checkm,GC,>=,65.0,
 Pseudomonas aeruginosa,all,Checkm,Genome size (bp),<=,7800000,
 Pseudomonas aeruginosa,all,Checkm,Genome size (bp),>=,6000000,
-Pseudomonas aeruginosa,all,Checkm,Marker lineage,regex,^Pseudomonas aeruginosa.+,species_field
+Pseudomonas aeruginosa,all,Checkm,Marker lineage,regex,^Pseudomonas aeruginosa,species_field
 Pseudomonas aeruginosa,all,Quast,GC (%),<=,67.0,
 Pseudomonas aeruginosa,all,Quast,GC (%),>=,65.0,
 Pseudomonas aeruginosa,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1263,7 +1263,7 @@ Pseudomonas aeruginosa,all,Speciator,confidence,regex,^good$,
 Pseudomonas aeruginosa,all,Speciator,genusName,regex,^Pseudomonas,
 Pseudomonas aeruginosa,all,Speciator,speciesName,regex,^Pseudomonas aeruginosa,species_field
 Pseudomonas aeruginosa,all,Sylph,number_of_genomes,=,1,
-Pseudomonas aeruginosa,all,Sylph,species_name,regex,^.+,species_field
+Pseudomonas aeruginosa,all,Sylph,species_name,regex,^,species_field
 Pseudomonas aeruginosa,short,Ariba,percent,=,100,
 Pseudomonas aeruginosa,short,Checkm,# contigs,<=,600,
 Pseudomonas aeruginosa,short,Checkm,# contigs,>=,44,
@@ -1277,7 +1277,7 @@ Pseudomonas marginalis,all,Checkm,GC,<=,61.0,
 Pseudomonas marginalis,all,Checkm,GC,>=,60.0,
 Pseudomonas marginalis,all,Checkm,Genome size (bp),<=,7600000,
 Pseudomonas marginalis,all,Checkm,Genome size (bp),>=,6600000,
-Pseudomonas marginalis,all,Checkm,Marker lineage,regex,^Pseudomonas marginalis.+,species_field
+Pseudomonas marginalis,all,Checkm,Marker lineage,regex,^Pseudomonas marginalis,species_field
 Pseudomonas marginalis,all,Quast,GC (%),<=,61.0,
 Pseudomonas marginalis,all,Quast,GC (%),>=,60.0,
 Pseudomonas marginalis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1287,7 +1287,7 @@ Pseudomonas marginalis,all,Speciator,confidence,regex,^good$,
 Pseudomonas marginalis,all,Speciator,genusName,regex,^Pseudomonas,
 Pseudomonas marginalis,all,Speciator,speciesName,regex,^Pseudomonas marginalis,species_field
 Pseudomonas marginalis,all,Sylph,number_of_genomes,=,1,
-Pseudomonas marginalis,all,Sylph,species_name,regex,^.+,species_field
+Pseudomonas marginalis,all,Sylph,species_name,regex,^,species_field
 Pseudomonas marginalis,short,Ariba,percent,=,100,
 Pseudomonas marginalis,short,Checkm,# contigs,<=,400,
 Pseudomonas marginalis,short,Checkm,# contigs,>=,51,
@@ -1301,7 +1301,7 @@ Salmonella arizonae,all,Checkm,GC,<=,52.0,
 Salmonella arizonae,all,Checkm,GC,>=,51.0,
 Salmonella arizonae,all,Checkm,Genome size (bp),<=,5600000,
 Salmonella arizonae,all,Checkm,Genome size (bp),>=,4400000,
-Salmonella arizonae,all,Checkm,Marker lineage,regex,^Salmonella arizonae.+,species_field
+Salmonella arizonae,all,Checkm,Marker lineage,regex,^Salmonella arizonae,species_field
 Salmonella arizonae,all,Quast,GC (%),<=,52.0,
 Salmonella arizonae,all,Quast,GC (%),>=,51.0,
 Salmonella arizonae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1311,7 +1311,7 @@ Salmonella arizonae,all,Speciator,confidence,regex,^good$,
 Salmonella arizonae,all,Speciator,genusName,regex,^Salmonella,
 Salmonella arizonae,all,Speciator,speciesName,regex,^Salmonella arizonae,species_field
 Salmonella arizonae,all,Sylph,number_of_genomes,=,1,
-Salmonella arizonae,all,Sylph,species_name,regex,^.+,species_field
+Salmonella arizonae,all,Sylph,species_name,regex,^,species_field
 Salmonella arizonae,short,Ariba,percent,=,100,
 Salmonella arizonae,short,Checkm,# contigs,<=,200,
 Salmonella arizonae,short,Checkm,# contigs,>=,61,
@@ -1325,7 +1325,7 @@ Salmonella enterica,all,Checkm,GC,<=,52.0,
 Salmonella enterica,all,Checkm,GC,>=,51.0,
 Salmonella enterica,all,Checkm,Genome size (bp),<=,5900000,
 Salmonella enterica,all,Checkm,Genome size (bp),>=,4400000,
-Salmonella enterica,all,Checkm,Marker lineage,regex,^Salmonella enterica.+,species_field
+Salmonella enterica,all,Checkm,Marker lineage,regex,^Salmonella enterica,species_field
 Salmonella enterica,all,Quast,GC (%),<=,52.0,
 Salmonella enterica,all,Quast,GC (%),>=,51.0,
 Salmonella enterica,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1335,7 +1335,7 @@ Salmonella enterica,all,Speciator,confidence,regex,^good$,
 Salmonella enterica,all,Speciator,genusName,regex,^Salmonella,
 Salmonella enterica,all,Speciator,speciesName,regex,^Salmonella enterica,species_field
 Salmonella enterica,all,Sylph,number_of_genomes,=,1,
-Salmonella enterica,all,Sylph,species_name,regex,^.+,species_field
+Salmonella enterica,all,Sylph,species_name,regex,^,species_field
 Salmonella enterica,short,Ariba,percent,=,100,
 Salmonella enterica,short,Checkm,# contigs,<=,200,
 Salmonella enterica,short,Checkm,# contigs,>=,32,
@@ -1349,7 +1349,7 @@ Salmonella houtenae,all,Checkm,GC,<=,52.0,
 Salmonella houtenae,all,Checkm,GC,>=,52.0,
 Salmonella houtenae,all,Checkm,Genome size (bp),<=,5100000,
 Salmonella houtenae,all,Checkm,Genome size (bp),>=,4500000,
-Salmonella houtenae,all,Checkm,Marker lineage,regex,^Salmonella houtenae.+,species_field
+Salmonella houtenae,all,Checkm,Marker lineage,regex,^Salmonella houtenae,species_field
 Salmonella houtenae,all,Quast,GC (%),<=,52.0,
 Salmonella houtenae,all,Quast,GC (%),>=,52.0,
 Salmonella houtenae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1359,7 +1359,7 @@ Salmonella houtenae,all,Speciator,confidence,regex,^good$,
 Salmonella houtenae,all,Speciator,genusName,regex,^Salmonella,
 Salmonella houtenae,all,Speciator,speciesName,regex,^Salmonella houtenae,species_field
 Salmonella houtenae,all,Sylph,number_of_genomes,=,1,
-Salmonella houtenae,all,Sylph,species_name,regex,^.+,species_field
+Salmonella houtenae,all,Sylph,species_name,regex,^,species_field
 Salmonella houtenae,short,Ariba,percent,=,100,
 Salmonella houtenae,short,Checkm,# contigs,<=,400,
 Salmonella houtenae,short,Checkm,# contigs,>=,50,
@@ -1373,7 +1373,7 @@ Serratia marcescens,all,Checkm,GC,<=,60.0,
 Serratia marcescens,all,Checkm,GC,>=,58.0,
 Serratia marcescens,all,Checkm,Genome size (bp),<=,5900000,
 Serratia marcescens,all,Checkm,Genome size (bp),>=,4800000,
-Serratia marcescens,all,Checkm,Marker lineage,regex,^Serratia marcescens.+,species_field
+Serratia marcescens,all,Checkm,Marker lineage,regex,^Serratia marcescens,species_field
 Serratia marcescens,all,Quast,GC (%),<=,60.0,
 Serratia marcescens,all,Quast,GC (%),>=,58.0,
 Serratia marcescens,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1383,7 +1383,7 @@ Serratia marcescens,all,Speciator,confidence,regex,^good$,
 Serratia marcescens,all,Speciator,genusName,regex,^Serratia,
 Serratia marcescens,all,Speciator,speciesName,regex,^Serratia marcescens,species_field
 Serratia marcescens,all,Sylph,number_of_genomes,=,1,
-Serratia marcescens,all,Sylph,species_name,regex,^.+,species_field
+Serratia marcescens,all,Sylph,species_name,regex,^,species_field
 Serratia marcescens,short,Ariba,percent,=,100,
 Serratia marcescens,short,Checkm,# contigs,<=,300,
 Serratia marcescens,short,Checkm,# contigs,>=,21,
@@ -1397,7 +1397,7 @@ Staphylococcus aureus,all,Checkm,GC,<=,33.0,
 Staphylococcus aureus,all,Checkm,GC,>=,32.0,
 Staphylococcus aureus,all,Checkm,Genome size (bp),<=,3300000,
 Staphylococcus aureus,all,Checkm,Genome size (bp),>=,2600000,
-Staphylococcus aureus,all,Checkm,Marker lineage,regex,^Staphylococcus aureus.+,species_field
+Staphylococcus aureus,all,Checkm,Marker lineage,regex,^Staphylococcus aureus,species_field
 Staphylococcus aureus,all,Quast,GC (%),<=,33.0,
 Staphylococcus aureus,all,Quast,GC (%),>=,32.0,
 Staphylococcus aureus,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1407,7 +1407,7 @@ Staphylococcus aureus,all,Speciator,confidence,regex,^good$,
 Staphylococcus aureus,all,Speciator,genusName,regex,^Staphylococcus,
 Staphylococcus aureus,all,Speciator,speciesName,regex,^Staphylococcus aureus,species_field
 Staphylococcus aureus,all,Sylph,number_of_genomes,=,1,
-Staphylococcus aureus,all,Sylph,species_name,regex,^.+,species_field
+Staphylococcus aureus,all,Sylph,species_name,regex,^,species_field
 Staphylococcus aureus,short,Ariba,percent,=,100,
 Staphylococcus aureus,short,Checkm,# contigs,<=,300,
 Staphylococcus aureus,short,Checkm,# contigs,>=,23,
@@ -1421,7 +1421,7 @@ Staphylococcus capitis,all,Checkm,GC,<=,33.0,
 Staphylococcus capitis,all,Checkm,GC,>=,33.0,
 Staphylococcus capitis,all,Checkm,Genome size (bp),<=,2800000,
 Staphylococcus capitis,all,Checkm,Genome size (bp),>=,2300000,
-Staphylococcus capitis,all,Checkm,Marker lineage,regex,^Staphylococcus capitis.+,species_field
+Staphylococcus capitis,all,Checkm,Marker lineage,regex,^Staphylococcus capitis,species_field
 Staphylococcus capitis,all,Quast,GC (%),<=,33.0,
 Staphylococcus capitis,all,Quast,GC (%),>=,33.0,
 Staphylococcus capitis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1431,7 +1431,7 @@ Staphylococcus capitis,all,Speciator,confidence,regex,^good$,
 Staphylococcus capitis,all,Speciator,genusName,regex,^Staphylococcus,
 Staphylococcus capitis,all,Speciator,speciesName,regex,^Staphylococcus capitis,species_field
 Staphylococcus capitis,all,Sylph,number_of_genomes,=,1,
-Staphylococcus capitis,all,Sylph,species_name,regex,^.+,species_field
+Staphylococcus capitis,all,Sylph,species_name,regex,^,species_field
 Staphylococcus capitis,short,Ariba,percent,=,100,
 Staphylococcus capitis,short,Checkm,# contigs,<=,200,
 Staphylococcus capitis,short,Checkm,# contigs,>=,25,
@@ -1445,7 +1445,7 @@ Staphylococcus epidermidis,all,Checkm,GC,<=,32.0,
 Staphylococcus epidermidis,all,Checkm,GC,>=,32.0,
 Staphylococcus epidermidis,all,Checkm,Genome size (bp),<=,2900000,
 Staphylococcus epidermidis,all,Checkm,Genome size (bp),>=,2300000,
-Staphylococcus epidermidis,all,Checkm,Marker lineage,regex,^Staphylococcus epidermidis.+,species_field
+Staphylococcus epidermidis,all,Checkm,Marker lineage,regex,^Staphylococcus epidermidis,species_field
 Staphylococcus epidermidis,all,Quast,GC (%),<=,32.0,
 Staphylococcus epidermidis,all,Quast,GC (%),>=,32.0,
 Staphylococcus epidermidis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1455,7 +1455,7 @@ Staphylococcus epidermidis,all,Speciator,confidence,regex,^good$,
 Staphylococcus epidermidis,all,Speciator,genusName,regex,^Staphylococcus,
 Staphylococcus epidermidis,all,Speciator,speciesName,regex,^Staphylococcus epidermidis,species_field
 Staphylococcus epidermidis,all,Sylph,number_of_genomes,=,1,
-Staphylococcus epidermidis,all,Sylph,species_name,regex,^.+,species_field
+Staphylococcus epidermidis,all,Sylph,species_name,regex,^,species_field
 Staphylococcus epidermidis,short,Ariba,percent,=,100,
 Staphylococcus epidermidis,short,Checkm,# contigs,<=,500,
 Staphylococcus epidermidis,short,Checkm,# contigs,>=,40,
@@ -1469,7 +1469,7 @@ Staphylococcus haemolyticus,all,Checkm,GC,<=,33.0,
 Staphylococcus haemolyticus,all,Checkm,GC,>=,32.0,
 Staphylococcus haemolyticus,all,Checkm,Genome size (bp),<=,2700000,
 Staphylococcus haemolyticus,all,Checkm,Genome size (bp),>=,2300000,
-Staphylococcus haemolyticus,all,Checkm,Marker lineage,regex,^Staphylococcus haemolyticus.+,species_field
+Staphylococcus haemolyticus,all,Checkm,Marker lineage,regex,^Staphylococcus haemolyticus,species_field
 Staphylococcus haemolyticus,all,Quast,GC (%),<=,33.0,
 Staphylococcus haemolyticus,all,Quast,GC (%),>=,32.0,
 Staphylococcus haemolyticus,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1479,7 +1479,7 @@ Staphylococcus haemolyticus,all,Speciator,confidence,regex,^good$,
 Staphylococcus haemolyticus,all,Speciator,genusName,regex,^Staphylococcus,
 Staphylococcus haemolyticus,all,Speciator,speciesName,regex,^Staphylococcus haemolyticus,species_field
 Staphylococcus haemolyticus,all,Sylph,number_of_genomes,=,1,
-Staphylococcus haemolyticus,all,Sylph,species_name,regex,^.+,species_field
+Staphylococcus haemolyticus,all,Sylph,species_name,regex,^,species_field
 Staphylococcus haemolyticus,short,Ariba,percent,=,100,
 Staphylococcus haemolyticus,short,Checkm,# contigs,<=,400,
 Staphylococcus haemolyticus,short,Checkm,# contigs,>=,62,
@@ -1493,7 +1493,7 @@ Staphylococcus pseudintermedius,all,Checkm,GC,<=,38.0,
 Staphylococcus pseudintermedius,all,Checkm,GC,>=,37.0,
 Staphylococcus pseudintermedius,all,Checkm,Genome size (bp),<=,2900000,
 Staphylococcus pseudintermedius,all,Checkm,Genome size (bp),>=,2400000,
-Staphylococcus pseudintermedius,all,Checkm,Marker lineage,regex,^Staphylococcus pseudintermedius.+,species_field
+Staphylococcus pseudintermedius,all,Checkm,Marker lineage,regex,^Staphylococcus pseudintermedius,species_field
 Staphylococcus pseudintermedius,all,Quast,GC (%),<=,38.0,
 Staphylococcus pseudintermedius,all,Quast,GC (%),>=,37.0,
 Staphylococcus pseudintermedius,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1503,7 +1503,7 @@ Staphylococcus pseudintermedius,all,Speciator,confidence,regex,^good$,
 Staphylococcus pseudintermedius,all,Speciator,genusName,regex,^Staphylococcus,
 Staphylococcus pseudintermedius,all,Speciator,speciesName,regex,^Staphylococcus pseudintermedius,species_field
 Staphylococcus pseudintermedius,all,Sylph,number_of_genomes,=,1,
-Staphylococcus pseudintermedius,all,Sylph,species_name,regex,^.+,species_field
+Staphylococcus pseudintermedius,all,Sylph,species_name,regex,^,species_field
 Staphylococcus pseudintermedius,short,Ariba,percent,=,100,
 Staphylococcus pseudintermedius,short,Checkm,# contigs,<=,300,
 Staphylococcus pseudintermedius,short,Checkm,# contigs,>=,37,
@@ -1517,7 +1517,7 @@ Staphylococcus saprophyticus,all,Checkm,GC,<=,33.0,
 Staphylococcus saprophyticus,all,Checkm,GC,>=,33.0,
 Staphylococcus saprophyticus,all,Checkm,Genome size (bp),<=,2800000,
 Staphylococcus saprophyticus,all,Checkm,Genome size (bp),>=,2400000,
-Staphylococcus saprophyticus,all,Checkm,Marker lineage,regex,^Staphylococcus saprophyticus.+,species_field
+Staphylococcus saprophyticus,all,Checkm,Marker lineage,regex,^Staphylococcus saprophyticus,species_field
 Staphylococcus saprophyticus,all,Quast,GC (%),<=,33.0,
 Staphylococcus saprophyticus,all,Quast,GC (%),>=,33.0,
 Staphylococcus saprophyticus,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1527,7 +1527,7 @@ Staphylococcus saprophyticus,all,Speciator,confidence,regex,^good$,
 Staphylococcus saprophyticus,all,Speciator,genusName,regex,^Staphylococcus,
 Staphylococcus saprophyticus,all,Speciator,speciesName,regex,^Staphylococcus saprophyticus,species_field
 Staphylococcus saprophyticus,all,Sylph,number_of_genomes,=,1,
-Staphylococcus saprophyticus,all,Sylph,species_name,regex,^.+,species_field
+Staphylococcus saprophyticus,all,Sylph,species_name,regex,^,species_field
 Staphylococcus saprophyticus,short,Ariba,percent,=,100,
 Staphylococcus saprophyticus,short,Checkm,# contigs,<=,200,
 Staphylococcus saprophyticus,short,Checkm,# contigs,>=,20,
@@ -1541,7 +1541,7 @@ Stenotrophomonas maltophilia,all,Checkm,GC,<=,68.0,
 Stenotrophomonas maltophilia,all,Checkm,GC,>=,66.0,
 Stenotrophomonas maltophilia,all,Checkm,Genome size (bp),<=,5300000,
 Stenotrophomonas maltophilia,all,Checkm,Genome size (bp),>=,4100000,
-Stenotrophomonas maltophilia,all,Checkm,Marker lineage,regex,^Stenotrophomonas maltophilia.+,species_field
+Stenotrophomonas maltophilia,all,Checkm,Marker lineage,regex,^Stenotrophomonas maltophilia,species_field
 Stenotrophomonas maltophilia,all,Quast,GC (%),<=,68.0,
 Stenotrophomonas maltophilia,all,Quast,GC (%),>=,66.0,
 Stenotrophomonas maltophilia,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1551,7 +1551,7 @@ Stenotrophomonas maltophilia,all,Speciator,confidence,regex,^good$,
 Stenotrophomonas maltophilia,all,Speciator,genusName,regex,^Stenotrophomonas,
 Stenotrophomonas maltophilia,all,Speciator,speciesName,regex,^Stenotrophomonas maltophilia,species_field
 Stenotrophomonas maltophilia,all,Sylph,number_of_genomes,=,1,
-Stenotrophomonas maltophilia,all,Sylph,species_name,regex,^.+,species_field
+Stenotrophomonas maltophilia,all,Sylph,species_name,regex,^,species_field
 Stenotrophomonas maltophilia,short,Ariba,percent,=,100,
 Stenotrophomonas maltophilia,short,Checkm,# contigs,<=,400,
 Stenotrophomonas maltophilia,short,Checkm,# contigs,>=,26,
@@ -1565,7 +1565,7 @@ Streptococcus agalactiae,all,Checkm,GC,<=,36.0,
 Streptococcus agalactiae,all,Checkm,GC,>=,35.0,
 Streptococcus agalactiae,all,Checkm,Genome size (bp),<=,2400000,
 Streptococcus agalactiae,all,Checkm,Genome size (bp),>=,1900000,
-Streptococcus agalactiae,all,Checkm,Marker lineage,regex,^Streptococcus agalactiae.+,species_field
+Streptococcus agalactiae,all,Checkm,Marker lineage,regex,^Streptococcus agalactiae,species_field
 Streptococcus agalactiae,all,Quast,GC (%),<=,36.0,
 Streptococcus agalactiae,all,Quast,GC (%),>=,35.0,
 Streptococcus agalactiae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1575,7 +1575,7 @@ Streptococcus agalactiae,all,Speciator,confidence,regex,^good$,
 Streptococcus agalactiae,all,Speciator,genusName,regex,^Streptococcus,
 Streptococcus agalactiae,all,Speciator,speciesName,regex,^Streptococcus agalactiae,species_field
 Streptococcus agalactiae,all,Sylph,number_of_genomes,=,1,
-Streptococcus agalactiae,all,Sylph,species_name,regex,^.+,species_field
+Streptococcus agalactiae,all,Sylph,species_name,regex,^,species_field
 Streptococcus agalactiae,short,Ariba,percent,=,100,
 Streptococcus agalactiae,short,Checkm,# contigs,<=,200,
 Streptococcus agalactiae,short,Checkm,# contigs,>=,17,
@@ -1589,7 +1589,7 @@ Streptococcus dysgalactiae,all,Checkm,GC,<=,40.0,
 Streptococcus dysgalactiae,all,Checkm,GC,>=,39.0,
 Streptococcus dysgalactiae,all,Checkm,Genome size (bp),<=,2400000,
 Streptococcus dysgalactiae,all,Checkm,Genome size (bp),>=,1900000,
-Streptococcus dysgalactiae,all,Checkm,Marker lineage,regex,^Streptococcus dysgalactiae.+,species_field
+Streptococcus dysgalactiae,all,Checkm,Marker lineage,regex,^Streptococcus dysgalactiae,species_field
 Streptococcus dysgalactiae,all,Quast,GC (%),<=,40.0,
 Streptococcus dysgalactiae,all,Quast,GC (%),>=,39.0,
 Streptococcus dysgalactiae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1599,7 +1599,7 @@ Streptococcus dysgalactiae,all,Speciator,confidence,regex,^good$,
 Streptococcus dysgalactiae,all,Speciator,genusName,regex,^Streptococcus,
 Streptococcus dysgalactiae,all,Speciator,speciesName,regex,^Streptococcus dysgalactiae,species_field
 Streptococcus dysgalactiae,all,Sylph,number_of_genomes,=,1,
-Streptococcus dysgalactiae,all,Sylph,species_name,regex,^.+,species_field
+Streptococcus dysgalactiae,all,Sylph,species_name,regex,^,species_field
 Streptococcus dysgalactiae,short,Ariba,percent,=,100,
 Streptococcus dysgalactiae,short,Checkm,# contigs,<=,200,
 Streptococcus dysgalactiae,short,Checkm,# contigs,>=,66,
@@ -1613,7 +1613,7 @@ Streptococcus equi,all,Checkm,GC,<=,42.0,
 Streptococcus equi,all,Checkm,GC,>=,41.0,
 Streptococcus equi,all,Checkm,Genome size (bp),<=,2300000,
 Streptococcus equi,all,Checkm,Genome size (bp),>=,1900000,
-Streptococcus equi,all,Checkm,Marker lineage,regex,^Streptococcus equi.+,species_field
+Streptococcus equi,all,Checkm,Marker lineage,regex,^Streptococcus equi,species_field
 Streptococcus equi,all,Quast,GC (%),<=,42.0,
 Streptococcus equi,all,Quast,GC (%),>=,41.0,
 Streptococcus equi,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1623,7 +1623,7 @@ Streptococcus equi,all,Speciator,confidence,regex,^good$,
 Streptococcus equi,all,Speciator,genusName,regex,^Streptococcus,
 Streptococcus equi,all,Speciator,speciesName,regex,^Streptococcus equi,species_field
 Streptococcus equi,all,Sylph,number_of_genomes,=,1,
-Streptococcus equi,all,Sylph,species_name,regex,^.+,species_field
+Streptococcus equi,all,Sylph,species_name,regex,^,species_field
 Streptococcus equi,short,Ariba,percent,=,100,
 Streptococcus equi,short,Checkm,# contigs,<=,300,
 Streptococcus equi,short,Checkm,# contigs,>=,49,
@@ -1637,7 +1637,7 @@ Streptococcus pneumoniae,all,Checkm,GC,<=,40.0,
 Streptococcus pneumoniae,all,Checkm,GC,>=,39.0,
 Streptococcus pneumoniae,all,Checkm,Genome size (bp),<=,2400000,
 Streptococcus pneumoniae,all,Checkm,Genome size (bp),>=,1900000,
-Streptococcus pneumoniae,all,Checkm,Marker lineage,regex,^Streptococcus pneumoniae.+,species_field
+Streptococcus pneumoniae,all,Checkm,Marker lineage,regex,^Streptococcus pneumoniae,species_field
 Streptococcus pneumoniae,all,Quast,GC (%),<=,40.0,
 Streptococcus pneumoniae,all,Quast,GC (%),>=,39.0,
 Streptococcus pneumoniae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1647,7 +1647,7 @@ Streptococcus pneumoniae,all,Speciator,confidence,regex,^good$,
 Streptococcus pneumoniae,all,Speciator,genusName,regex,^Streptococcus,
 Streptococcus pneumoniae,all,Speciator,speciesName,regex,^Streptococcus pneumoniae,species_field
 Streptococcus pneumoniae,all,Sylph,number_of_genomes,=,1,
-Streptococcus pneumoniae,all,Sylph,species_name,regex,^.+,species_field
+Streptococcus pneumoniae,all,Sylph,species_name,regex,^,species_field
 Streptococcus pneumoniae,short,Ariba,percent,=,100,
 Streptococcus pneumoniae,short,Checkm,# contigs,<=,300,
 Streptococcus pneumoniae,short,Checkm,# contigs,>=,28,
@@ -1661,7 +1661,7 @@ Streptococcus pyogenes,all,Checkm,GC,<=,38.0,
 Streptococcus pyogenes,all,Checkm,GC,>=,38.0,
 Streptococcus pyogenes,all,Checkm,Genome size (bp),<=,2100000,
 Streptococcus pyogenes,all,Checkm,Genome size (bp),>=,1600000,
-Streptococcus pyogenes,all,Checkm,Marker lineage,regex,^Streptococcus pyogenes.+,species_field
+Streptococcus pyogenes,all,Checkm,Marker lineage,regex,^Streptococcus pyogenes,species_field
 Streptococcus pyogenes,all,Quast,GC (%),<=,38.0,
 Streptococcus pyogenes,all,Quast,GC (%),>=,38.0,
 Streptococcus pyogenes,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1671,7 +1671,7 @@ Streptococcus pyogenes,all,Speciator,confidence,regex,^good$,
 Streptococcus pyogenes,all,Speciator,genusName,regex,^Streptococcus,
 Streptococcus pyogenes,all,Speciator,speciesName,regex,^Streptococcus pyogenes,species_field
 Streptococcus pyogenes,all,Sylph,number_of_genomes,=,1,
-Streptococcus pyogenes,all,Sylph,species_name,regex,^.+,species_field
+Streptococcus pyogenes,all,Sylph,species_name,regex,^,species_field
 Streptococcus pyogenes,short,Ariba,percent,=,100,
 Streptococcus pyogenes,short,Checkm,# contigs,<=,100,
 Streptococcus pyogenes,short,Checkm,# contigs,>=,18,
@@ -1685,7 +1685,7 @@ Streptococcus suis,all,Checkm,GC,<=,44.0,
 Streptococcus suis,all,Checkm,GC,>=,39.0,
 Streptococcus suis,all,Checkm,Genome size (bp),<=,2700000,
 Streptococcus suis,all,Checkm,Genome size (bp),>=,1800000,
-Streptococcus suis,all,Checkm,Marker lineage,regex,^Streptococcus suis.+,species_field
+Streptococcus suis,all,Checkm,Marker lineage,regex,^Streptococcus suis,species_field
 Streptococcus suis,all,Quast,GC (%),<=,44.0,
 Streptococcus suis,all,Quast,GC (%),>=,39.0,
 Streptococcus suis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1695,7 +1695,7 @@ Streptococcus suis,all,Speciator,confidence,regex,^good$,
 Streptococcus suis,all,Speciator,genusName,regex,^Streptococcus,
 Streptococcus suis,all,Speciator,speciesName,regex,^Streptococcus suis,species_field
 Streptococcus suis,all,Sylph,number_of_genomes,=,1,
-Streptococcus suis,all,Sylph,species_name,regex,^.+,species_field
+Streptococcus suis,all,Sylph,species_name,regex,^,species_field
 Streptococcus suis,short,Ariba,percent,=,100,
 Streptococcus suis,short,Checkm,# contigs,<=,300,
 Streptococcus suis,short,Checkm,# contigs,>=,29,
@@ -1709,7 +1709,7 @@ Streptococcus uberis,all,Checkm,GC,<=,37.0,
 Streptococcus uberis,all,Checkm,GC,>=,36.0,
 Streptococcus uberis,all,Checkm,Genome size (bp),<=,2200000,
 Streptococcus uberis,all,Checkm,Genome size (bp),>=,1700000,
-Streptococcus uberis,all,Checkm,Marker lineage,regex,^Streptococcus uberis.+,species_field
+Streptococcus uberis,all,Checkm,Marker lineage,regex,^Streptococcus uberis,species_field
 Streptococcus uberis,all,Quast,GC (%),<=,37.0,
 Streptococcus uberis,all,Quast,GC (%),>=,36.0,
 Streptococcus uberis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1719,7 +1719,7 @@ Streptococcus uberis,all,Speciator,confidence,regex,^good$,
 Streptococcus uberis,all,Speciator,genusName,regex,^Streptococcus,
 Streptococcus uberis,all,Speciator,speciesName,regex,^Streptococcus uberis,species_field
 Streptococcus uberis,all,Sylph,number_of_genomes,=,1,
-Streptococcus uberis,all,Sylph,species_name,regex,^.+,species_field
+Streptococcus uberis,all,Sylph,species_name,regex,^,species_field
 Streptococcus uberis,short,Ariba,percent,=,100,
 Streptococcus uberis,short,Checkm,# contigs,<=,200,
 Streptococcus uberis,short,Checkm,# contigs,>=,11,
@@ -1733,7 +1733,7 @@ Vibrio cholerae,all,Checkm,GC,<=,48.0,
 Vibrio cholerae,all,Checkm,GC,>=,47.0,
 Vibrio cholerae,all,Checkm,Genome size (bp),<=,4500000,
 Vibrio cholerae,all,Checkm,Genome size (bp),>=,3800000,
-Vibrio cholerae,all,Checkm,Marker lineage,regex,^Vibrio cholerae.+,species_field
+Vibrio cholerae,all,Checkm,Marker lineage,regex,^Vibrio cholerae,species_field
 Vibrio cholerae,all,Quast,GC (%),<=,48.0,
 Vibrio cholerae,all,Quast,GC (%),>=,47.0,
 Vibrio cholerae,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1743,7 +1743,7 @@ Vibrio cholerae,all,Speciator,confidence,regex,^good$,
 Vibrio cholerae,all,Speciator,genusName,regex,^Vibrio,
 Vibrio cholerae,all,Speciator,speciesName,regex,^Vibrio cholerae,species_field
 Vibrio cholerae,all,Sylph,number_of_genomes,=,1,
-Vibrio cholerae,all,Sylph,species_name,regex,^.+,species_field
+Vibrio cholerae,all,Sylph,species_name,regex,^,species_field
 Vibrio cholerae,short,Ariba,percent,=,100,
 Vibrio cholerae,short,Checkm,# contigs,<=,300,
 Vibrio cholerae,short,Checkm,# contigs,>=,62,
@@ -1757,7 +1757,7 @@ Vibrio parahaemolyticus,all,Checkm,GC,<=,46.0,
 Vibrio parahaemolyticus,all,Checkm,GC,>=,44.0,
 Vibrio parahaemolyticus,all,Checkm,Genome size (bp),<=,6100000,
 Vibrio parahaemolyticus,all,Checkm,Genome size (bp),>=,4900000,
-Vibrio parahaemolyticus,all,Checkm,Marker lineage,regex,^Vibrio parahaemolyticus.+,species_field
+Vibrio parahaemolyticus,all,Checkm,Marker lineage,regex,^Vibrio parahaemolyticus,species_field
 Vibrio parahaemolyticus,all,Quast,GC (%),<=,46.0,
 Vibrio parahaemolyticus,all,Quast,GC (%),>=,44.0,
 Vibrio parahaemolyticus,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1767,7 +1767,7 @@ Vibrio parahaemolyticus,all,Speciator,confidence,regex,^good$,
 Vibrio parahaemolyticus,all,Speciator,genusName,regex,^Vibrio,
 Vibrio parahaemolyticus,all,Speciator,speciesName,regex,^Vibrio parahaemolyticus,species_field
 Vibrio parahaemolyticus,all,Sylph,number_of_genomes,=,1,
-Vibrio parahaemolyticus,all,Sylph,species_name,regex,^.+,species_field
+Vibrio parahaemolyticus,all,Sylph,species_name,regex,^,species_field
 Vibrio parahaemolyticus,short,Ariba,percent,=,100,
 Vibrio parahaemolyticus,short,Checkm,# contigs,<=,200,
 Vibrio parahaemolyticus,short,Checkm,# contigs,>=,47,
@@ -1781,7 +1781,7 @@ Vibrio vulnificus,all,Checkm,GC,<=,47.0,
 Vibrio vulnificus,all,Checkm,GC,>=,46.0,
 Vibrio vulnificus,all,Checkm,Genome size (bp),<=,6100000,
 Vibrio vulnificus,all,Checkm,Genome size (bp),>=,4700000,
-Vibrio vulnificus,all,Checkm,Marker lineage,regex,^Vibrio vulnificus.+,species_field
+Vibrio vulnificus,all,Checkm,Marker lineage,regex,^Vibrio vulnificus,species_field
 Vibrio vulnificus,all,Quast,GC (%),<=,47.0,
 Vibrio vulnificus,all,Quast,GC (%),>=,46.0,
 Vibrio vulnificus,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1791,7 +1791,7 @@ Vibrio vulnificus,all,Speciator,confidence,regex,^good$,
 Vibrio vulnificus,all,Speciator,genusName,regex,^Vibrio,
 Vibrio vulnificus,all,Speciator,speciesName,regex,^Vibrio vulnificus,species_field
 Vibrio vulnificus,all,Sylph,number_of_genomes,=,1,
-Vibrio vulnificus,all,Sylph,species_name,regex,^.+,species_field
+Vibrio vulnificus,all,Sylph,species_name,regex,^,species_field
 Vibrio vulnificus,short,Ariba,percent,=,100,
 Vibrio vulnificus,short,Checkm,# contigs,<=,300,
 Vibrio vulnificus,short,Checkm,# contigs,>=,69,
@@ -1805,7 +1805,7 @@ Yersinia enterocolitica,all,Checkm,GC,<=,48.0,
 Yersinia enterocolitica,all,Checkm,GC,>=,47.0,
 Yersinia enterocolitica,all,Checkm,Genome size (bp),<=,5200000,
 Yersinia enterocolitica,all,Checkm,Genome size (bp),>=,4300000,
-Yersinia enterocolitica,all,Checkm,Marker lineage,regex,^Yersinia enterocolitica.+,species_field
+Yersinia enterocolitica,all,Checkm,Marker lineage,regex,^Yersinia enterocolitica,species_field
 Yersinia enterocolitica,all,Quast,GC (%),<=,48.0,
 Yersinia enterocolitica,all,Quast,GC (%),>=,47.0,
 Yersinia enterocolitica,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1815,7 +1815,7 @@ Yersinia enterocolitica,all,Speciator,confidence,regex,^good$,
 Yersinia enterocolitica,all,Speciator,genusName,regex,^Yersinia,
 Yersinia enterocolitica,all,Speciator,speciesName,regex,^Yersinia enterocolitica,species_field
 Yersinia enterocolitica,all,Sylph,number_of_genomes,=,1,
-Yersinia enterocolitica,all,Sylph,species_name,regex,^.+,species_field
+Yersinia enterocolitica,all,Sylph,species_name,regex,^,species_field
 Yersinia enterocolitica,short,Ariba,percent,=,100,
 Yersinia enterocolitica,short,Checkm,# contigs,<=,400,
 Yersinia enterocolitica,short,Checkm,# contigs,>=,31,
@@ -1829,7 +1829,7 @@ Yersinia pestis,all,Checkm,GC,<=,48.0,
 Yersinia pestis,all,Checkm,GC,>=,47.0,
 Yersinia pestis,all,Checkm,Genome size (bp),<=,5000000,
 Yersinia pestis,all,Checkm,Genome size (bp),>=,4400000,
-Yersinia pestis,all,Checkm,Marker lineage,regex,^Yersinia pestis.+,species_field
+Yersinia pestis,all,Checkm,Marker lineage,regex,^Yersinia pestis,species_field
 Yersinia pestis,all,Quast,GC (%),<=,48.0,
 Yersinia pestis,all,Quast,GC (%),>=,47.0,
 Yersinia pestis,all,Quast,Ns per 100 kbp,<=,1000,
@@ -1839,7 +1839,7 @@ Yersinia pestis,all,Speciator,confidence,regex,^good$,
 Yersinia pestis,all,Speciator,genusName,regex,^Yersinia,
 Yersinia pestis,all,Speciator,speciesName,regex,^Yersinia pestis,species_field
 Yersinia pestis,all,Sylph,number_of_genomes,=,1,
-Yersinia pestis,all,Sylph,species_name,regex,^.+,species_field
+Yersinia pestis,all,Sylph,species_name,regex,^,species_field
 Yersinia pestis,short,Ariba,percent,=,100,
 Yersinia pestis,short,Checkm,# contigs,<=,600,
 Yersinia pestis,short,Checkm,# contigs,>=,123,
@@ -1853,17 +1853,17 @@ all,all,Checkm,GC,<=,75,
 all,all,Checkm,GC,>=,25,
 all,all,Checkm,Genome size (bp),<=,1200000,
 all,all,Checkm,Genome size (bp),>=,500000,
-all,all,Checkm,Marker lineage,regex,^.+,species_field
+all,all,Checkm,Marker lineage,regex,^,species_field
 all,all,Quast,GC (%),<,75,
 all,all,Quast,GC (%),>,25,
 all,all,Quast,Ns per 100 kbp,<=,1000,
 all,all,Quast,Total length (>= 0 bp),<,1200000,
 all,all,Quast,Total length (>= 0 bp),>,500000,
 all,all,Speciator,confidence,regex,^good$,
-all,all,Speciator,genusName,regex,^.+,
-all,all,Speciator,speciesName,regex,^.+,species_field
+all,all,Speciator,genusName,regex,^,
+all,all,Speciator,speciesName,regex,^,species_field
 all,all,Sylph,number_of_genomes,=,1,
-all,all,Sylph,species_name,regex,^.+,species_field
+all,all,Sylph,species_name,regex,^,species_field
 all,short,Ariba,percent,=,100,
 all,short,Checkm,# contigs,<=,900,
 all,short,Checkm,N50 (scaffolds),>,15000,

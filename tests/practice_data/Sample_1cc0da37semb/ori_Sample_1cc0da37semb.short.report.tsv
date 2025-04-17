@@ -1,0 +1,23 @@
+Assembly	Sample_1cc0da37semb.short
+# contigs (>= 0 bp)	48
+# contigs (>= 1000 bp)	45
+# contigs (>= 5000 bp)	35
+# contigs (>= 10000 bp)	33
+# contigs (>= 25000 bp)	29
+# contigs (>= 50000 bp)	23
+Total length (>= 0 bp)	5495488
+Total length (>= 1000 bp)	5493456
+Total length (>= 5000 bp)	5476008
+Total length (>= 10000 bp)	5461932
+Total length (>= 25000 bp)	5379494
+Total length (>= 50000 bp)	5176165
+# contigs	48
+Largest contig	516958
+Total length	5495488
+GC (%)	57.24
+N50	319835
+N90	79409
+auN	304328.0
+L50	7
+L90	20
+# N's per 100 kbp	0.00

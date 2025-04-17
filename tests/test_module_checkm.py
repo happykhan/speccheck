@@ -19,4 +19,4 @@ def test_checkmvalues():
     checkm_file = "tests/collect_test_data/checkm.short.tsv"
     checkm = Checkm(checkm_file)
     values = checkm.fetch_values()
-    assert values['Marker lineage'] == 'Mycoplasma genitalium (6)'
+    assert values['Marker lineage'] == 'Mycoplasma genitalium'

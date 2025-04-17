@@ -1,0 +1,23 @@
+Assembly	Sample_e236b6bdsemb.short
+# contigs (>= 0 bp)	99
+# contigs (>= 1000 bp)	81
+# contigs (>= 5000 bp)	57
+# contigs (>= 10000 bp)	47
+# contigs (>= 25000 bp)	36
+# contigs (>= 50000 bp)	26
+Total length (>= 0 bp)	5795489
+Total length (>= 1000 bp)	5783152
+Total length (>= 5000 bp)	5716762
+Total length (>= 10000 bp)	5643565
+Total length (>= 25000 bp)	5439350
+Total length (>= 50000 bp)	5099700
+# contigs	99
+Largest contig	531999
+Total length	5795489
+GC (%)	56.70
+N50	279162
+N90	38968
+auN	258117.4
+L50	8
+L90	29
+# N's per 100 kbp	0.00

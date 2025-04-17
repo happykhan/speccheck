@@ -1,0 +1,2 @@
+Bin Id	Marker lineage	# genomes	# markers	# marker sets	Completeness	Contamination	Strain heterogeneity	Genome size (bp)	# ambiguous bases	# scaffolds	# contigs	N50 (scaffolds)	N50 (contigs)	Mean scaffold length (bp)	Mean contig length (bp)	Longest scaffold (bp)	Longest contig (bp)	GC	GC std (scaffolds > 1kbp)	Coding density	Translation table	# predicted genes	0	1	2	3	4	5+
+Sample_1cc0da37semb.short	Klebsiella pneumoniae (6)	20	1598	383	99.71	0.46	0.00	5495488	0	48	48	319835	319835	114489	114489	516958	516958	57.2	4.17	87.97	11	5104	6	1584	8	0	0	0

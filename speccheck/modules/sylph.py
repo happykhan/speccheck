@@ -35,8 +35,13 @@ class Sylph():
             reader = csv.DictReader(file, delimiter='\t')
             result = {'genomes': '', 'number_of_genomes': 0}
             genomes = []
+            species = []
             for row in reader:
-                genomes.append(row['Contig_name'].replace(',', ''))
+                match = re.search(r'(?<=\s)[A-Z][a-z]+ [a-z]+(?= strain)', row['Contig_name'])
+                # Extracted species name
                 result['number_of_genomes'] += 1
-            result['genomes'] = ';'.join(genomes)
-        return result
+                if match:
+                    species.append(match.group(0) )
+            result['genomes'] = ';'.join(genomes)        
+            result['species'] = ';'.join(species)
+            return result

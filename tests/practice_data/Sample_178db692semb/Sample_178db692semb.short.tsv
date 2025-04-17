@@ -1,0 +1,2 @@
+Sample_id	taxId	speciesId	speciesName	genusId	genusName	superkingdomId	superkingdomName	referenceId	mashDistance	pValue	matchingHashes	confidence	source
+Sample_178db692semb	573	573	Klebsiella pneumoniae	570	Klebsiella	2	Bacteria	Klebsiella_pneumoniae/0001.fna.gz	0.00173271	0	931/1000	good	Curated

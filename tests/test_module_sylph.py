@@ -18,7 +18,7 @@ def test_sylph_has_not_valid_fileformat():
 def test_sylph_has_valid_fileformat():
     sylph_file = "tests/collect_test_data/sylph.tsv"
     sylph = Sylph(sylph_file)
-    assert sylph.has_valid_fileformat    
+    assert sylph.has_valid_fileformat
 
 def test_sylphvalues():
     sylph_file = "tests/collect_test_data/sylph.tsv"

@@ -43,6 +43,9 @@ class Checkm():
                 parsed_row = {}
                 row_count += 1
                 for key, value in row.items():
+                    if key == 'Marker lineage':
+                        # Remove the (number) suffix from lineage
+                        value = re.sub(r'\s*\(\d+\)', '', value)
                     if value is None:
                         continue
                     # Try to parse float if possible
