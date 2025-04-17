@@ -1,7 +1,13 @@
+iniconfig==2.1.0
 Jinja2==3.1.6
 MarkupSafe==3.0.2
+narwhals==1.35.0
 numpy==2.2.4
+packaging==24.2
 pandas==2.2.3
+plotly==6.0.1
+pluggy==1.5.0
+pytest==8.3.5
 python-dateutil==2.9.0.post0
 pytz==2025.2
 six==1.17.0
