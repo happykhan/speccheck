@@ -38,10 +38,10 @@ class Sylph():
             species = []
             for row in reader:
                 match = re.search(r'(?<=\s)[A-Z][a-z]+ [a-z]+(?= strain)', row['Contig_name'])
-                # Extracted species name
-                result['number_of_genomes'] += 1
                 if match:
                     species.append(match.group(0) )
-            result['genomes'] = ';'.join(genomes)        
-            result['species'] = ';'.join(species)
+                    # Extracted species name
+                    result['number_of_genomes'] += 1
+            result['genomes'] = ';'.join(genomes)
+            result['species_name'] = ';'.join(species)
             return result

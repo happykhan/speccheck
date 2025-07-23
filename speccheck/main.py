@@ -1,19 +1,5 @@
-"""
-Collect and run checks from modules on input files.
-This function takes an organism name and a list of input file paths,
-collects all files from the given paths,
-dynamically loads modules that contain checks, and runs these checks
-on each file. It logs the progress and results of the checks.
-Args:
-    organism (str): The name of the organism for which the checks are being run.
-    input_filepaths (list): A list of file paths to be checked.
-Returns:
-    None
-"""
-
 import os
 import sys
-import logging
 import csv
 import shutil
 import pandas as pd
@@ -21,6 +7,9 @@ from speccheck.util import get_all_files, load_modules_with_checks
 from speccheck.criteria import validate_criteria, get_species_field, get_criteria
 from speccheck.report import plot_charts
 from speccheck.collect import collect_files, write_to_file, check_criteria
+from speccheck.update_criteria import update_criteria_file
+import logging
+
 
 def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
     """Collect and run checks from modules on input files."""
@@ -31,11 +20,11 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
     errors, warnings = validate_criteria(criteria_file)
     if errors:
         for error in errors:
-            logging.error(error)
+            logging.error("%s", error)
         sys.exit(1)
     if warnings:
         for warning in warnings:
-            logging.warning(warning)
+            logging.warning("%s", warning)
     # Get all files from the input paths
     all_files = get_all_files(input_filepaths)
     # Discover and load valid modules dynamically
@@ -58,20 +47,18 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
             organism = list(organism)[0]
         else:
             organism = None
-            logging.error('Mixed species found in the files.')
+            logging.error("Mixed species found in the files.")
     if not organism:
-        logging.warning(
-            "Organism name not provided and could not be resolved from the files. Using default values which are VERY leinient."
-        )
+        logging.warning("Organism name not provided and could not be resolved from the files. Using default values which are VERY leinient.")
     logging.info("Finished checking %d files for %s", len(all_files), organism)
-    logging.info("Found software: %s", ", ".join(recovered_values.keys()))
+    logging.info("Found software: %s", ', '.join(recovered_values.keys()))
     # get criteria
     criteria = get_criteria(criteria_file, organism)
     # run checks
     qc_report = {}  # dict to store results
     all_checks_passed = True
     for software, result in recovered_values.items():
-        logging.info("Running checks for %s", software)
+        logging.info(f"Running checks for {software}")
         for res_name, res_value in result.items():
             col_name = software + "." + res_name
             qc_report[col_name] = res_value
@@ -88,7 +75,6 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
                     elif not test_result:
                         qc_report[col_name] = test_result
         qc_report[software + ".all_checks_passed"] = all_fields_passed
-        print(all_checks_passed)
         all_checks_passed = all_checks_passed and all_fields_passed
     qc_report['all_checks_passed'] = all_checks_passed
     # log results
@@ -146,15 +132,19 @@ def summary(directory, output, species, sample_name, template, plot = False):
         shutil.copy(os.path.join(os.path.dirname(template), 'bulma.css'), os.path.join(output, 'bulma.css'))
         logging.info("Plots generated.")
 
-def check(criteria_file):
+def check(criteria_file, update=False, update_url='https://raw.githubusercontent.com/happykhan/genomeqc/refs/heads/main/docs/summary/filtered_metrics.csv'):
     logging.info("Checking criteria file: %s", criteria_file)
     # Check criteria file if it has all the required fields
     # Use the 'all' species to template which fields are required
     errors = []
     warnings = []
+    # if update is True, download the latest criteria file
+    if update:
+        update_criteria_file(criteria_file, update_url)
+        logging.info("Updated criteria file from %s", update_url)
     # Check its a valid csv file
     if not os.path.isfile(criteria_file):
-        logging.error("Criteria file not found: %s", criteria_file)
+        logging.error(f"Criteria file not found: {criteria_file}")
         return
     
     # check if the file is a valid csv file
@@ -194,7 +184,7 @@ def check(criteria_file):
         errors.append("No criteria found for species 'all'.")
     if warnings:
         for warning in warnings:
-            logging.warning(warning)        
+            logging.warning(warning)
     if errors:
         for error in errors:
             logging.error(error)
