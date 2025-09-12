@@ -10,7 +10,7 @@ COPY ../ /app
 
 # Install any needed packages specified in requirements.txt
 RUN cd /app
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -e .
 # Make speccheck.py executable
 ENV PATH="/app:${PATH}"
 RUN chmod +x speccheck.py
