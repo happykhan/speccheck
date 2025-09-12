@@ -20,7 +20,13 @@ Clone the repository and install any required dependencies:
 ```bash
 git clone https://github.com/yourusername/speccheck.git
 cd speccheck
-pip install -r requirements.txt
+pip install -e .        
+```
+
+For the development tools as well, use:
+
+```bash
+pip install -e '.[dev]'        
 ```
 
 There is a docker image available for this project. 

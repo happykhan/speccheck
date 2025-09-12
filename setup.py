@@ -6,8 +6,19 @@ setup(
     version=__version__,
     packages=find_packages(),
     install_requires=[
-        # Add your dependencies here
+        'rich',
+        'jinja2',
+        'pandas',
+        'requests',
+        'plotly'
     ],
+    extras_require={
+        "dev": [
+            "pytest",
+            "coverage",
+            "pylint",
+        ]
+    },
     entry_points={
         'console_scripts': [
             # Add command line scripts here
