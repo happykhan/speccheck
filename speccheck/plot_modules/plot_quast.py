@@ -5,6 +5,13 @@ import plotly.offline as pyo
 class Plot_Quast:
     def __init__(self, df):
         self.df = df
+        self.description = "QUAST (Quality Assessment Tool for Genome Assemblies) evaluates genome assemblies by providing metrics such as N50, GC content, and the number of contigs to assess assembly quality."
+        self.url = "https://quast.sourceforge.net/"
+        self.name = 'QUAST'
+        self.citation = 'https://doi.org/10.1093/bioinformatics/btt086'
+
+    def summary(self):
+        return {'description': self.description, 'url': self.url, 'name': self.name, 'citation': self.citation}
 
     def _make_scatter_plot(self, col, row, color, title):
         fig = px.scatter(
@@ -15,24 +22,25 @@ class Plot_Quast:
             marginal_x="violin",
             marginal_y="violin",
             title=title,
-            hover_data=[self.df.index]
+            hover_data=[self.df.index],
         )
+                
         # Check if there is only one unique species
         if self.df["species"].nunique() == 1:
             fig.update_layout(showlegend=False)  # Hide legend if only one species
         else:
-            fig.update_layout(
-                hovermode="closest",
-                legend_title=color.title()
-            )
+            fig.update_layout(hovermode="closest", legend_title=color.title())
         return pyo.plot(fig, include_plotlyjs=False, output_type="div")
 
     def plot(self):
-        html_fragment = "<h2>Quast Plots</h2>"
+        info = self.summary()
+        html_fragment = f"<h2 id=\"{info.get('name').lower()}\">{info.get('name')}</h2>"
         # Add explanation text
-        html_fragment += """
+        html_fragment += f"""
         <p>QUAST (Quality Assessment Tool for Genome Assemblies) is a tool used to evaluate genome assemblies. 
-        It provides various metrics such as N50, GC content, and the number of contigs to assess the quality of assemblies.</p>
+        It provides various metrics such as N50, GC content, and the number of contigs to assess the quality of assemblies (<a href="{info.get('citation')}">ref</a>).
+        For more information, visit <a href="{info.get('url')}">{info.get('name')}</a>.</p>
+        </p>
         """
         if int(self.df['all_checks_passed'].sum()) < len(self.df):
             html_fragment += """

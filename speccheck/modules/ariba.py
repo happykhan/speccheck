@@ -5,7 +5,7 @@ class Ariba():
 
     def __init__(self, file_path):
         self.file_path = file_path
-    
+
     @property
     def has_valid_filename(self):
         return self.file_path.endswith(".tsv")
@@ -33,11 +33,14 @@ class Ariba():
     def fetch_values(self):
         with open(self.file_path, "r", encoding="utf-8") as file:
             reader = csv.DictReader(file, delimiter='\t')
-            result = {'passed': 0, 'total': 0, 'percent': 0}   
+            result = {'passed': 0, 'total': 0, 'percent': 0, 'not_called': 0}   
             for row in reader:
-                # if allele does not have *, then passed 
-                if '*' not in row['allele']:
+                # if allele does not have * or , then passed 
+                if '*' not in row['allele'] and row['allele'] not in ['ND']:
                     result['passed'] += 1
+                if row['allele'] in ['ND']:
+                    result['not_called'] += 1
                 result['total'] += 1
             result['percent'] = result['passed'] / result['total'] * 100    
         return result
+    

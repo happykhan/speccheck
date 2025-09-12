@@ -2,14 +2,13 @@ import os
 import sys
 import csv
 import shutil
+import logging
 import pandas as pd
 from speccheck.util import get_all_files, load_modules_with_checks
 from speccheck.criteria import validate_criteria, get_species_field, get_criteria
 from speccheck.report import plot_charts
 from speccheck.collect import collect_files, write_to_file, check_criteria
 from speccheck.update_criteria import update_criteria_file
-import logging
-
 
 def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
     """Collect and run checks from modules on input files."""
@@ -45,11 +44,14 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
         organism = set(org_list)
         if len(organism) == 1:
             organism = list(organism)[0]
-        else:
+        elif len(organism) > 1:
             organism = None
             logging.error("Mixed species found in the files.")
+        else:
+            organism = None
     if not organism:
-        logging.warning("Organism name not provided and could not be resolved from the files. Using default values which are VERY leinient.")
+        logging.warning("Organism name not provided and could not be resolved from the files. Using default values which are VERY lenient.")
+        organism = 'Unknown'
     logging.info("Finished checking %d files for %s", len(all_files), organism)
     logging.info("Found software: %s", ', '.join(recovered_values.keys()))
     # get criteria
@@ -86,15 +88,14 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_name):
 
 
 def summary(directory, output, species, sample_name, template, plot = False):
-
+    # TODO. CHECK ALL SAMPLE NAMES ARE UNIQUE
     os.makedirs(output, exist_ok=True)
     csv_files = []
     # collect all csv files
     for root, dirs, files in os.walk(directory):
         csv_files = [os.path.join(root, file) for file in files if file.endswith('.csv')]
     # merge all csv files in a single dictionary
-    # TODO: Need to check all sample ids are unique, and sample_name column exists. 
-
+    # TODO: Need to check all sample ids are unique, and sample_name column exists.
     merged_data = {}
     for file in csv_files:
         df = pd.read_csv(file)
@@ -144,7 +145,7 @@ def check(criteria_file, update=False, update_url='https://raw.githubusercontent
         logging.info("Updated criteria file from %s", update_url)
     # Check its a valid csv file
     if not os.path.isfile(criteria_file):
-        logging.error(f"Criteria file not found: {criteria_file}")
+        logging.error("Criteria file not found: %s", criteria_file)
         return
     
     # check if the file is a valid csv file

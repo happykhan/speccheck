@@ -5,7 +5,7 @@ def test_collect():
 
     # Define the input filepaths
     input_filepaths = ['tests/collect_test_data']
-    criteria_file = 'tests/collect_test_data/criteria.csv'
+    criteria_file = 'criteria.csv'
     output_file = 'collect_output.csv'
 
     sample_name = "Sample1"

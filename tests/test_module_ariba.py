@@ -25,3 +25,12 @@ def test_aribavalues():
     ariba = Ariba(ariba_file)
     values = ariba.fetch_values()
     assert values['passed'] == 4
+
+def test_aribanull():
+    ariba_file = "tests/collect_test_data/ariba_no_results.tsv"
+    ariba = Ariba(ariba_file)
+    values = ariba.fetch_values()
+    assert values['percent'] == 0.0
+    assert values['not_called'] == 7
+    assert values['total'] == 7
+    assert values['passed'] == 0

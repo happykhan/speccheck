@@ -1,27 +1,39 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" /> <!--It is necessary to use the UTF-8 encoding with plotly graphics to get e.g. negative signs to render correctly -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <script src="https://cdn.plot.ly/plotly-3.0.0-rc.2.min.js" charset="utf-8"></script>
-        <link rel="stylesheet" href="bulma.css">
-    </head>
-
-    <body>
-        <div class="container is-max-desktop">
-            <div class="content">
+<head>
+    <meta charset="utf-8" /> <!-- It is necessary to use the UTF-8 encoding with plotly graphics to get e.g. negative signs to render correctly -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.plot.ly/plotly-3.0.0-rc.2.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="bulma.css">
+</head>
+<body>
+    <div class="container is-max-desktop">
+        <div class="content">
+            {% if version %}
+                <h1>QC Report (speccheck {{ version }})</h1>
+            {% else %}
                 <h1>QC Report (speccheck)</h1>
+            {% endif %}
+            <p>This report summarizes the quality control checks performed on the samples. {{ sample_count }}</p>
+            <div>
+                {{ software_summary }}
+            </div>
+            <div>
+                {{ failure_reasons }}
+            </div>
+            <div>
                 {{ summary_table }}
-
+            </div>
+            <p>Note: QC_PASS column is <em>Pass</em> if all software checks passed, <em>Fail</em> otherwise.</p>
+            <div>
                 {{ software_charts }}
-            </div>    
-        </div>
-        <footer class="footer">
-            <div class="content has-text-centered">
-                
-                
-                {{ footer}}
-            </div>  
-                </footer>                   
-    </body>
+            </div>
+        </div>    
+    </div>
+    <footer class="footer">
+        <div class="content has-text-centered">
+            {{ footer }}
+        </div>  
+    </footer>                   
+</body>
 </html>

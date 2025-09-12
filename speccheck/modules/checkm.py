@@ -5,7 +5,7 @@ class Checkm():
 
     def __init__(self, file_path):
         self.file_path = file_path
-    
+
     @property
     def has_valid_filename(self):
         return self.file_path.endswith(".tsv")
