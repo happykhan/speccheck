@@ -20,11 +20,6 @@
 
 ## Installation
 
-### From PyPI (Recommended)
-
-```bash
-pip install speccheck
-```
 
 ### From Source
 
