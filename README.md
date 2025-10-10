@@ -4,124 +4,331 @@
 [![GPLv3 License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Version](https://img.shields.io/badge/python->=3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
-**speccheck** is a command-line tool for processing, collecting, and summarizing QC reports. It supports extracting metadata and QC outcomes for specific organisms across datasets, validating QC criteria, and generating summaries with optional plotting.
+**speccheck** is a modular command-line tool for collecting, validating, and summarizing quality control (QC) metrics from genomic analysis pipelines. It automatically detects and processes outputs from multiple bioinformatics tools, validates them against customizable criteria, and generates comprehensive reports with optional interactive visualizations.
 
 ## Features
 
-- **Collect** metadata and QC results from file paths using flexible wildcards.
-- **Summarize** multiple collected reports into a clean HTML and CSV summary.
-- **Check** criteria files for correctness and consistency.
-- Built-in verbose logging and version tracking.
+- 🔍 **Automatic Module Detection**: Supports CheckM, QUAST, Speciator, ARIBA, and Sylph outputs
+- ✅ **Flexible QC Validation**: Define organism-specific quality criteria with pass/fail checks
+- 📊 **Interactive Reports**: Generate HTML dashboards with Plotly visualizations
+- 🔗 **Metadata Integration**: Merge external sample metadata into QC reports
+- 📝 **Rich Logging**: Beautiful console output with Rich library
+- 🐳 **Docker Support**: Pre-built Docker images available
 
 ## Installation
 
-Clone the repository and install any required dependencies:
+### From Source
+
+Clone the repository and install with pip:
 
 ```bash
-git clone https://github.com/yourusername/speccheck.git
+git clone https://github.com/happykhan/speccheck.git
 cd speccheck
-pip install -e .        
+pip install -e .
 ```
 
-For the development tools as well, use:
+### Development Installation
+
+For development with testing and linting tools:
 
 ```bash
-pip install -e '.[dev]'        
+pip install -e '.[dev]'
 ```
 
-There is a docker image available for this project. 
+### Docker
+
+A Docker image is available for containerized execution:
+
+```bash
+docker pull happykhan/speccheck
+```
+
+## Quick Start
+
+1. **Collect QC data** from analysis outputs:
+```bash
+speccheck collect tests/practice_data/Sample_* --output-file results.csv
+```
+
+2. **Generate summary report** with visualizations:
+```bash
+speccheck summary qc_results/ --plot
+```
+
+3. **Validate criteria** file:
+```bash
+speccheck check --criteria-file criteria.csv
+```
 
 ## Usage
 
-The tool has three main subcommands:
+### Command: `collect`
 
-### 1. `collect`: Collect and process QC data
+Collect and validate QC metrics from bioinformatics tool outputs.
 
 ```bash
-python speccheck.py collect [OPTIONS] <filepaths>
+speccheck collect [OPTIONS] FILEPATHS...
 ```
 
-**Options:**
+#### Options
 
-| Option | Description |
-|--------|-------------|
-| `--organism` | Organism name (optional, extracted from filenames if not specified) |
-| `--sample` | Sample name (optional) |
-| `--criteria-file` | Path to criteria CSV file (default: `criteria.csv`) |
-| `--output-file` | Output CSV file path (default: `qc_results/collected_data.csv`) |
-| `-v`, `--verbose` | Enable debug-level logging |
-| `--version` | Print the version number |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `FILEPATHS` | Positional | Required | File paths (supports wildcards like `data/*/*.tsv`) |
+| `--organism` | String | Auto-detect | Organism name for criteria matching |
+| `--sample` | String | None | Sample identifier |
+| `--criteria-file` | Path | `criteria.csv` | CSV file with QC criteria |
+| `--output-file` | Path | `qc_results/collected_data.csv` | Output CSV path |
+| `--metadata` | Path | None | CSV with additional metadata (requires `sample_id` column) |
+| `-v, --verbose` | Flag | False | Enable debug logging |
+| `--version` | Flag | - | Show version and exit |
 
-**Example:**
+#### Examples
+
+Basic collection:
+```bash
+speccheck collect data/sample1/*.tsv --sample sample1
+```
+
+With organism specification:
+```bash
+speccheck collect data/ecoli_* --organism "Escherichia coli" --output-file ecoli_qc.csv
+```
+
+With metadata merging:
+```bash
+speccheck collect data/* --metadata sample_info.csv --output-file merged_results.csv
+```
+
+#### Supported Modules
+
+The collect command automatically detects outputs from:
+- **CheckM**: Completeness, contamination, genome metrics
+- **QUAST**: Assembly statistics (N50, contigs, GC content)
+- **Speciator**: Species identification and confidence
+- **ARIBA**: Antimicrobial resistance gene detection
+- **Sylph**: Metagenomic profiling and ANI values
+
+---
+
+### Command: `summary`
+
+Generate consolidated reports from multiple collected QC files.
 
 ```bash
-python speccheck.py collect --organism ecoli --sample sample1 data/*/*.json
+speccheck summary [OPTIONS] DIRECTORY
+```
+
+#### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `DIRECTORY` | Positional | Required | Directory containing CSV QC reports |
+| `--output` | Path | `qc_report` | Output directory for summary |
+| `--species` | String | `Speciator.speciesName` | Column name for species field |
+| `--sample` | String | `sample_id` | Column name for sample identifier |
+| `--templates` | Path | `templates/report.html` | HTML template file |
+| `--plot` | Flag | False | Generate interactive plots |
+| `-v, --verbose` | Flag | False | Enable debug logging |
+| `--version` | Flag | - | Show version and exit |
+
+#### Examples
+
+Basic summary:
+```bash
+speccheck summary qc_results/
+```
+
+With plotting enabled:
+```bash
+speccheck summary qc_results/ --plot --output final_report/
+```
+
+Custom field names:
+```bash
+speccheck summary results/ --sample SampleID --species Species --plot
+```
+
+#### Output
+
+- `report.csv`: Consolidated QC metrics with sorted columns (sample_id, all_checks_passed, .check columns, other fields)
+- `report.html`: Interactive HTML dashboard (when `--plot` is enabled)
+
+---
+
+### Command: `check`
+
+Validate the structure and content of a criteria file.
+
+```bash
+speccheck check [OPTIONS]
+```
+
+#### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `--criteria-file` | Path | `criteria.csv` | Path to criteria CSV file |
+| `-v, --verbose` | Flag | False | Enable debug logging |
+| `--version` | Flag | - | Show version and exit |
+
+#### Example
+
+```bash
+speccheck check --criteria-file config/custom_criteria.csv
 ```
 
 ---
 
-### 2. `summary`: Summarize reports
+## Criteria File Format
 
-```bash
-python speccheck.py summary [OPTIONS] <directory>
+The criteria file defines organism-specific QC thresholds in CSV format:
+
+```csv
+organism,software,field,operator,threshold
+Escherichia coli,Checkm,Completeness,>=,95
+Escherichia coli,Checkm,Contamination,<=,5
+Escherichia coli,Quast,N50,>=,50000
 ```
 
-**Options:**
+**Columns:**
+- `organism`: Species or genus name (use "all" for universal criteria)
+- `software`: Tool name (CheckM, QUAST, Speciator, ARIBA, Sylph)
+- `field`: Metric name from tool output
+- `operator`: Comparison operator (`>=`, `<=`, `==`, `>`, `<`)
+- `threshold`: Numeric threshold value
 
-| Option | Description |
-|--------|-------------|
-| `--output` | Output directory for the summary (default: `qc_report`) |
-| `--species` | Field name for species in report (default: `Speciator.speciesName`) |
-| `--sample` | Field name for sample name (default: `Sample`) |
-| `--templates` | Path to the HTML template (default: `templates/report.html`) |
-| `--plot` | Enable plotting (default: `False`) |
-| `-v`, `--verbose` | Enable debug-level logging |
-| `--version` | Print the version number |
+---
 
-**Example:**
+## Metadata Integration
+
+Add external sample metadata using the `--metadata` option:
+
+**metadata.csv**:
+```csv
+sample_id,location,sequencing_date,batch
+sample1,Lab A,2024-01-15,Batch1
+sample2,Lab B,2024-01-16,Batch1
+```
 
 ```bash
-python speccheck.py summary --plot reports/
+speccheck collect data/* --metadata metadata.csv --output-file results.csv
+```
+
+Metadata columns are automatically merged with QC metrics based on `sample_id`.
+
+---
+
+## Output Format
+
+### CSV Column Order
+
+Output files are automatically organized for readability:
+
+1. **Sample identifier** (`sample_id` or `Sample`)
+2. **Overall checks** (columns ending with `all_checks_passed`)
+3. **Individual checks** (columns ending with `.check`) - sorted alphabetically
+4. **Metrics** (remaining columns) - sorted alphabetically
+
+### Example Output
+
+```csv
+sample_id,all_checks_passed,Checkm.all_checks_passed,Checkm.Completeness.check,Checkm.Contamination.check,Checkm.Completeness,Checkm.Contamination
+sample1,True,True,True,True,98.5,1.2
+sample2,False,False,False,True,89.3,0.8
 ```
 
 ---
 
-### 3. `check`: Validate the criteria file
+## Development
+
+### Running Tests
 
 ```bash
-python speccheck.py check [OPTIONS]
+pytest
+pytest --cov=speccheck  # With coverage
 ```
 
-**Options:**
-
-| Option | Description |
-|--------|-------------|
-| `--criteria-file` | Path to criteria file (default: `criteria.csv`) |
-| `-v`, `--verbose` | Enable debug-level logging |
-| `--version` | Print the version number |
-
-**Example:**
+### Code Quality
 
 ```bash
-python speccheck.py check --criteria-file config/my_criteria.csv
+pylint speccheck/
+```
+
+### Project Structure
+
+```
+speccheck/
+├── speccheck/
+│   ├── __init__.py
+│   ├── main.py              # Core logic
+│   ├── collect.py           # File collection & writing
+│   ├── criteria.py          # Criteria validation
+│   ├── report.py            # Report generation
+│   ├── modules/             # Tool-specific parsers
+│   │   ├── checkm.py
+│   │   ├── quast.py
+│   │   ├── speciator.py
+│   │   ├── ariba.py
+│   │   └── sylph.py
+│   └── plot_modules/        # Visualization modules
+│       ├── plot_checkm.py
+│       ├── plot_quast.py
+│       └── ...
+├── tests/                   # Pytest test suite
+├── templates/               # HTML templates
+├── speccheck.py            # CLI entry point
+└── setup.py                # Package configuration
 ```
 
 ---
 
-## Output
+## Dependencies
 
-- **Collected data**: CSV file with all relevant metrics per file.
-- **Summary report**: CSV and optionally an HTML dashboard with species/sample breakdowns and visualizations.
-- **Logging**: Console messages (INFO or DEBUG) for tracking the process.
+- **Core**: `rich`, `typer`, `pandas`, `jinja2`, `plotly`
+- **Dev**: `pytest`, `pytest-cov`, `pylint`, `coverage`
+
+---
 
 ## Version
 
-Display version using:
+Check the installed version:
 
 ```bash
-python speccheck.py <subcommand> --version
+speccheck --version
 ```
+
+---
 
 ## License
 
-GPLv3
+This project is licensed under the GNU General Public License v3.0 (GPLv3). See [LICENSE](LICENSE) for details.
+
+---
+
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Submit a pull request
+
+---
+
+## Citation
+
+If you use speccheck in your research, please cite:
+
+```
+[Citation information to be added]
+```
+
+---
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/happykhan/speccheck/issues)
+- **Documentation**: This README
+- **Contact**: See [setup.py](setup.py) for author information
