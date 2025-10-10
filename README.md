@@ -1,8 +1,11 @@
 # speccheck
 
-[![Run Pytest](https://github.com/happykhan/speccheck/actions/workflows/run_pytest.yml/badge.svg)](https://github.com/happykhan/speccheck/actions/workflows/run_pytest.yml)
+[![CI](https://github.com/happykhan/speccheck/actions/workflows/run_pytest.yml/badge.svg)](https://github.com/happykhan/speccheck/actions/workflows/run_pytest.yml)
+[![codecov](https://codecov.io/gh/happykhan/speccheck/branch/main/graph/badge.svg)](https://codecov.io/gh/happykhan/speccheck)
 [![GPLv3 License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Version](https://img.shields.io/badge/python->=3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 **speccheck** is a modular command-line tool for collecting, validating, and summarizing quality control (QC) metrics from genomic analysis pipelines. It automatically detects and processes outputs from multiple bioinformatics tools, validates them against customizable criteria, and generates comprehensive reports with optional interactive visualizations.
 
@@ -16,6 +19,12 @@
 - 🐳 **Docker Support**: Pre-built Docker images available
 
 ## Installation
+
+### From PyPI (Recommended)
+
+```bash
+pip install speccheck
+```
 
 ### From Source
 
@@ -34,6 +43,8 @@ For development with testing and linting tools:
 ```bash
 pip install -e '.[dev]'
 ```
+
+**Note**: This project uses modern Python packaging with `pyproject.toml` (PEP 517/621). See [MIGRATION.md](MIGRATION.md) for details on the migration from `setup.py`.
 
 ### Docker
 
@@ -308,12 +319,30 @@ This project is licensed under the GNU General Public License v3.0 (GPLv3). See 
 
 ## Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome! We appreciate bug reports, feature requests, documentation improvements, and code contributions.
+
+### Quick Start for Contributors
 
 1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Submit a pull request
+2. Install development dependencies: `pip install -e '.[dev]'`
+3. Install pre-commit hooks: `pre-commit install`
+4. Create a feature branch: `git checkout -b feature/your-feature`
+5. Make your changes and add tests
+6. Run checks: `pytest --cov=speccheck && ruff check speccheck/`
+7. Submit a pull request
+
+For detailed guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### Code Quality
+
+This project uses:
+- **Black** for code formatting
+- **Ruff** for fast linting
+- **Pylint** for comprehensive code analysis
+- **pytest** with coverage reporting
+- **pre-commit** hooks for automated checks
+
+All PRs must pass CI checks including tests on Python 3.10, 3.11, and 3.12 across Ubuntu, macOS, and Windows.
 
 ---
 
