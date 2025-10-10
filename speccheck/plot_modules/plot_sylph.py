@@ -66,7 +66,7 @@ class Plot_Sylph:
         for idx, row in self.df.iterrows():
             # convert everthing in the row into a string
             row = {k: str(v) if v is not None else 'N/A' for k, v in row.items()}
-            sample_name = idx
+            sample_id = idx
             top_species = row.get('top_species', 'N/A')
             top_ani = row.get('top_adjusted_ani', 'N/A')
             num_genomes = row.get('number_of_genomes', 'N/A')
@@ -84,7 +84,7 @@ class Plot_Sylph:
 
             html_fragment += f"""
                     <tr>
-                        <td>{sample_name}</td>
+                        <td>{sample_id}</td>
                         <td>{top_species}</td>
                         <td>{top_ani}</td>
                         <td>{num_genomes}</td>

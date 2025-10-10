@@ -225,14 +225,14 @@ def plot_charts(
     """
     software_modules = load_modules_with_checks()
     plotly_jinja_data = {"software_charts": ""}
-    # make sure sample_name has a value, if its nan, just put sample01 ... sampleN
+    # make sure sample_id has a value, if its nan, just put sample01 ... sampleN
     for idx, (key, value) in enumerate(merged_dict.items(), start=1):
         if not isinstance(value, dict):
             merged_dict[key] = {}
-        if "sample_name" not in merged_dict[key] or pd.isna(
-            merged_dict[key]["sample_name"]
+        if "sample_id" not in merged_dict[key] or pd.isna(
+            merged_dict[key]["sample_id"]
         ):
-            merged_dict[key]["sample_name"] = f"sample{idx}"
+            merged_dict[key]["sample_id"] = f"sample{idx}"
     # convert the dictionary to a pandas dataframe
     df = pd.DataFrame.from_dict(merged_dict, orient="index")
     # Remove column all_checks_passed if it exists
@@ -242,7 +242,7 @@ def plot_charts(
     groups = df.columns.to_series().str.split(".").str[0]
     # seperate each group into a new dataframe
     unique_groups = groups.unique()
-    unique_groups = unique_groups[unique_groups != "sample_name"]
+    unique_groups = unique_groups[unique_groups != "sample_id"]
     software_dict = {}
     # Species might not be present in the data, if so, add it with value 'Unknown'
     if species not in df.columns:

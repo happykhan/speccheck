@@ -19,7 +19,8 @@ setup(
         'jinja2',
         'pandas',
         'requests',
-        'plotly'
+        'plotly',
+        'typer'
     ],
     extras_require={
         "dev": [
@@ -28,6 +29,7 @@ setup(
             "pylint",
             "twine",
             "setuptools",
+            "pytest-cov",
         ]
     },
     entry_points={

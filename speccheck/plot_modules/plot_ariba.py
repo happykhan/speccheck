@@ -38,7 +38,7 @@ class Plot_Ariba:
         
         # Add data rows
         for idx, row in self.df.iterrows():
-            sample_name = str(idx)
+            sample_id = str(idx)
             species = row.get('species', 'N/A')
             passed = row.get('passed', 'N/A')
             total = row.get('total', 'N/A')
@@ -58,7 +58,7 @@ class Plot_Ariba:
             
             html_fragment += f"""
                     <tr>
-                        <td>{sample_name}</td>
+                        <td>{sample_id}</td>
                         <td>{species}</td>
                         <td>{passed}</td>
                         <td>{total}</td>

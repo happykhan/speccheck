@@ -63,8 +63,20 @@ def check_criteria(field, result):
 def write_to_file(output_file, qc_report):
     if os.path.dirname(output_file):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    
+    # Order columns: sample_id, all_checks_passed columns, .check columns, then alphabetical
+    sample_id_cols = [k for k in qc_report.keys() if k in ['Sample', 'sample_id']]
+    all_checks_passed_cols = sorted([k for k in qc_report.keys() if k.endswith('all_checks_passed')])
+    check_cols = sorted([k for k in qc_report.keys() if k.endswith('.check')])
+    other_cols = sorted([k for k in qc_report.keys() 
+                        if k not in sample_id_cols 
+                        and not k.endswith('all_checks_passed') 
+                        and not k.endswith('.check')])
+    
+    ordered_keys = sample_id_cols + all_checks_passed_cols + check_cols + other_cols
+    
     with open(output_file, "w", encoding="utf-8") as f:
         # write as csv where field is the column name and value is the value
-        f.write(",".join(qc_report.keys()) + "\n")
-        f.write(",".join(str(value) for value in qc_report.values()) + "\n")
+        f.write(",".join(ordered_keys) + "\n")
+        f.write(",".join(str(qc_report[key]) for key in ordered_keys) + "\n")
         logging.info("Results written to %s", output_file)

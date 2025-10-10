@@ -8,9 +8,9 @@ def test_collect():
     criteria_file = 'criteria.csv'
     output_file = 'collect_output.csv'
 
-    sample_name = "Sample1"
+    sample_id = "Sample1"
     # Run the collect function
-    collect("Mycoplasma genitalium", input_filepaths, criteria_file, output_file, sample_name)
+    collect("Mycoplasma genitalium", input_filepaths, criteria_file, output_file, sample_id)
     
     # Check if the output file is created
     assert os.path.isfile(output_file)
