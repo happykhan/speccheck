@@ -138,7 +138,7 @@ def summary(directory, output, species, sample_id, template, plot = False):
     if any(pd.isna(sample_id) for sample_id in merged_data.keys()):
         logging.error("Sample names not found in the data.")
         return
-
+    logging.info("Merged data for %d samples from %d files", len(merged_data), len(csv_files))
     # write merged data to a csv file
     output_file = os.path.join(output, 'report.csv')
     if plot: 

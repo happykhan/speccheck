@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.cover
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Documentation (build docs separately if needed)
+*.md
+!README.md
+
+# Data and results (don't include in image)
+qc_results/
+qc_report/
+test_summary/
+again/
+new/
+kleb_example/
+hottest100/
+jsonl/
+
+# Docker
+docker/
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large test data
+tests/large_test_data/
+
+# Temporary files
+*.tmp
+*.log
+*.csv
+!criteria.csv
+*.html
+!templates/*.html
