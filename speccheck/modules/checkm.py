@@ -14,12 +14,20 @@ class Checkm():
     def has_valid_fileformat(self):
 
         required_headers = [
-            'Bin Id', 'Marker lineage', '# genomes', '# markers', '# marker sets', 
-            'Completeness', 'Contamination', 'Strain heterogeneity', 'Genome size (bp)', 
-            '# ambiguous bases', '# scaffolds', '# contigs', 'N50 (scaffolds)', 
-            'N50 (contigs)', 'Mean scaffold length (bp)', 'Mean contig length (bp)', 
-            'Longest scaffold (bp)', 'Longest contig (bp)', 'GC', 'GC std (scaffolds > 1kbp)', 
-            'Coding density', 'Translation table', '# predicted genes', '0', '1', '2', '3', '4', '5+'
+            'Name',
+            'Completeness',
+            'Contamination',
+            'Completeness_Model_Used',
+            'Translation_Table_Used',
+            'Coding_Density',
+            'Contig_N50',
+            'Average_Gene_Length',
+            'Genome_Size',
+            'GC_Content',
+            'Total_Coding_Sequences',
+            'Total_Contigs',
+            'Max_Contig_Length',
+            'Additional_Notes'
         ]
         with open(self.file_path, "r", encoding="utf-8") as file:
             first_line = file.readline()
@@ -43,9 +51,6 @@ class Checkm():
                 parsed_row = {}
                 row_count += 1
                 for key, value in row.items():
-                    if key == 'Marker lineage':
-                        # Remove the (number) suffix from lineage
-                        value = re.sub(r'\s*\(\d+\)', '', value)
                     if value is None:
                         continue
                     # Try to parse float if possible

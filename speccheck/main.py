@@ -82,9 +82,20 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_id, me
     all_checks_passed = True
     for software, result in recovered_values.items():
         logging.info("Running checks for %s", software)
-        for res_name, res_value in result.items():
-            col_name = software + "." + res_name
-            qc_report[col_name] = res_value
+
+        # ✅ Handle Depth hybrid output (list of dicts)
+        if isinstance(result, list):
+            for entry in result:
+                read_type = entry.get("Read_type", "").lower()
+                for res_name, res_value in entry.items():
+                    if res_name in ("Read_type", "Sample_id"):
+                        continue
+                    col_name = f"{software}.{read_type}.{res_name}"
+                    qc_report[col_name] = res_value
+        else:
+            for res_name, res_value in result.items():
+                col_name = software + "." + res_name
+                qc_report[col_name] = res_value
 
         all_fields_passed = True
         for field in criteria:

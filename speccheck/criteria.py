@@ -33,7 +33,7 @@ def validate_criteria(criteria_file):
         "value",
         "special_field",
     ]
-    valid_software = ["Quast", "Checkm", "Speciator", 'Sylph', 'Ariba']
+    valid_software = ["Quast", "Checkm", "Speciator", 'Sylph', 'Ariba', 'DepthParser']
     valid_operators = {">", "<", ">=", "<=", "=", "regex"}
     errors = []
     warnings = []
@@ -68,7 +68,7 @@ def validate_criteria(criteria_file):
             if not row["species"] or not row["software"] or not row["field"]:
                 errors.append(f"Row {i}: Missing required fields")
                 continue
-            if row["software"] not in valid_software:
+            if not any(row["software"].startswith(v) for v in valid_software):
                 warnings.append(f"Row {i}: Unsupported software '{row['software']}'")
             # Validate operator
             if row["operator"] not in valid_operators:
