@@ -25,6 +25,36 @@ def collect_files(all_files, module_list):
 
 def check_criteria(field, result):
     test_result = True
+    software = field["software"]
+
+        # --- Handle DepthParser hybrid output (short + long) ---
+    # result["DepthParser"] can be a dict (short or long) or list (hybrid)
+    if software.startswith("DepthParser"):
+        # Determine which type of read (short or long) to check
+        read_type = None
+        if software.endswith(".short"):
+            read_type = "short"
+        elif software.endswith(".long"):
+            read_type = "long"
+
+        depth_entries = result.get("DepthParser")
+
+        # If it's hybrid (list), pick the matching read type
+        if isinstance(depth_entries, list):
+            matched = next(
+                (entry for entry in depth_entries if entry.get("Read_type") == read_type),
+                None
+            )
+            if not matched:
+                logging.warning("No matching read type (%s) found for DepthParser", read_type)
+                return False
+            field_value = matched[field["field"]]
+        else:
+            # Single short or long file
+            field_value = depth_entries[field["field"]]
+    else:
+        field_value = result[field["field"]]
+
     if field["operator"] == "regex":
         if not re.match(field["value"], result[field["field"]]):
             logging.warning(
