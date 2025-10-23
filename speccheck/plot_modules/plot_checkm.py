@@ -90,14 +90,14 @@ class Plot_Checkm:
             title="Contamination vs Completeness",
         )
         html_fragment += self._make_scatter_plot(
-            col="GC",
-            row="Genome size (bp)",
+            col="GC_Content",
+            row="Genome_Size",
             color="species",
             title="Estimated genome size vs GC content",
         )
         html_fragment += self._make_scatter_plot(
-            col="N50 (contigs)",
-            row="# contigs",
+            col="Contig_N50",
+            row="Total_Contigs",
             color="species",
             title="Number of contigs vs N50 ",
         )

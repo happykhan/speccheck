@@ -134,7 +134,9 @@ def summary(directory, output, species, sample_id, template, plot = False):
     csv_files = []
     # collect all csv files
     for root, dirs, files in os.walk(directory):
-        csv_files = [os.path.join(root, file) for file in files if file.endswith('.csv')]
+        for file in files:
+            if file.endswith('.csv'):
+                csv_files.append(os.path.join(root, file))
     # merge all csv files in a single dictionary
     # TODO: Need to check all sample ids are unique, and sample_id column exists.
     merged_data = {}
