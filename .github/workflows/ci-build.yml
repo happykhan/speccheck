@@ -1,4 +1,4 @@
-name: CI - build docker image via python
+name: Build docker image via python
 
 on:
   push:
