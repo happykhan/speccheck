@@ -39,7 +39,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install Python deps
-        run: pip install --upgrade pip && pip install -r requirements.txt || true
+        run: pip install --upgrade pip && pip install -e .
 
       - name: Run Python build script
         env:
