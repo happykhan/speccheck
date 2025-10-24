@@ -7,6 +7,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.getcwd())
 from speccheck import __version__
+import argparse
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -138,10 +139,12 @@ def run_docker_commands():
         logger.info("✓ Build successful!")
         logger.info("")
 
-        # Ask before pushing
-        response = input(f"Push {image_name} to Docker Hub? [y/N] ")
-        if response.lower() == 'y':
-            logger.info("Pushing to Docker Hub...")
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument('--push', action='store_true', help='Automatically push image to Docker Hub', default=True)
+        args, _ = parser.parse_known_args()
+
+        if args.push:
+            logger.info("Auto-pushing to Docker Hub (--push)...")
             subprocess.run([docker_cmd, "push", image_name], check=True, env=docker_env)
             logger.info("✓ Push successful!")
         else:
