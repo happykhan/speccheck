@@ -1,4 +1,3 @@
-import re
 import csv
 
 
@@ -15,12 +14,12 @@ class Ariba:
     def has_valid_fileformat(self):
 
         required_headers = ["gene", "allele", "cov", "pc", "ctgs", "depth", "hetmin", "hets"]
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             first_line = file.readline()
             if "\t" not in first_line:
                 return False
 
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             lines = file.readlines()
             lines = [line for line in lines if line.strip()]
         # Check if the first line is the header and has the required headers
@@ -30,7 +29,7 @@ class Ariba:
         return True
 
     def fetch_values(self):
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             reader = csv.DictReader(file, delimiter="\t")
             result = {"passed": 0, "total": 0, "percent": 0, "not_called": 0}
             for row in reader:

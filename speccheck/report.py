@@ -1,8 +1,10 @@
-import os
 import importlib
 import logging
+import os
+
 import pandas as pd
 from jinja2 import Template
+
 from speccheck import __version__ as VERSION
 
 

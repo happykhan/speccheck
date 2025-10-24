@@ -1,4 +1,5 @@
 import os
+
 from speccheck.main import collect
 
 
@@ -17,7 +18,7 @@ def test_collect():
     assert os.path.isfile(output_file)
 
     # Check the content of the output file
-    with open(output_file, "r", encoding="utf-8") as f:
+    with open(output_file, encoding="utf-8") as f:
         content = f.read()
         assert "Sample1" in content
         assert "Quast.N50.check" in content

@@ -1,14 +1,16 @@
-import os
-import sys
 import csv
-import shutil
 import logging
+import os
+import shutil
+import sys
+
 import pandas as pd
-from speccheck.util import get_all_files, load_modules_with_checks
-from speccheck.criteria import validate_criteria, get_species_field, get_criteria
+
+from speccheck.collect import check_criteria, collect_files, write_to_file
+from speccheck.criteria import get_criteria, get_species_field, validate_criteria
 from speccheck.report import plot_charts
-from speccheck.collect import collect_files, write_to_file, check_criteria
 from speccheck.update_criteria import update_criteria_file
+from speccheck.util import get_all_files, load_modules_with_checks
 
 
 def collect(organism, input_filepaths, criteria_file, output_file, sample_id, metadata_file=None):
@@ -138,7 +140,7 @@ def summary(directory, output, species, sample_id, template, plot=False):
     os.makedirs(output, exist_ok=True)
     csv_files = []
     # collect all csv files
-    for root, dirs, files in os.walk(directory):
+    for root, _dirs, files in os.walk(directory):
         for file in files:
             if file.endswith(".csv"):
                 csv_files.append(os.path.join(root, file))
@@ -232,14 +234,14 @@ def check(
         "species",
         "special_field",
     ]
-    with open(criteria_file, "r", encoding="utf-8") as f:
+    with open(criteria_file, encoding="utf-8") as f:
         reader = csv.reader(f)
         header = next(reader)
         for column in columns:
             if column not in header:
                 errors.append(f"Missing required column: {column}")
 
-    with open(criteria_file, "r", encoding="utf-8") as f:
+    with open(criteria_file, encoding="utf-8") as f:
         criteria = csv.DictReader(f)
         required = {}
         species_rules = {}

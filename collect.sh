@@ -1,0 +1,5 @@
+python speccheck.py collect tests/practice_data/Sample_178db692semb/ --sample Sample_178db692semb --output-file qc_results/Sample_178db692semb.csv --organism "Klebsiella pneumoniae"
+python speccheck.py collect tests/practice_data/Sample_1cc0da37semb/ --sample Sample_1cc0da37semb --output-file qc_results/Sample_1cc0da37semb.csv --organism "Klebsiella pneumoniae"
+python speccheck.py collect tests/practice_data/Sample_6d8e0e28ntam/ --sample Sample_6d8e0e28ntam --output-file qc_results/Sample_6d8e0e28ntam.csv --organism "Klebsiella pneumoniae"
+python speccheck.py collect tests/practice_data/Sample_e236b6bdsemb/ --sample Sample_e236b6bdsemb --output-file qc_results/Sample_e236b6bdsemb.csv --organism "Klebsiella pneumoniae"
+python speccheck.py collect tests/practice_data/Sample_eb789dafsemb/ --sample Sample_eb789dafsemb --output-file qc_results/Sample_eb789dafsemb.csv --organism "Klebsiella pneumoniae"

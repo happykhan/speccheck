@@ -8,10 +8,10 @@ valid CSV file with the required headers and valid data.
         - warnings (list): A list of warning messages for non-critical issues.
 """
 
-import re
-import os
 import csv
 import logging
+import os
+import re
 
 
 def validate_criteria(criteria_file):
@@ -45,14 +45,14 @@ def validate_criteria(criteria_file):
 
     # Check if file is a valid CSV
     try:
-        with open(criteria_file, "r", encoding="utf-8") as f:
+        with open(criteria_file, encoding="utf-8") as f:
             csv.Sniffer().sniff(f.read(1024))
             f.seek(0)
     except csv.Error:
         errors.append(f"File is not a valid CSV: {criteria_file}")
         return errors, warnings
 
-    with open(criteria_file, "r", encoding="utf-8") as f:
+    with open(criteria_file, encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
         # Validate headers
@@ -112,7 +112,7 @@ def get_species_field(criteria_file):
     """
     rows = []
 
-    with open(criteria_file, "r", encoding="utf-8") as f:
+    with open(criteria_file, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         try:
             csv.Sniffer().sniff(f.read(2048))
@@ -143,7 +143,7 @@ def get_criteria(criteria_file, species=None):
         dict: A dictionary of criteria for the species.
     """
     criteria = []
-    with open(criteria_file, "r", encoding="utf-8") as f:
+    with open(criteria_file, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         merge_criteria = []
         for row in reader:

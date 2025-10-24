@@ -1,5 +1,3 @@
-import plotly.express as px
-import plotly.offline as pyo
 
 
 class Plot_Sylph:
@@ -26,7 +24,7 @@ class Plot_Sylph:
         html_fragment = '<h2 id="sylph">Sylph Plots</h2>'
         summary = self.summary()
         html_fragment += f"""
-        <p>Sylph is a tool for phylogenetic placement of microbiome samples. 
+        <p>Sylph is a tool for phylogenetic placement of microbiome samples.
         It analyzes sequencing data and provides metrics to understand the taxonomic composition of microbial communities.
         For more information, visit the <a href="{summary.get('url')}" target="_blank">the website</a>. [citation: <a href="{summary.get('citation')}" target="_blank">Sylph paper</a>]</p>
         </p>
@@ -82,7 +80,7 @@ class Plot_Sylph:
 
             # Create a formatted list for all species
             species_breakdown = "<br>".join(
-                [f"{s}: {a}%" for s, a in zip(all_species, all_abundances) if s]
+                [f"{s}: {a}%" for s, a in zip(all_species, all_abundances, strict=False) if s]
             )
 
             all_checks_passed = row.get("all_checks_passed", "False") == "True"

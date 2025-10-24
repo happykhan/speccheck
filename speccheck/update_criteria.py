@@ -1,6 +1,7 @@
-import logging
-import requests
 import csv
+import logging
+
+import requests
 
 METRICS = {
     "N50": ["N50", "N50 (scaffolds)", "N50 (contigs)"],
@@ -23,7 +24,7 @@ def update_criteria_file(criteria_file, update_url):
     Update the criteria file with the latest values from the given URL.
     """
     logging.info("Updating criteria file from %s", update_url)
-    with open(criteria_file, "r", encoding="utf-8") as f:
+    with open(criteria_file, encoding="utf-8") as f:
         current_criteria = list(csv.DictReader(f))
 
     try:
@@ -36,13 +37,13 @@ def update_criteria_file(criteria_file, update_url):
             return
         csv_lines = response.text.strip().split("\n")
         headers = csv_lines[0].split(",")
-        updated_criteria = [dict(zip(headers, line.split(","))) for line in csv_lines[1:]]
+        updated_criteria = [dict(zip(headers, line.split(","), strict=False)) for line in csv_lines[1:]]
         # Change species by replacing _ with a space
         for row in updated_criteria:
             if "species" in row:
                 row["species"] = row["species"].replace("_", " ")
         # Get current criteria file
-        current_criteria_list = [row for row in current_criteria]
+        current_criteria_list = list(current_criteria)
         # Check if species are missing.
         species_not_in_update_list = set(
             current_species := {row["species"] for row in current_criteria_list if "species" in row}

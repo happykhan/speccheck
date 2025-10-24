@@ -1,7 +1,9 @@
-import pytest
-from speccheck.criteria import get_species_field
 import csv
 import os
+
+import pytest
+
+from speccheck.criteria import get_species_field
 
 
 def test_get_species_field_valid():

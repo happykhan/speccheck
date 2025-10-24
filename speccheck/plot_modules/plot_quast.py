@@ -42,7 +42,7 @@ class Plot_Quast:
         html_fragment = f"<h2 id=\"{info.get('name').lower()}\">{info.get('name')}</h2>"
         # Add explanation text
         html_fragment += f"""
-        <p>QUAST (Quality Assessment Tool for Genome Assemblies) is a tool used to evaluate genome assemblies. 
+        <p>QUAST (Quality Assessment Tool for Genome Assemblies) is a tool used to evaluate genome assemblies.
         It provides various metrics such as N50, GC content, and the number of contigs to assess the quality of assemblies (<a href="{info.get('citation')}">ref</a>).
         For more information, visit <a href="{info.get('url')}">{info.get('name')}</a>.</p>
         </p>
@@ -82,8 +82,8 @@ class Plot_Quast:
         # Add a short explanation of what N50 is,  as a note.
         # Add a short explanation of what N50 is, as a note.
         html_fragment += """
-        <p><strong>Note:</strong> N50 is a metric used to assess the quality of genome assemblies. 
-        It represents the length of the shortest contig for which the sum of contigs of that length or longer 
+        <p><strong>Note:</strong> N50 is a metric used to assess the quality of genome assemblies.
+        It represents the length of the shortest contig for which the sum of contigs of that length or longer
         covers at least 50% of the total assembly length. A higher N50 value indicates better assembly quality.</p>
         """
         return html_fragment

@@ -40,7 +40,7 @@ class Plot_Speciator:
             """
         else:
             html_fragment += """
-            <p><span style="color: green; font-weight: bold;">✓</span> All samples were assigned to a single species: 
+            <p><span style="color: green; font-weight: bold;">✓</span> All samples were assigned to a single species:
             <strong>{}</strong>.</p>
             """.format(
                 self.df["speciesName"].unique()[0]

@@ -1,4 +1,3 @@
-import re
 import csv
 
 
@@ -24,7 +23,7 @@ class Depth:
         """Check if file has required headers"""
         required_headers = ["Sample_id", "Read_type", "Depth"]
         try:
-            with open(self.file_path, "r", encoding="utf-8") as file:
+            with open(self.file_path, encoding="utf-8") as file:
                 reader = csv.DictReader(file, delimiter="\t")
                 headers = reader.fieldnames
                 if not headers:
@@ -35,7 +34,7 @@ class Depth:
 
     def fetch_values(self):
         """Read the file and return parsed rows (dict or list)."""
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             reader = csv.DictReader(file, delimiter="\t")
             rows = list(reader)
 

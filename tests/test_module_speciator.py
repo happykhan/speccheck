@@ -1,6 +1,8 @@
-import pytest
-from speccheck.modules.speciator import Speciator
 import os
+
+import pytest
+
+from speccheck.modules.speciator import Speciator
 
 
 @pytest.fixture
@@ -28,12 +30,12 @@ def invalid_tsv_file(tmp_path):
 
 def test_has_valid_fileformat_valid(valid_tsv_file):
     speciator = Speciator(valid_tsv_file)
-    assert speciator.has_valid_fileformat == True
+    assert speciator.has_valid_fileformat
 
 
 def test_has_valid_fileformat_invalid(invalid_tsv_file):
     speciator = Speciator(invalid_tsv_file)
-    assert speciator.has_valid_fileformat == False
+    assert not speciator.has_valid_fileformat
 
 
 def test_fetch_values_valid_file(valid_tsv_file):

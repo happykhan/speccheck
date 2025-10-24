@@ -1,0 +1,31 @@
+# Include documentation and license files
+include README.md
+include LICENSE
+include MIGRATION.md
+
+# Include criteria file
+include criteria.csv
+
+# Include templates
+recursive-include templates *.html *.css
+
+# Include test data (optional - uncomment if you want to ship tests)
+# recursive-include tests *.py *.csv *.tsv *.txt *.json
+
+# Exclude build artifacts
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .coverage
+global-exclude .pytest_cache
+
+# Exclude development files
+exclude .gitignore
+exclude .pylintrc
+exclude pytest.ini
+recursive-exclude .github *
+recursive-exclude .vscode *
+recursive-exclude build *
+recursive-exclude dist *
+recursive-exclude *.egg-info *

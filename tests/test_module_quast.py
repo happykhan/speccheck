@@ -1,6 +1,8 @@
-import pytest
-from speccheck.modules.quast import Quast
 import os
+
+import pytest
+
+from speccheck.modules.quast import Quast
 
 
 @pytest.fixture

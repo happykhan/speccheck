@@ -28,12 +28,12 @@ class Speciator:
             "confidence",
             "source",
         ]
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             first_line = file.readline()
             if "\t" not in first_line:
                 return False
 
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             lines = file.readlines()
             lines = [line for line in lines if line.strip()]
         # Check if the first line is the header and has the required headers
@@ -43,7 +43,7 @@ class Speciator:
         return True
 
     def fetch_values(self):
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             reader = csv.DictReader(file, delimiter="\t")
             row_count = 0
             for row in reader:

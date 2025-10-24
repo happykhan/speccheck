@@ -6,10 +6,10 @@ If the class has a method named 'has_valid_fileformat', it is added to the list 
     list of type: List of loaded classes that have the 'has_valid_fileformat' method.
 """
 
-import os
 import glob
-import logging
 import importlib.util
+import logging
+import os
 
 
 def get_all_files(filepaths):

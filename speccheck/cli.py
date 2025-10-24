@@ -14,13 +14,15 @@ Usage:
 """
 
 import logging
-from typing import List, Optional
+
 import typer
 from rich.console import Console
 from rich.logging import RichHandler
-from speccheck.main import collect as collect_func, summary as summary_func, check as check_func
-from speccheck import __version__
 
+from speccheck import __version__
+from speccheck.main import check as check_func
+from speccheck.main import collect as collect_func
+from speccheck.main import summary as summary_func
 
 app = typer.Typer(help="Process QC reports for genomic data")
 console = Console()
@@ -60,8 +62,8 @@ def main_callback(
 
 @app.command()
 def collect(
-    filepaths: List[str] = typer.Argument(..., help="File paths with wildcards"),
-    organism: Optional[str] = typer.Option(
+    filepaths: list[str] = typer.Argument(..., help="File paths with wildcards"),
+    organism: str | None = typer.Option(
         None,
         "--organism",
         help="Organism name. If not given, will be extracted from file paths.",
@@ -77,7 +79,7 @@ def collect(
         "--output-file",
         help="Output file for collected data",
     ),
-    metadata: Optional[str] = typer.Option(
+    metadata: str | None = typer.Option(
         None,
         "--metadata",
         help="CSV file with additional sample metadata (must have sample_id column)",

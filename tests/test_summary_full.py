@@ -1,6 +1,7 @@
-import os
-from speccheck.main import summary
 import csv
+import os
+
+from speccheck.main import summary
 
 
 def test_summary():

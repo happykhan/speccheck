@@ -45,12 +45,12 @@ class Quast:
 
     @property
     def has_valid_fileformat(self):
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             first_line = file.readline()
             if "\t" not in first_line:
                 return False
 
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             lines = file.readlines()
             lines = [line for line in lines if line.strip()]
         expected_lines = [
@@ -82,14 +82,14 @@ class Quast:
         if len(lines) != len(expected_lines):
             return False
 
-        for line, pattern in zip(lines, expected_lines):
+        for line, pattern in zip(lines, expected_lines, strict=False):
             if not re.match(pattern, line.strip()):
                 return False
 
         return True
 
     def fetch_values(self):
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             lines = file.readlines()
 
         values = {}

@@ -1,5 +1,7 @@
-import pytest
 import os
+
+import pytest
+
 from speccheck.collect import collect_files, write_to_file
 
 
@@ -91,7 +93,7 @@ def test_write_to_file(tmp_path):
 
     # Assert
     assert output_file.exists()
-    with open(output_file, "r", encoding="utf-8") as f:
+    with open(output_file, encoding="utf-8") as f:
         content = f.read()
         assert content == "field1,field2\nvalue1,value2\n"
 
@@ -106,7 +108,7 @@ def test_write_to_file_creates_directories(tmp_path):
 
     # Assert
     assert output_file.exists()
-    with open(output_file, "r", encoding="utf-8") as f:
+    with open(output_file, encoding="utf-8") as f:
         content = f.read()
         assert content == "field1,field2\nvalue1,value2\n"
 
@@ -123,6 +125,6 @@ def test_write_to_file_overwrites_existing_file(tmp_path):
 
     # Assert
     assert output_file.exists()
-    with open(output_file, "r", encoding="utf-8") as f:
+    with open(output_file, encoding="utf-8") as f:
         content = f.read()
         assert content == "field1,field2\nnew_value1,new_value2\n"

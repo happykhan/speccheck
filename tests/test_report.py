@@ -1,7 +1,9 @@
-import os
 import importlib
+import os
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from speccheck.report import load_modules_with_checks
 
 

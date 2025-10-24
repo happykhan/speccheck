@@ -20,7 +20,7 @@ class Plot_Ariba:
 
         # Add description
         html_fragment += """
-        <p>ARIBA (Antimicrobial Resistance Identification By Assembly) identifies antimicrobial resistance genes 
+        <p>ARIBA (Antimicrobial Resistance Identification By Assembly) identifies antimicrobial resistance genes
         and variants from sequencing reads. The table below summarizes the results for each sample.</p>
         """
 

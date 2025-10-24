@@ -1,6 +1,6 @@
 import logging
-import os
 import operator as op_from_module
+import os
 import re
 
 
