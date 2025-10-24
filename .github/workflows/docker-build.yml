@@ -1,4 +1,4 @@
-name: Build docker image via python
+name: Docker Build
 
 on:
   push:
