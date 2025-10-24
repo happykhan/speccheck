@@ -36,9 +36,7 @@ def update_criteria_file(criteria_file, update_url):
             return
         csv_lines = response.text.strip().split("\n")
         headers = csv_lines[0].split(",")
-        updated_criteria = [
-            dict(zip(headers, line.split(","))) for line in csv_lines[1:]
-        ]
+        updated_criteria = [dict(zip(headers, line.split(","))) for line in csv_lines[1:]]
         # Change species by replacing _ with a space
         for row in updated_criteria:
             if "species" in row:
@@ -47,14 +45,8 @@ def update_criteria_file(criteria_file, update_url):
         current_criteria_list = [row for row in current_criteria]
         # Check if species are missing.
         species_not_in_update_list = set(
-            current_species := {
-                row["species"] for row in current_criteria_list if "species" in row
-            }
-        ) - set(
-            updated_species := {
-                row["species"] for row in updated_criteria if "species" in row
-            }
-        )
+            current_species := {row["species"] for row in current_criteria_list if "species" in row}
+        ) - set(updated_species := {row["species"] for row in updated_criteria if "species" in row})
         # Remove "all" from species not in update list
         species_not_in_update_list.discard("all")
         if species_not_in_update_list:
@@ -96,10 +88,7 @@ def update_criteria_file(criteria_file, update_url):
                     )
         # Fix some minor stuff.
         for row in current_criteria_list:
-            if (
-                row["field"] in METRICS.get("no_of_contigs", [])
-                and row["operator"] == ">="
-            ):
+            if row["field"] in METRICS.get("no_of_contigs", []) and row["operator"] == ">=":
                 # Delete this row
                 current_criteria_list.remove(row)
             # Acinetobacter baumannii,all,Sylph,species_name,regex,^,species_field

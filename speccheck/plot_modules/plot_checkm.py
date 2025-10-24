@@ -1,4 +1,3 @@
-
 import plotly.express as px
 import plotly.offline as pyo
 
@@ -8,8 +7,8 @@ class Plot_Checkm:
         self.df = df
         self.description = "CheckM is a tool used to assess the quality of genome bins by evaluating their completeness and contamination. It provides insights into the reliability of genome assemblies."
         self.url = "https://github.com/Ecogenomics/CheckM"
-        self.name = 'CheckM'
-        self.citation = 'https://genome.cshlp.org/content/25/7/1043'
+        self.name = "CheckM"
+        self.citation = "https://genome.cshlp.org/content/25/7/1043"
 
     def summary(self):
         """
@@ -18,8 +17,13 @@ class Plot_Checkm:
         Returns:
             dict: A dictionary containing the description, URL, name, and citation of the object.
         """
-        return {'description': self.description, 'url': self.url, 'name': self.name, 'citation': self.citation}        
-        
+        return {
+            "description": self.description,
+            "url": self.url,
+            "name": self.name,
+            "citation": self.citation,
+        }
+
     def _make_scatter_plot(self, col, row, color, title):
         fig = px.scatter(
             self.df,
@@ -31,7 +35,7 @@ class Plot_Checkm:
             title=title,
             hover_data=[self.df.index],
         )
-                
+
         # Check if there is only one unique species
         if self.df["species"].nunique() == 1:
             fig.update_layout(showlegend=False)  # Hide legend if only one species
@@ -41,7 +45,7 @@ class Plot_Checkm:
 
     def plot(self):
         # Create a scatter plot for Contamination vs Completeness with violin plots
-        html_fragment = "<h2 id=\"checkm\">CheckM</h2>"
+        html_fragment = '<h2 id="checkm">CheckM</h2>'
         summary = self.summary()
         # Add a short description for CheckM
         html_fragment += f"""

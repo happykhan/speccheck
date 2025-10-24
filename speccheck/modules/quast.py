@@ -18,7 +18,8 @@ file_path : str
 
 import re
 
-class Quast():
+
+class Quast:
     """
     A class to represent and validate the QUAST (Quality Assessment Tool for Genome Assemblies) report format.
     Methods
@@ -28,6 +29,7 @@ class Quast():
     fetch_values():
         Parses the QUAST report file and returns a dictionary of key-value pairs from the report.
     """
+
     def __init__(self, file_path):
         """
         Parameters
@@ -47,7 +49,7 @@ class Quast():
             first_line = file.readline()
             if "\t" not in first_line:
                 return False
-        
+
         with open(self.file_path, "r", encoding="utf-8") as file:
             lines = file.readlines()
             lines = [line for line in lines if line.strip()]

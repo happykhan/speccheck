@@ -2,6 +2,7 @@ import pytest
 from speccheck.modules.speciator import Speciator
 import os
 
+
 @pytest.fixture
 def valid_tsv_file(tmp_path):
     file_content = (
@@ -11,6 +12,7 @@ def valid_tsv_file(tmp_path):
     file_path = tmp_path / "valid_file.tsv"
     file_path.write_text(file_content)
     return file_path
+
 
 @pytest.fixture
 def invalid_tsv_file(tmp_path):
@@ -23,34 +25,38 @@ def invalid_tsv_file(tmp_path):
     file_path.write_text(file_content)
     return file_path
 
+
 def test_has_valid_fileformat_valid(valid_tsv_file):
     speciator = Speciator(valid_tsv_file)
     assert speciator.has_valid_fileformat == True
+
 
 def test_has_valid_fileformat_invalid(invalid_tsv_file):
     speciator = Speciator(invalid_tsv_file)
     assert speciator.has_valid_fileformat == False
 
+
 def test_fetch_values_valid_file(valid_tsv_file):
     speciator = Speciator(valid_tsv_file)
     result = speciator.fetch_values()
     expected = {
-        'Sample_id': 1,
-        'taxId': 123,
-        'speciesId': 456,
-        'speciesName': 'Species A',
-        'genusId': 789,
-        'genusName': 'Genus A',
-        'superkingdomId': 101112,
-        'superkingdomName': 'Superkingdom A',
-        'referenceId': 131415,
-        'mashDistance': 0.001,
-        'pValue': 0.05,
-        'matchingHashes': 100,
-        'confidence': 0.95,
-        'source': 'Source A'
+        "Sample_id": 1,
+        "taxId": 123,
+        "speciesId": 456,
+        "speciesName": "Species A",
+        "genusId": 789,
+        "genusName": "Genus A",
+        "superkingdomId": 101112,
+        "superkingdomName": "Superkingdom A",
+        "referenceId": 131415,
+        "mashDistance": 0.001,
+        "pValue": 0.05,
+        "matchingHashes": 100,
+        "confidence": 0.95,
+        "source": "Source A",
     }
     assert result == expected
+
 
 def test_fetch_values_invalid_file(invalid_tsv_file):
     speciator = Speciator(invalid_tsv_file)

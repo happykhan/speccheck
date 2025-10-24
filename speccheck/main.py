@@ -10,6 +10,7 @@ from speccheck.report import plot_charts
 from speccheck.collect import collect_files, write_to_file, check_criteria
 from speccheck.update_criteria import update_criteria_file
 
+
 def collect(organism, input_filepaths, criteria_file, output_file, sample_id, metadata_file=None):
     """Collect and run checks from modules on input files."""
     # Check criteria file
@@ -35,16 +36,18 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_id, me
             return
         try:
             metadata_df = pd.read_csv(metadata_file)
-            if 'sample_id' not in metadata_df.columns:
+            if "sample_id" not in metadata_df.columns:
                 logging.error("Metadata file must contain a 'sample_id' column")
                 return
-            metadata_df.set_index('sample_id', inplace=True)
-            metadata_dict = metadata_df.to_dict('index')
-            logging.info("Loaded metadata for %d samples from %s", len(metadata_dict), metadata_file)
+            metadata_df.set_index("sample_id", inplace=True)
+            metadata_dict = metadata_df.to_dict("index")
+            logging.info(
+                "Loaded metadata for %d samples from %s", len(metadata_dict), metadata_file
+            )
         except Exception as e:
             logging.error("Error reading metadata file: %s", str(e))
             return
-    
+
     # Get all files from the input paths
     all_files = get_all_files(input_filepaths)
     # Discover and load valid modules dynamically
@@ -71,10 +74,12 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_id, me
         else:
             organism = None
     if not organism:
-        logging.warning("Organism name not provided and could not be resolved from the files. Using default values which are VERY lenient.")
-        organism = 'Unknown'
+        logging.warning(
+            "Organism name not provided and could not be resolved from the files. Using default values which are VERY lenient."
+        )
+        organism = "Unknown"
     logging.info("Finished checking %d files for %s", len(all_files), organism)
-    logging.info("Found software: %s", ', '.join(recovered_values.keys()))
+    logging.info("Found software: %s", ", ".join(recovered_values.keys()))
     # get criteria
     criteria = get_criteria(criteria_file, organism)
     # run checks
@@ -110,11 +115,11 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_id, me
                         qc_report[col_name] = test_result
         qc_report[software + ".all_checks_passed"] = all_fields_passed
         all_checks_passed = all_checks_passed and all_fields_passed
-    qc_report['all_checks_passed'] = all_checks_passed
+    qc_report["all_checks_passed"] = all_checks_passed
     # log results
     # Write qc_report to file
-    qc_report['sample_id'] = sample_id
-    
+    qc_report["sample_id"] = sample_id
+
     # Merge metadata if available for this sample
     if metadata_file and sample_id in metadata_dict:
         logging.info("Merging metadata for sample: %s", sample_id)
@@ -122,20 +127,20 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_id, me
             qc_report[meta_key] = meta_value
     elif metadata_file and sample_id not in metadata_dict:
         logging.warning("No metadata found for sample: %s", sample_id)
-    
+
     logging.info("Writing results to file.")
     write_to_file(output_file, qc_report)
     logging.info("All checks completed.")
 
 
-def summary(directory, output, species, sample_id, template, plot = False):
+def summary(directory, output, species, sample_id, template, plot=False):
     # TODO. CHECK ALL SAMPLE NAMES ARE UNIQUE
     os.makedirs(output, exist_ok=True)
     csv_files = []
     # collect all csv files
     for root, dirs, files in os.walk(directory):
         for file in files:
-            if file.endswith('.csv'):
+            if file.endswith(".csv"):
                 csv_files.append(os.path.join(root, file))
     # merge all csv files in a single dictionary
     # TODO: Need to check all sample ids are unique, and sample_id column exists.
@@ -143,7 +148,7 @@ def summary(directory, output, species, sample_id, template, plot = False):
     for file in csv_files:
         df = pd.read_csv(file)
         df.set_index(sample_id, inplace=True)
-        merged_data.update(df.to_dict(orient='index'))
+        merged_data.update(df.to_dict(orient="index"))
     # check if the sample field is present in the data
     if not merged_data:
         logging.error("No data found in the merged files.")
@@ -153,24 +158,24 @@ def summary(directory, output, species, sample_id, template, plot = False):
         return
     logging.info("Merged data for %d samples from %d files", len(merged_data), len(csv_files))
     # write merged data to a csv file
-    output_file = os.path.join(output, 'report.csv')
-    if plot: 
+    output_file = os.path.join(output, "report.csv")
+    if plot:
         plot_dict = merged_data.copy()
-    
+
     # Collect all unique fieldnames
     all_fieldnames = set()
     for values in merged_data.values():
         all_fieldnames.update(values.keys())
-    
+
     # Sort fieldnames: sample_id first, then .check columns, then alphabetically
-    check_columns = sorted([col for col in all_fieldnames if col.endswith('.check')])
-    other_columns = sorted([col for col in all_fieldnames if not col.endswith('.check')])
+    check_columns = sorted([col for col in all_fieldnames if col.endswith(".check")])
+    other_columns = sorted([col for col in all_fieldnames if not col.endswith(".check")])
     fieldnames = ["sample_id"] + check_columns + other_columns
-    
+
     # Sort merged_data by sample_id keys
     sorted_sample_ids = sorted(merged_data.keys())
-    
-    with open(output_file, 'w', encoding='utf-8') as f:
+
+    with open(output_file, "w", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for sample_id_key in sorted_sample_ids:
@@ -182,11 +187,23 @@ def summary(directory, output, species, sample_id, template, plot = False):
                 plot_dict[sample_id_key]["sample_id"] = sample_id_key
     # run plotting for each software (if available)
     if plot:
-        plot_charts(plot_dict, species, output_html_path=os.path.join(output, 'report.html'), input_template_path=template)
-        shutil.copy(os.path.join(os.path.dirname(template), 'bulma.css'), os.path.join(output, 'bulma.css'))
+        plot_charts(
+            plot_dict,
+            species,
+            output_html_path=os.path.join(output, "report.html"),
+            input_template_path=template,
+        )
+        shutil.copy(
+            os.path.join(os.path.dirname(template), "bulma.css"), os.path.join(output, "bulma.css")
+        )
         logging.info("Plots generated.")
 
-def check(criteria_file, update=False, update_url='https://raw.githubusercontent.com/happykhan/genomeqc/refs/heads/main/docs/summary/filtered_metrics.csv'):
+
+def check(
+    criteria_file,
+    update=False,
+    update_url="https://raw.githubusercontent.com/happykhan/genomeqc/refs/heads/main/docs/summary/filtered_metrics.csv",
+):
     logging.info("Checking criteria file: %s", criteria_file)
     # Check criteria file if it has all the required fields
     # Use the 'all' species to template which fields are required
@@ -200,39 +217,68 @@ def check(criteria_file, update=False, update_url='https://raw.githubusercontent
     if not os.path.isfile(criteria_file):
         logging.error("Criteria file not found: %s", criteria_file)
         return
-    
+
     # check if the file is a valid csv file
-    if not criteria_file.endswith('.csv'):
+    if not criteria_file.endswith(".csv"):
         errors.append("Criteria file is not a valid csv file.")
-    
+
     # check if the file has the required fields
-    columns = ['assembly_type', 'software', 'field', 'operator', 'value', 'species', 'special_field']
-    with open(criteria_file, 'r', encoding='utf-8') as f:
+    columns = [
+        "assembly_type",
+        "software",
+        "field",
+        "operator",
+        "value",
+        "species",
+        "special_field",
+    ]
+    with open(criteria_file, "r", encoding="utf-8") as f:
         reader = csv.reader(f)
         header = next(reader)
         for column in columns:
             if column not in header:
                 errors.append(f"Missing required column: {column}")
 
-    with open(criteria_file, 'r', encoding='utf-8') as f:
+    with open(criteria_file, "r", encoding="utf-8") as f:
         criteria = csv.DictReader(f)
-        required = {} 
+        required = {}
         species_rules = {}
         for row in criteria:
-            required_name = row['assembly_type'] + '.' + row['software'] + '.' + row['field']
-            if row['species'] == 'all':
-                required[required_name] = {'operator': row['operator'], 'value': row['value'], 'special_field': row['special_field']}
+            required_name = row["assembly_type"] + "." + row["software"] + "." + row["field"]
+            if row["species"] == "all":
+                required[required_name] = {
+                    "operator": row["operator"],
+                    "value": row["value"],
+                    "special_field": row["special_field"],
+                }
             else:
-                if row['species'] in species_rules:
-                    species_rules[row['species']].append({required_name: {'operator': row['operator'], 'value': row['value'], 'special_field': row['special_field']}})
+                if row["species"] in species_rules:
+                    species_rules[row["species"]].append(
+                        {
+                            required_name: {
+                                "operator": row["operator"],
+                                "value": row["value"],
+                                "special_field": row["special_field"],
+                            }
+                        }
+                    )
                 else:
-                    species_rules[row['species']] = [{required_name: {'operator': row['operator'], 'value': row['value'], 'special_field': row['special_field']}}]
+                    species_rules[row["species"]] = [
+                        {
+                            required_name: {
+                                "operator": row["operator"],
+                                "value": row["value"],
+                                "special_field": row["special_field"],
+                            }
+                        }
+                    ]
 
         for species, rules in species_rules.items():
             for field, rule in required.items():
                 if field not in [list(x.keys())[0] for x in rules]:
-                    errors.append(f"Required field {field} not found for species {species}. 'all' value is {rule['operator']} {rule['value']} {rule['special_field']}")
-        
+                    errors.append(
+                        f"Required field {field} not found for species {species}. 'all' value is {rule['operator']} {rule['value']} {rule['special_field']}"
+                    )
 
     if not required:
         errors.append("No criteria found for species 'all'.")

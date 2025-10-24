@@ -29,9 +29,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(message)s",
     datefmt="[%X]",
-    handlers=[
-        RichHandler(console=console, show_time=True, show_level=True, show_path=False)
-    ],
+    handlers=[RichHandler(console=console, show_time=True, show_level=True, show_path=False)],
 )
 
 
@@ -54,7 +52,7 @@ def main_callback(
 ):
     """
     Process QC reports for genomic data.
-    
+
     Use one of the subcommands: collect, summary, or check.
     """
     pass
@@ -84,9 +82,7 @@ def collect(
         "--metadata",
         help="CSV file with additional sample metadata (must have sample_id column)",
     ),
-    verbose: bool = typer.Option(
-        False, "--verbose", "-v", help="Enable verbose output"
-    ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
     version: bool = typer.Option(
         False,
         "--version",
@@ -98,27 +94,21 @@ def collect(
     """Collect and process QC data from files."""
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
-    
+
     collect_func(organism, filepaths, criteria_file, output_file, sample, metadata)
 
 
 @app.command()
 def summary(
     directory: str = typer.Argument(..., help="Directory with reports"),
-    output: str = typer.Option(
-        "qc_report", "--output", help="Output folder for summary"
-    ),
-    species: str = typer.Option(
-        "Speciator.speciesName", "--species", help="Field for species"
-    ),
+    output: str = typer.Option("qc_report", "--output", help="Output folder for summary"),
+    species: str = typer.Option("Speciator.speciesName", "--species", help="Field for species"),
     sample: str = typer.Option("sample_id", "--sample", help="Field for sample name"),
     templates: str = typer.Option(
         "templates/report.html", "--templates", help="Template HTML file"
     ),
     plot: bool = typer.Option(False, "--plot", help="Enable plotting"),
-    verbose: bool = typer.Option(
-        False, "--verbose", "-v", help="Enable verbose output"
-    ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
     version: bool = typer.Option(
         False,
         "--version",
@@ -130,7 +120,7 @@ def summary(
     """Generate summary reports from collected data."""
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
-    
+
     summary_func(directory, output, species, sample, templates, plot)
 
 
@@ -141,17 +131,13 @@ def check(
         "--criteria-file",
         help="File with criteria for processing",
     ),
-    update: bool = typer.Option(
-        False, "--update", help="Update criteria with latest values"
-    ),
+    update: bool = typer.Option(False, "--update", help="Update criteria with latest values"),
     update_url: str = typer.Option(
         "https://raw.githubusercontent.com/happykhan/genomeqc/refs/heads/main/docs/summary/filtered_metrics.csv",
         "--update-url",
         help="URL to update criteria from",
     ),
-    verbose: bool = typer.Option(
-        False, "--verbose", "-v", help="Enable verbose output"
-    ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
     version: bool = typer.Option(
         False,
         "--version",

@@ -7,11 +7,16 @@ class Plot_Quast:
         self.df = df
         self.description = "QUAST (Quality Assessment Tool for Genome Assemblies) evaluates genome assemblies by providing metrics such as N50, GC content, and the number of contigs to assess assembly quality."
         self.url = "https://quast.sourceforge.net/"
-        self.name = 'QUAST'
-        self.citation = 'https://doi.org/10.1093/bioinformatics/btt086'
+        self.name = "QUAST"
+        self.citation = "https://doi.org/10.1093/bioinformatics/btt086"
 
     def summary(self):
-        return {'description': self.description, 'url': self.url, 'name': self.name, 'citation': self.citation}
+        return {
+            "description": self.description,
+            "url": self.url,
+            "name": self.name,
+            "citation": self.citation,
+        }
 
     def _make_scatter_plot(self, col, row, color, title):
         fig = px.scatter(
@@ -24,7 +29,7 @@ class Plot_Quast:
             title=title,
             hover_data=[self.df.index],
         )
-                
+
         # Check if there is only one unique species
         if self.df["species"].nunique() == 1:
             fig.update_layout(showlegend=False)  # Hide legend if only one species
@@ -42,7 +47,7 @@ class Plot_Quast:
         For more information, visit <a href="{info.get('url')}">{info.get('name')}</a>.</p>
         </p>
         """
-        if int(self.df['all_checks_passed'].sum()) < len(self.df):
+        if int(self.df["all_checks_passed"].sum()) < len(self.df):
             html_fragment += """
             <p>In this analysis:</p>
             <ul>
@@ -52,9 +57,9 @@ class Plot_Quast:
                     fail_count = len(self.df) - int(self.df[col].sum())
                     col_name = col.split(".")[0]
                     if fail_count > 0:
-                        html_fragment += f"<li><span style=\"color: red; font-weight: bold;\">❌</span> Number of samples that failed due to {col_name}: {fail_count}</li>"
+                        html_fragment += f'<li><span style="color: red; font-weight: bold;">❌</span> Number of samples that failed due to {col_name}: {fail_count}</li>'
                     else:
-                        html_fragment += f"<li><span style=\"color: green; font-weight: bold;\">✓</span> All samples that passed {col_name} check.</li>"
+                        html_fragment += f'<li><span style="color: green; font-weight: bold;">✓</span> All samples that passed {col_name} check.</li>'
             html_fragment += """
             </ul>
             """
@@ -66,15 +71,15 @@ class Plot_Quast:
             col="N50",
             row="Total length (>= 0 bp)",
             color="species",
-            title="Distribution of N50 vs Total length"
+            title="Distribution of N50 vs Total length",
         )
         html_fragment += self._make_scatter_plot(
             col="# contigs (>= 0 bp)",
             row="Largest contig",
             color="species",
-            title="Distribution of # contigs vs largest contig size"
+            title="Distribution of # contigs vs largest contig size",
         )
-        # Add a short explanation of what N50 is,  as a note. 
+        # Add a short explanation of what N50 is,  as a note.
         # Add a short explanation of what N50 is, as a note.
         html_fragment += """
         <p><strong>Note:</strong> N50 is a metric used to assess the quality of genome assemblies. 
@@ -82,4 +87,3 @@ class Plot_Quast:
         covers at least 50% of the total assembly length. A higher N50 value indicates better assembly quality.</p>
         """
         return html_fragment
-

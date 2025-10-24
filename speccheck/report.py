@@ -46,9 +46,7 @@ def _get_sum_table(df):
     sum_table = sum_table.replace({True: "Pass", False: "Fail"})
 
     # Rename columns to remove the '.all_checks_passed' suffix
-    sum_table.columns = sum_table.columns.str.replace(
-        ".all_checks_passed", "", regex=False
-    )
+    sum_table.columns = sum_table.columns.str.replace(".all_checks_passed", "", regex=False)
     return sum_table
 
 
@@ -74,8 +72,10 @@ def summary_table(df):
         return ""
 
     # Apply the styling function to the DataFrame
-    
-    styled_table = sum_table.style.applymap(colorize).set_table_attributes('class="table is-striped is-fullwidth"')
+
+    styled_table = sum_table.style.applymap(colorize).set_table_attributes(
+        'class="table is-striped is-fullwidth"'
+    )
     # Convert the styled DataFrame to HTML
     table_html = styled_table.to_html(escape=False)
     # Construct explanatory text
@@ -83,7 +83,7 @@ def summary_table(df):
     <p>This table shows the results of the quality control checks. Each row represents a sample, and each column represents a check. The last column indicates whether all checks passed for that sample.</p>
     """
     # Combine explanation and table
-    full_html = explanation + "<div class=\"table-container\">" + table_html + "</div>"
+    full_html = explanation + '<div class="table-container">' + table_html + "</div>"
 
     return full_html
 
@@ -101,9 +101,7 @@ def make_footer():
 def load_modules_with_checks():
     """Load Python modules with required checks from the 'plot_modules' directory."""
     module_dict = {}
-    modules_file_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "plot_modules"
-    )
+    modules_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plot_modules")
 
     for filename in os.listdir(modules_file_path):
         if not filename.endswith(".py"):
@@ -143,7 +141,9 @@ def get_software_summary(software_dict):
     # Write software description list based on contents of software
     software_list = "<ul>"
     for soft in software_dict.values():
-        software_list += f"<li><b><a href=#{soft['name'].lower()}>{soft['name']}</a></b>: {soft['description']} "
+        software_list += (
+            f"<li><b><a href=#{soft['name'].lower()}>{soft['name']}</a></b>: {soft['description']} "
+        )
         if soft["url"]:
             software_list += f' (<a href="{soft["url"]}">website</a>)'
         if soft.get("version"):
@@ -179,7 +179,9 @@ def get_failure_reasons(df, software_dict):
     if len(top_failure_reasons) == 1:
         failure_string = "<p>This was the top reason for failure:</p>"
     elif len(top_failure_reasons) > 1:
-        failure_string = f"<p>These were the top {len(top_failure_reasons)} reasons for failure:</p>"
+        failure_string = (
+            f"<p>These were the top {len(top_failure_reasons)} reasons for failure:</p>"
+        )
     if len(top_failure_reasons) > 0:
         explanation += failure_string
         explanation += "<ol>"
@@ -187,7 +189,7 @@ def get_failure_reasons(df, software_dict):
             if reason not in software_dict:
                 logging.warning("No software found for reason: %s", reason)
                 continue
-            name = software_dict.get(reason)['name']
+            name = software_dict.get(reason)["name"]
             explanation += f"<li><b><a href=#{name.lower()}>{name}</a></b>: {count} failures</li>"
         explanation += "</ol>"
     return explanation
@@ -229,9 +231,7 @@ def plot_charts(
     for idx, (key, value) in enumerate(merged_dict.items(), start=1):
         if not isinstance(value, dict):
             merged_dict[key] = {}
-        if "sample_id" not in merged_dict[key] or pd.isna(
-            merged_dict[key]["sample_id"]
-        ):
+        if "sample_id" not in merged_dict[key] or pd.isna(merged_dict[key]["sample_id"]):
             merged_dict[key]["sample_id"] = f"sample{idx}"
     # convert the dictionary to a pandas dataframe
     df = pd.DataFrame.from_dict(merged_dict, orient="index")

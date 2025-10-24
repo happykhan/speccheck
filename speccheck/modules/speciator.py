@@ -1,7 +1,7 @@
+import csv
 
-import csv 
 
-class Speciator():
+class Speciator:
     def __init__(self, file_path):
         self.file_path = file_path
 
@@ -13,15 +13,26 @@ class Speciator():
     def has_valid_fileformat(self):
 
         required_headers = [
-            'Sample_id', 'taxId', 'speciesId', 'speciesName', 'genusId', 'genusName', 
-            'superkingdomId', 'superkingdomName', 'referenceId', 'mashDistance', 'pValue', 
-            'matchingHashes', 'confidence', 'source'
-        ]             
+            "Sample_id",
+            "taxId",
+            "speciesId",
+            "speciesName",
+            "genusId",
+            "genusName",
+            "superkingdomId",
+            "superkingdomName",
+            "referenceId",
+            "mashDistance",
+            "pValue",
+            "matchingHashes",
+            "confidence",
+            "source",
+        ]
         with open(self.file_path, "r", encoding="utf-8") as file:
             first_line = file.readline()
             if "\t" not in first_line:
                 return False
-        
+
         with open(self.file_path, "r", encoding="utf-8") as file:
             lines = file.readlines()
             lines = [line for line in lines if line.strip()]
@@ -33,7 +44,7 @@ class Speciator():
 
     def fetch_values(self):
         with open(self.file_path, "r", encoding="utf-8") as file:
-            reader = csv.DictReader(file, delimiter='\t')
+            reader = csv.DictReader(file, delimiter="\t")
             row_count = 0
             for row in reader:
                 parsed_row = {}
@@ -43,13 +54,13 @@ class Speciator():
                         continue
                     # Try to parse float if possible
                     try:
-                        if '.' in value or 'e' in value.lower():
+                        if "." in value or "e" in value.lower():
                             parsed_row[key] = float(value)
                         else:
                             parsed_row[key] = int(value)
                     except ValueError:
                         parsed_row[key] = value.strip()
             if row_count != 1:
-                raise ValueError("The file must contain exactly one row of values.")                
-            
+                raise ValueError("The file must contain exactly one row of values.")
+
         return parsed_row

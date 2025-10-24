@@ -33,7 +33,7 @@ def validate_criteria(criteria_file):
         "value",
         "special_field",
     ]
-    valid_software = ["Quast", "Checkm", "Speciator", 'Sylph', 'Ariba', 'DepthParser']
+    valid_software = ["Quast", "Checkm", "Speciator", "Sylph", "Ariba", "DepthParser"]
     valid_operators = {">", "<", ">=", "<=", "=", "regex"}
     errors = []
     warnings = []
@@ -111,7 +111,7 @@ def get_species_field(criteria_file):
         str: The field name for the species.
     """
     rows = []
-    
+
     with open(criteria_file, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         try:
@@ -120,10 +120,7 @@ def get_species_field(criteria_file):
         except csv.Error as exc:
             raise csv.Error(f"File is not a valid CSV: {criteria_file}") from exc
         for row in reader:
-            if (
-                row.get("special_field") == "species_field"
-                and row.get("operator") == "regex"
-            ):
+            if row.get("special_field") == "species_field" and row.get("operator") == "regex":
                 entry = {
                     "software": row.get("software"),
                     "field": row.get("field"),
@@ -159,11 +156,11 @@ def get_criteria(criteria_file, species=None):
                 "special_field": row["special_field"],
             }
             # A float will have a decimal point, so we try to convert the value to float
-            if "." in new_criteria['value'] and new_criteria['value'].replace(".", "").isdigit():
-                new_criteria['value'] = float(new_criteria['value'])
+            if "." in new_criteria["value"] and new_criteria["value"].replace(".", "").isdigit():
+                new_criteria["value"] = float(new_criteria["value"])
             # If the value is not a float, we try to convert it to an integer
-            elif new_criteria['value'].isdigit():
-                new_criteria['value'] = int(new_criteria['value'])
+            elif new_criteria["value"].isdigit():
+                new_criteria["value"] = int(new_criteria["value"])
 
             if row["species"] == "all":
                 criteria.append(new_criteria)

@@ -1,7 +1,8 @@
 import pytest
 from speccheck.criteria import get_species_field
-import csv 
+import csv
 import os
+
 
 def test_get_species_field_valid():
     # Arrange
@@ -19,10 +20,11 @@ def test_get_species_field_valid():
 
     # Act
     result = get_species_field(criteria_file)
-    # delete test file 
+    # delete test file
     os.remove(criteria_file)
     # Assert
     assert result == expected_output
+
 
 def test_get_species_field_no_species_field():
     # Arrange
@@ -38,6 +40,7 @@ def test_get_species_field_no_species_field():
     os.remove(criteria_file)
     # Assert
     assert result == expected_output
+
 
 def test_get_species_field_but_numeric():
     # Arrange

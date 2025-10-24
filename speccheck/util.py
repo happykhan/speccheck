@@ -5,6 +5,7 @@ and checks if the module contains a class with the same name as the file in Titl
 If the class has a method named 'has_valid_fileformat', it is added to the list of loaded modules.
     list of type: List of loaded classes that have the 'has_valid_fileformat' method.
 """
+
 import os
 import glob
 import logging
@@ -14,10 +15,10 @@ import importlib.util
 def get_all_files(filepaths):
     """
     Given a list of file paths, return a list of absolute paths to all files.
-    
+
     This function takes a list of file paths and checks if each path is a directory.
     If it is a directory, it appends a wildcard to the path to match all files in the directory.
-    It then uses the glob module to find all files matching the path pattern and adds their 
+    It then uses the glob module to find all files matching the path pattern and adds their
     absolute paths to the result list. If no files match the pattern, a warning is logged.
 
     Args:
@@ -43,9 +44,7 @@ def get_all_files(filepaths):
 def load_modules_with_checks():
     """Load Python modules with required checks from the 'modules' directory."""
     module_list = []
-    modules_file_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "modules"
-    )
+    modules_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
 
     for filename in os.listdir(modules_file_path):
         if not filename.endswith(".py"):

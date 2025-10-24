@@ -2,6 +2,7 @@ import pytest
 from speccheck.modules.quast import Quast
 import os
 
+
 @pytest.fixture
 def quast_file(tmp_path):
     data = """Assembly\tSampleAssembly
@@ -32,6 +33,7 @@ L90\t20
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(data)
     return file_path
+
 
 def test_fetch_values(quast_file):
     quast = Quast(quast_file)
