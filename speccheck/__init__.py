@@ -9,7 +9,7 @@ License: GPLv3
 Version: 1.1.3
 """
 
-__version__ = "1.1.3"
+__version__ = "1.2.0"
 __author__ = "Nabil-Fareed Alikhan"
 __email__ = "nabil@happykhan.com"
 __license__ = "GPLv3"

@@ -29,7 +29,7 @@ def get_current_version(init_file: Path) -> str:
 def bump_version(version: str, bump_type: str) -> str:
     """Bump version number based on type (major, minor, patch)"""
     major, minor, patch = map(int, version.split('.'))
-    
+
     if bump_type == 'major':
         return f"{major + 1}.0.0"
     elif bump_type == 'minor':
@@ -43,7 +43,7 @@ def bump_version(version: str, bump_type: str) -> str:
 def update_version_in_file(file_path: Path, old_version: str, new_version: str):
     """Update version string in a file"""
     content = file_path.read_text()
-    
+
     if file_path.name == '__init__.py':
         pattern = r'(__version__\s*=\s*["\'])([^"\']+)(["\'])'
         updated = re.sub(pattern, rf'\g<1>{new_version}\g<3>', content)
@@ -52,10 +52,10 @@ def update_version_in_file(file_path: Path, old_version: str, new_version: str):
         updated = re.sub(pattern, rf'\g<1>{new_version}\g<3>', content)
     else:
         raise ValueError(f"Unknown file type: {file_path.name}")
-    
+
     if updated == content:
         raise ValueError(f"Failed to update version in {file_path}")
-    
+
     file_path.write_text(updated)
     print(f"✓ Updated {file_path.name}: {old_version} → {new_version}")
 
@@ -67,14 +67,14 @@ def main():
     group.add_argument('--major', action='store_true', help='Bump major version (X.0.0)')
     group.add_argument('--minor', action='store_true', help='Bump minor version (x.X.0)')
     group.add_argument('--patch', action='store_true', help='Bump patch version (x.x.X)')
-    
+
     args = parser.parse_args()
-    
+
     # File paths
     root_dir = Path(__file__).parent
     init_file = root_dir / 'speccheck' / '__init__.py'
     pyproject_file = root_dir / 'pyproject.toml'
-    
+
     # Validate files exist
     if not init_file.exists():
         print(f"Error: {init_file} not found", file=sys.stderr)
@@ -82,11 +82,11 @@ def main():
     if not pyproject_file.exists():
         print(f"Error: {pyproject_file} not found", file=sys.stderr)
         sys.exit(1)
-    
+
     # Get current version
     current_version = get_current_version(init_file)
     print(f"Current version: {current_version}")
-    
+
     # Determine new version
     if args.version:
         # Validate version format
@@ -103,15 +103,15 @@ def main():
         elif args.patch:
             bump_type = 'patch'
         new_version = bump_version(current_version, bump_type)
-    
+
     print(f"New version: {new_version}")
-    
+
     # Confirm
     response = input(f"\nUpdate version to {new_version}? [y/N] ")
     if response.lower() != 'y':
         print("Aborted.")
         sys.exit(0)
-    
+
     # Update files
     try:
         update_version_in_file(init_file, current_version, new_version)

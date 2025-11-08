@@ -2,6 +2,7 @@ import logging
 import operator as op_from_module
 import os
 import re
+from collections.abc import Iterable
 
 
 def collect_files(all_files, module_list):
@@ -87,6 +88,41 @@ def check_criteria(field, result):
     return test_result
 
 
+def _extract_accessions_from_genome_paths(raw: str | Iterable[str] | None):
+    """Return semicolon-joined accession IDs from Sylph genome path(s).
+
+    Accepts a single string (possibly semicolon-delimited) or an iterable of strings.
+    Path examples:
+        gtdb_genomes_reps_r220/database/GCF/000/742/135/GCF_000742135.1_genomic.fna.gz
+    We extract the final filename, drop suffix `_genomic.fna.gz` (or .fna/.fa[.gz])
+    and return just the accession (e.g. `GCF_000742135.1`).
+    If parsing fails, we fall back to original token.
+    """
+    if raw is None:
+        return ""
+
+    # Normalize into list of path tokens
+    if isinstance(raw, str):
+        parts = [p for p in raw.split(";") if p]
+    else:
+        parts = []
+        for item in raw:
+            if not item:
+                continue
+            parts.extend([p for p in str(item).split(";") if p])
+
+    cleaned: list[str] = []
+    for p in parts:
+        fname = p.rsplit("/", 1)[-1]
+        # Remove common genome file suffixes
+        for suf in ["_genomic.fna.gz", "_genomic.fna", ".fna.gz", ".fna", ".fa.gz", ".fa"]:
+            if fname.endswith(suf):
+                fname = fname[: -len(suf)]
+                break
+        cleaned.append(fname)
+    return ";".join(cleaned)
+
+
 def write_to_file(output_file, qc_report):
     """Write results to CSV.
 
@@ -138,6 +174,12 @@ def write_to_file(output_file, qc_report):
     )
 
     if looks_like_qc:
+        # Sanitize Sylph.genomes to contain only accession IDs
+        if "Sylph.genomes" in qc_report:
+            qc_report = dict(qc_report)  # shallow copy to avoid mutating caller
+            qc_report["Sylph.genomes"] = _extract_accessions_from_genome_paths(
+                qc_report.get("Sylph.genomes")
+            )
         # 1) Write detailed CSV (legacy, all fields) as detailed.<basename>
         detailed_dir = os.path.dirname(output_file)
         base = os.path.basename(output_file)
