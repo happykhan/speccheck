@@ -88,14 +88,91 @@ def check_criteria(field, result):
 
 
 def write_to_file(output_file, qc_report):
+    """Write results to CSV.
+
+    Behavior:
+    - If the report looks like a full speccheck QC report (has module-prefixed keys), write two files:
+        1) A concise CSV at `output_file` with a fixed column schema/order.
+        2) A detailed CSV alongside it, prefixed as `detailed.<basename>`, containing all keys
+           using the legacy ordering (backward compatible).
+    - Otherwise (e.g., unit tests or ad-hoc dicts), preserve legacy behavior and only write
+      the simple CSV with natural ordering.
+    """
     if os.path.dirname(output_file):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-    # Order columns: sample_id, all_checks_passed columns, .check columns, then alphabetical
-    sample_id_cols = [k for k in qc_report.keys() if k in ["Sample", "sample_id"]]
-    all_checks_passed_cols = sorted(
-        [k for k in qc_report.keys() if k.endswith("all_checks_passed")]
+    # Columns required in concise output and their explicit order
+    concise_columns = [
+        "sample_id",
+        "all_checks_passed",
+        "Speciator.all_checks_passed",
+        "Speciator.speciesName",
+        "Depth.all_checks_passed",
+        "Depth.Depth",
+        "Depth.Read_type",
+        "Sylph.all_checks_passed",
+        "Sylph.top_species",
+        "Sylph.top_taxonomic_abundance",
+        "Quast.all_checks_passed",
+        "Quast.# contigs (>= 0 bp).check",
+        "Quast.# contigs",
+        "Quast.N50.check",
+        "Quast.N50",
+        "Quast.Total length (>= 0 bp).check",
+        "Quast.Total length",
+        "Quast.GC (%).check",
+        "Quast.GC (%)",
+        "Quast.Largest contig",
+        "Checkm.all_checks_passed",
+        "Checkm.Completeness.check",
+        "Checkm.Completeness",
+        "Checkm.Contamination.check",
+        "Checkm.Contamination",
+        "Sylph.genomes",
+    ]
+
+    # Heuristic: determine if this is a full speccheck QC report
+    looks_like_qc = (
+        any(k.startswith(("Speciator.", "Depth.", "Sylph.", "Quast.", "Checkm.")) for k in qc_report)
+        or ("sample_id" in qc_report and "all_checks_passed" in qc_report)
     )
+
+    if looks_like_qc:
+        # 1) Write detailed CSV (legacy, all fields) as detailed.<basename>
+        detailed_dir = os.path.dirname(output_file)
+        base = os.path.basename(output_file)
+        detailed_path = os.path.join(detailed_dir, f"detailed.{base}") if detailed_dir else f"detailed.{base}"
+
+        sample_id_cols = [k for k in qc_report.keys() if k in ["Sample", "sample_id"]]
+        all_checks_passed_cols = sorted([k for k in qc_report.keys() if k.endswith("all_checks_passed")])
+        check_cols = sorted([k for k in qc_report.keys() if k.endswith(".check")])
+        other_cols = sorted(
+            [
+                k
+                for k in qc_report.keys()
+                if k not in sample_id_cols
+                and not k.endswith("all_checks_passed")
+                and not k.endswith(".check")
+            ]
+        )
+        detailed_keys = sample_id_cols + all_checks_passed_cols + check_cols + other_cols
+
+        with open(detailed_path, "w", encoding="utf-8") as f_det:
+            f_det.write(",".join(detailed_keys) + "\n")
+            f_det.write(",".join(str(qc_report.get(key, "")) for key in detailed_keys) + "\n")
+        logging.info("Detailed results written to %s", detailed_path)
+
+        # 2) Write concise CSV with only the requested columns, in that exact order
+        with open(output_file, "w", encoding="utf-8") as f_out:
+            f_out.write(",".join(concise_columns) + "\n")
+            row = [str(qc_report.get(col, "")) for col in concise_columns]
+            f_out.write(",".join(row) + "\n")
+        logging.info("Concise results written to %s", output_file)
+        return
+
+    # Legacy/simple behavior (e.g., unit tests): keep original, minimal writer
+    sample_id_cols = [k for k in qc_report.keys() if k in ["Sample", "sample_id"]]
+    all_checks_passed_cols = sorted([k for k in qc_report.keys() if k.endswith("all_checks_passed")])
     check_cols = sorted([k for k in qc_report.keys() if k.endswith(".check")])
     other_cols = sorted(
         [
@@ -106,11 +183,8 @@ def write_to_file(output_file, qc_report):
             and not k.endswith(".check")
         ]
     )
-
     ordered_keys = sample_id_cols + all_checks_passed_cols + check_cols + other_cols
-
     with open(output_file, "w", encoding="utf-8") as f:
-        # write as csv where field is the column name and value is the value
         f.write(",".join(ordered_keys) + "\n")
         f.write(",".join(str(qc_report[key]) for key in ordered_keys) + "\n")
         logging.info("Results written to %s", output_file)

@@ -6,8 +6,9 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.getcwd())
-from speccheck import __version__
 import argparse
+
+from speccheck import __version__
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -19,7 +20,7 @@ def find_docker_executable():
     docker_path = shutil.which('docker')
     if docker_path:
         return docker_path
-    
+
     # Check common macOS locations
     common_paths = [
         '/usr/local/bin/docker',
@@ -27,12 +28,12 @@ def find_docker_executable():
         '/Applications/Docker.app/Contents/Resources/bin/docker',
         '/Applications/OrbStack.app/Contents/MacOS/xbin/docker'
     ]
-    
+
     for path in common_paths:
         if os.path.exists(path) and os.access(path, os.X_OK):
             logger.info("Found Docker at: %s", path)
             return path
-    
+
     logger.error("Docker executable not found. Please install Docker Desktop or OrbStack.")
     logger.error("Checked locations:")
     for path in common_paths:
@@ -42,7 +43,7 @@ def find_docker_executable():
 def get_docker_env():
     """Get environment with Docker credential helper in PATH."""
     env = os.environ.copy()
-    
+
     # Add common credential helper locations to PATH
     credential_paths = [
         '/Applications/OrbStack.app/Contents/MacOS/xbin',
@@ -50,13 +51,13 @@ def get_docker_env():
         '/usr/local/bin',
         '/opt/homebrew/bin'
     ]
-    
+
     current_path = env.get('PATH', '')
     new_paths = [p for p in credential_paths if os.path.exists(p)]
-    
+
     if new_paths:
         env['PATH'] = ':'.join(new_paths + [current_path])
-    
+
     return env
 
 def check_required_files():
@@ -70,20 +71,20 @@ def check_required_files():
         'templates/report.html',
         'docker/Dockerfile'
     ]
-    
+
     missing_files = []
     for file in required_files:
         if not os.path.exists(file):
             missing_files.append(file)
         else:
             logger.info("✓ Found: %s", file)
-    
+
     if missing_files:
         logger.error("Missing required files:")
         for file in missing_files:
             logger.error("  ✗ %s", file)
         return False
-    
+
     return True
 
 def run_docker_commands():

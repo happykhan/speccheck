@@ -12,9 +12,6 @@ import os
 from setuptools import find_packages, setup
 
 
-
-
-
 # Read version from speccheck/__init__.py
 def get_version():
     init_file = os.path.join(os.path.dirname(__file__), 'speccheck', '__init__.py')
