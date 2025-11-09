@@ -104,12 +104,15 @@ def _extract_accessions_from_genome_paths(raw: str | Iterable[str] | None):
     # Normalize into list of path tokens
     if isinstance(raw, str):
         parts = [p for p in raw.split(";") if p]
-    else:
+    elif isinstance(raw, Iterable) and not isinstance(raw, (dict, bytes, bytearray)):
         parts = []
         for item in raw:
             if not item:
                 continue
             parts.extend([p for p in str(item).split(";") if p])
+    else:
+        # Not a string or iterable of strings (e.g., numbers). Return as-is stringified.
+        return str(raw)
 
     cleaned: list[str] = []
     for p in parts:

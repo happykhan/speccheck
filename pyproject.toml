@@ -101,12 +101,14 @@ addopts = [
     "-v",
     "--strict-markers",
     "--cov=speccheck",
+    "--cov-branch",
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
 
 [tool.coverage.run]
 source = ["speccheck"]
+branch = true
 omit = [
     "*/tests/*",
     "*/__pycache__/*",
