@@ -4,7 +4,7 @@ FROM python:3.13-slim
 # Metadata
 LABEL maintainer="Nabil-Fareed Alikhan <nabil@happykhan.com>"
 LABEL description="A bioinformatics tool for quality control based on species criteria"
-LABEL version="1.1.1"
+LABEL version="1.2.1"
 
 # Set the working directory in the container
 WORKDIR /app

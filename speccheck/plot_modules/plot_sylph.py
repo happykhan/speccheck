@@ -29,14 +29,27 @@ class Plot_Sylph:
         For more information, visit the <a href="{summary.get('url')}" target="_blank">the website</a>. [citation: <a href="{summary.get('citation')}" target="_blank">Sylph paper</a>]</p>
         </p>
         """
-        if int(self.df["all_checks_passed"].sum()) < len(self.df):
+        # Add a summary of the analysis
+        status = self.df["all_checks_passed"].astype(str).str.lower()
+        passed_mask = status.isin(["passed", "true", "1", "yes"])  # add values that is expected expect
+
+        # If any sample did not pass, add summary
+        # Add a summary of the analysis
+        status = self.df["all_checks_passed"].astype(str).str.lower()
+        passed_mask = status.isin(["passed", "true", "1", "yes"])  # add values you expect
+
+        # If any sample did not pass, add summary
+        if passed_mask.sum() < len(self.df):
             html_fragment += """
             <p>In this analysis:</p>
             <ul>
             """
             for col in self.df.columns:
                 if col.endswith(".check") and col != "all_checks_passed":
-                    fail_count = len(self.df) - int(self.df[col].sum())
+                     # normalize this column to boolean (True = passed)
+                    col_series = self.df[col].astype(str).str.lower()
+                    col_pass_mask = col_series.isin(["passed", "true", "1", "yes"])
+                    fail_count = len(self.df) - int(col_pass_mask.sum())
                     col_name = col.split(".")[0]
                     if fail_count > 0:
                         html_fragment += f'<li><span style="color: red; font-weight: bold;">❌</span> Number of samples that failed due to {col_name}: {fail_count}</li>'
@@ -83,7 +96,8 @@ class Plot_Sylph:
                 [f"{s}: {a}%" for s, a in zip(all_species, all_abundances, strict=False) if s]
             )
 
-            all_checks_passed = row.get("all_checks_passed", "False") == "True"
+            all_checks_val = str(row.get("all_checks_passed", "")).lower()
+            all_checks_passed = all_checks_val in ["passed", "true", "1", "yes"]
             all_checks_display = "✓" if all_checks_passed else "❌"
             all_checks_color = "color: green;" if all_checks_passed else "color: red;"
 
