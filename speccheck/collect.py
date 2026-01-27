@@ -139,6 +139,26 @@ def write_to_file(output_file, qc_report):
     """
     if os.path.dirname(output_file):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    
+    def _format_cell(key, val):
+        """
+        Convert only QC result fields (*.all_checks_passed, *.check)
+        into PASSED / FAILED. Leave all other values unchanged.
+        """
+        if val is None:
+            return ""
+
+        key_is_status = key.endswith("all_checks_passed") or key.endswith(".check")
+
+        # Convert only the QC result fields
+        if key_is_status:
+            if isinstance(val, bool):
+                return "PASSED" if val else "FAILED"
+            if isinstance(val, str) and val.lower() in ("true", "false"):
+                return "PASSED" if val.lower() == "true" else "FAILED"
+
+        # Default behaviour for everything else
+        return str(val)
 
     # Columns required in concise output and their explicit order
     concise_columns = [
@@ -204,13 +224,13 @@ def write_to_file(output_file, qc_report):
 
         with open(detailed_path, "w", encoding="utf-8") as f_det:
             f_det.write(",".join(detailed_keys) + "\n")
-            f_det.write(",".join(str(qc_report.get(key, "")) for key in detailed_keys) + "\n")
+            f_det.write(",".join(_format_cell(key, qc_report.get(key, "")) for key in detailed_keys) + "\n")
         logging.info("Detailed results written to %s", detailed_path)
 
         # 2) Write concise CSV with only the requested columns, in that exact order
         with open(output_file, "w", encoding="utf-8") as f_out:
             f_out.write(",".join(concise_columns) + "\n")
-            row = [str(qc_report.get(col, "")) for col in concise_columns]
+            row = [_format_cell(col, qc_report.get(col, "")) for col in concise_columns]
             f_out.write(",".join(row) + "\n")
         logging.info("Concise results written to %s", output_file)
         return
@@ -231,5 +251,5 @@ def write_to_file(output_file, qc_report):
     ordered_keys = sample_id_cols + all_checks_passed_cols + check_cols + other_cols
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(",".join(ordered_keys) + "\n")
-        f.write(",".join(str(qc_report[key]) for key in ordered_keys) + "\n")
+        f.write(",".join(_format_cell(key, qc_report.get(key, "")) for key in ordered_keys) + "\n")
         logging.info("Results written to %s", output_file)

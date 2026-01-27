@@ -40,12 +40,12 @@ def make_sample_counts(df):
 
 def _get_sum_table(df):
     # Select columns ending with 'all_checks_passed'
-    sum_table = df[[col for col in df.columns if col.endswith("all_checks_passed")]]
+    sum_table = df[[col for col in df.columns if col.endswith("all_checks_passed")]].copy()
     # Create a new column 'QC_PASS' that is True if all checks passed
     sum_table["QC_PASS"] = sum_table.all(axis=1)
 
     # Change True/False to Pass/Fail
-    sum_table = sum_table.replace({True: "Pass", False: "Fail"})
+    sum_table = sum_table.replace({True: "PASSED", False: "FAILED"})
 
     # Rename columns to remove the '.all_checks_passed' suffix
     sum_table.columns = sum_table.columns.str.replace(".all_checks_passed", "", regex=False)
@@ -67,15 +67,15 @@ def summary_table(df):
 
     # Define a function to apply color styling
     def colorize(val):
-        if val == "Fail":
+        if val == "FAILED":
             return "background-color: #FFC8C8; color: black;"
-        elif val == "Pass":
+        elif val == "PASSED":
             return "background-color: #90EE90; color: black;"
         return ""
 
     # Apply the styling function to the DataFrame
 
-    styled_table = sum_table.style.applymap(colorize).set_table_attributes(
+    styled_table = sum_table.style.map(colorize).set_table_attributes(
         'class="table is-striped is-fullwidth"'
     )
     # Convert the styled DataFrame to HTML
@@ -169,9 +169,9 @@ def get_failure_reasons(df, software_dict):
     # Identify the top 5 reasons for failure
     # This assumes that a 'Fail' in any column (except 'QC_PASS') contributes to the failure reason
     failure_reasons = (
-        sum_table[sum_table["QC_PASS"] == "Fail"]
+        sum_table[sum_table["QC_PASS"] == "FAILED"]
         .drop(columns=["QC_PASS"])
-        .apply(lambda x: x == "Fail")
+        .apply(lambda x: x == "FAILED")
     )
     explanation = ""
     top_failure_reasons = failure_reasons.sum().sort_values(ascending=False).head(5)

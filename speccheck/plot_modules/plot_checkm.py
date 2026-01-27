@@ -66,7 +66,11 @@ class Plot_Checkm:
         </p>
         """
         # Add a summary of the analysis
-        if int(self.df["all_checks_passed"].sum()) < len(self.df):
+        status = self.df["all_checks_passed"].astype(str).str.lower()
+        passed_mask = status.isin(["passed", "true", "1", "yes"])  # add values you expect
+
+        # If any sample did not pass, add summary
+        if passed_mask.sum() < len(self.df):
             html_fragment += """
             <p>In this analysis:</p>
             <ul>
