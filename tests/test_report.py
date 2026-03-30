@@ -2,9 +2,10 @@ import importlib
 import os
 from unittest.mock import MagicMock, patch
 
+import pandas as pd
 import pytest
 
-from speccheck.report import load_modules_with_checks
+from speccheck.report import get_failure_reasons, load_modules_with_checks
 
 
 @patch("os.listdir")
@@ -15,3 +16,26 @@ def test_load_modules_with_checks(
     mock_module_from_spec, mock_spec_from_file_location, mock_isfile, mock_listdir
 ):
     pass
+
+
+def test_get_failure_reasons_all_passed():
+    """Regression test for issue #12: TypeError when all samples pass QC.
+
+    When no samples fail, failure_reasons is an empty DataFrame and .sum()
+    returns strings ('0') instead of integers, causing a TypeError on > 0.
+    """
+    df = pd.DataFrame(
+        {
+            "checkm.all_checks_passed": [True, True],
+            "quast.all_checks_passed": [True, True],
+            "speciator.all_checks_passed": [True, True],
+        }
+    )
+    software_dict = {
+        "checkm": {"name": "CheckM"},
+        "quast": {"name": "Quast"},
+        "speciator": {"name": "Speciator"},
+    }
+    # Should not raise TypeError
+    result = get_failure_reasons(df, software_dict)
+    assert isinstance(result, str)
