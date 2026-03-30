@@ -176,6 +176,8 @@ def get_failure_reasons(df, software_dict):
     explanation = ""
     top_failure_reasons = failure_reasons.sum().sort_values(ascending=False).head(5)
     # remove reasons that have less than 1 failure
+    # Convert to numeric to handle cases where sum() returns strings (e.g. empty DataFrame)
+    top_failure_reasons = pd.to_numeric(top_failure_reasons, errors="coerce").fillna(0)
     top_failure_reasons = top_failure_reasons[top_failure_reasons > 0]
     failure_string = ""
     if len(top_failure_reasons) == 1:
