@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "speccheck-qc"
-version = "1.2.1"
+version = "1.2.2"
 description = "A bioinformatics software focused on quality control based on species criteria"
 readme = "README.md"
 authors = [
