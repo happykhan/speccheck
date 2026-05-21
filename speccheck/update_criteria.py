@@ -1,119 +1,285 @@
+"""
+Update speccheck criteria.csv with thresholds from the QualiBact v2 API.
+
+Fetches published thresholds from https://static.qualibact.org/api/v2/thresholds.csv,
+maps QualiBact metrics to speccheck criteria fields, and updates the values in-place.
+
+Usage:
+    python -m speccheck.update_criteria [criteria_file] [--url URL] [--scheme SCHEME]
+"""
+
+import argparse
 import csv
+import io
 import logging
+import sys
 
 import requests
 
-METRICS = {
-    "N50": ["N50", "N50 (scaffolds)", "N50 (contigs)"],
-    "GC_Content": ["GC", "GC_Content", "GC (%)"],
-    "no_of_contigs": [
-        "no_of_contigs",
-        "Contig_Count",
-        "# contigs (>= 0 bp)",
-        "# contigs",
+logger = logging.getLogger(__name__)
+
+DEFAULT_URL = "https://static.qualibact.org/api/v2/thresholds.csv"
+DEFAULT_SCHEME = "qualibact-v1.1"
+DEFAULT_CRITERIA_FILE = "criteria.csv"
+
+# Maps QualiBact metric names to (software, field) pairs used in criteria.csv.
+# Each metric may appear in multiple software columns (e.g. Checkm and Quast both
+# track GC and genome size).
+METRIC_MAP: dict[str, list[tuple[str, str]]] = {
+    "Genome_Size": [
+        ("Checkm", "Genome size (bp)"),
+        ("Quast", "Total length (>= 0 bp)"),
     ],
-    "Genome_Size": ["Genome_Size", "Total length (>= 0 bp)"],
-    "Completeness": ["Completeness"],
-    "Contamination": ["Contamination"],
-    "Total_Coding_Sequences": ["Total_Coding_Sequences"],
+    "GC_Content": [
+        ("Checkm", "GC"),
+        ("Quast", "GC (%)"),
+    ],
+    "Completeness_Specific": [
+        ("Checkm", "Completeness"),
+    ],
+    "Contamination": [
+        ("Checkm", "Contamination"),
+    ],
+    "N50": [
+        ("Checkm", "N50 (scaffolds)"),
+        ("Quast", "N50"),
+    ],
+    "no_of_contigs": [
+        ("Checkm", "# contigs"),
+        ("Quast", "# contigs (>= 0 bp)"),
+    ],
+    "Total_Coding_Sequences": [],  # No matching criteria.csv field currently
 }
 
 
-def update_criteria_file(criteria_file, update_url):
+def fetch_qualibact_thresholds(
+    url: str, scheme: str
+) -> dict[str, dict[str, tuple[str, str]]]:
     """
-    Update the criteria file with the latest values from the given URL.
+    Fetch QualiBact thresholds CSV and return parsed data.
+
+    Returns a nested dict:
+        {species: {metric: (FINAL_lower, FINAL_upper)}}
+
+    Only rows matching the requested scheme are included.
     """
-    logging.info("Updating criteria file from %s", update_url)
+    logger.info("Fetching QualiBact thresholds from %s (scheme=%s)", url, scheme)
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()
+
+    if not response.text.strip():
+        raise ValueError("Received empty response from QualiBact API")
+
+    reader = csv.DictReader(io.StringIO(response.text))
+    thresholds: dict[str, dict[str, tuple[str, str]]] = {}
+
+    for row in reader:
+        if row.get("scheme") != scheme:
+            continue
+        species = row.get("species", "").strip()
+        metric = row.get("metric", "").strip()
+        if not species or not metric:
+            continue
+        lower = row.get("FINAL_lower", "").strip()
+        upper = row.get("FINAL_upper", "").strip()
+        thresholds.setdefault(species, {})[metric] = (lower, upper)
+
+    logger.info(
+        "Loaded thresholds for %d species and up to %d metrics",
+        len(thresholds),
+        len({m for sp in thresholds.values() for m in sp}),
+    )
+    return thresholds
+
+
+def _format_value(value: str) -> str:
+    """
+    Format a numeric value string for criteria.csv.
+
+    Strips trailing '.0' from values that are effectively integers,
+    so we get '97' instead of '97.0'.
+    """
+    try:
+        num = float(value)
+        if num == int(num) and "e" not in value.lower():
+            return str(int(num))
+        return value
+    except (ValueError, OverflowError):
+        return value
+
+
+def update_criteria(
+    criteria_rows: list[dict[str, str]],
+    thresholds: dict[str, dict[str, tuple[str, str]]],
+) -> list[dict[str, str]]:
+    """
+    Apply QualiBact thresholds to criteria rows in-place and return the updated list.
+
+    Rules:
+    - Only rows where assembly_type != 'long' are updated
+    - FINAL_lower updates rows with operator '>='
+    - FINAL_upper updates rows with operator '<='
+    - Empty/missing bounds are skipped
+    """
+    criteria_species = {
+        row["species"] for row in criteria_rows if row["species"] != "all"
+    }
+    api_species = set(thresholds.keys())
+
+    # Warn about species mismatches
+    only_in_api = api_species - criteria_species
+    only_in_criteria = criteria_species - api_species
+
+    if only_in_api:
+        logger.warning(
+            "Species in QualiBact API but not in criteria.csv: %s",
+            ", ".join(sorted(only_in_api)),
+        )
+    if only_in_criteria:
+        logger.warning(
+            "Species in criteria.csv but not in QualiBact API: %s",
+            ", ".join(sorted(only_in_criteria)),
+        )
+
+    # Track which metrics could not be mapped
+    unmapped_metrics: set[str] = set()
+    updated_count = 0
+
+    for species, metrics in thresholds.items():
+        for metric_name, (lower, upper) in metrics.items():
+            targets = METRIC_MAP.get(metric_name)
+            if targets is None:
+                unmapped_metrics.add(metric_name)
+                continue
+            if not targets:
+                # Metric is known but has no criteria.csv mapping (e.g. Total_Coding_Sequences)
+                continue
+
+            for software, field in targets:
+                for row in criteria_rows:
+                    if row["species"] != species:
+                        continue
+                    if row["assembly_type"] == "long":
+                        continue
+                    if row["software"] != software or row["field"] != field:
+                        continue
+
+                    if lower and row["operator"] == ">=":
+                        old_val = row["value"]
+                        row["value"] = _format_value(lower)
+                        if old_val != row["value"]:
+                            logger.debug(
+                                "Updated %s / %s %s >= : %s -> %s",
+                                species, software, field, old_val, row["value"],
+                            )
+                            updated_count += 1
+
+                    if upper and row["operator"] == "<=":
+                        old_val = row["value"]
+                        row["value"] = _format_value(upper)
+                        if old_val != row["value"]:
+                            logger.debug(
+                                "Updated %s / %s %s <= : %s -> %s",
+                                species, software, field, old_val, row["value"],
+                            )
+                            updated_count += 1
+
+    if unmapped_metrics:
+        logger.warning(
+            "QualiBact metrics with no criteria.csv mapping: %s",
+            ", ".join(sorted(unmapped_metrics)),
+        )
+
+    logger.info("Updated %d values in criteria.csv", updated_count)
+    return criteria_rows
+
+
+def read_criteria(criteria_file: str) -> list[dict[str, str]]:
+    """Read criteria.csv and return rows as list of dicts."""
     with open(criteria_file, encoding="utf-8") as f:
-        current_criteria = list(csv.DictReader(f))
+        return list(csv.DictReader(f))
+
+
+def write_criteria(criteria_file: str, rows: list[dict[str, str]]) -> None:
+    """Write criteria rows back to CSV, preserving column order."""
+    fieldnames = [
+        "species",
+        "assembly_type",
+        "software",
+        "field",
+        "operator",
+        "value",
+        "special_field",
+    ]
+    with open(criteria_file, "w", encoding="utf-8", newline="\n") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def update_criteria_file(
+    criteria_file: str = DEFAULT_CRITERIA_FILE,
+    url: str = DEFAULT_URL,
+    scheme: str = DEFAULT_SCHEME,
+) -> None:
+    """
+    Main entry point: fetch QualiBact thresholds and update the criteria file.
+    """
+    logger.info("Updating %s from QualiBact API (%s, scheme=%s)", criteria_file, url, scheme)
+
+    thresholds = fetch_qualibact_thresholds(url, scheme)
+    if not thresholds:
+        logger.error("No thresholds found for scheme '%s'. Aborting.", scheme)
+        return
+
+    rows = read_criteria(criteria_file)
+    update_criteria(rows, thresholds)
+    write_criteria(criteria_file, rows)
+    logger.info("Criteria file updated successfully: %s", criteria_file)
+
+
+def main() -> None:
+    """CLI entry point."""
+    parser = argparse.ArgumentParser(
+        description="Update speccheck criteria.csv from QualiBact v2 API thresholds."
+    )
+    parser.add_argument(
+        "criteria_file",
+        nargs="?",
+        default=DEFAULT_CRITERIA_FILE,
+        help="Path to the criteria CSV file (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--url",
+        default=DEFAULT_URL,
+        help="URL for the QualiBact thresholds CSV (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--scheme",
+        default=DEFAULT_SCHEME,
+        help="QualiBact scheme to use (default: %(default)s)",
+    )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Enable verbose (debug) logging",
+    )
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(levelname)s: %(message)s",
+    )
 
     try:
-        response = requests.get(update_url, timeout=10)
-        response.raise_for_status()
-        # make response a dictionary
-        # Convert csv into list of dictionaries
-        if not response.text.strip():
-            logging.error("Received empty response from the update URL.")
-            return
-        csv_lines = response.text.strip().split("\n")
-        headers = csv_lines[0].split(",")
-        updated_criteria = [dict(zip(headers, line.split(","), strict=False)) for line in csv_lines[1:]]
-        # Change species by replacing _ with a space
-        for row in updated_criteria:
-            if "species" in row:
-                row["species"] = row["species"].replace("_", " ")
-        # Get current criteria file
-        current_criteria_list = list(current_criteria)
-        # Check if species are missing.
-        species_not_in_update_list = set(
-            current_species := {row["species"] for row in current_criteria_list if "species" in row}
-        ) - set(updated_species := {row["species"] for row in updated_criteria if "species" in row})
-        # Remove "all" from species not in update list
-        species_not_in_update_list.discard("all")
-        if species_not_in_update_list:
-            logging.warning(
-                "Species %s not found in the online criteria.",
-                ", ".join(species_not_in_update_list),
-            )
-        # Speces not in the current list
-        species_not_in_current_list = set(updated_species) - set(current_species)
-        if species_not_in_current_list:
-            logging.warning(
-                "Species %s found in the online criteria but not in the current criteria file.",
-                ", ".join(species_not_in_current_list),
-            )
-        for row in updated_criteria:
-            # find rows in current_criteria where 'species' is the same, assembly_type is not long, and other conditions
-            matching_rows = [
-                r
-                for r in current_criteria_list
-                if r.get("species") == row.get("species")
-                and r.get("assembly_type") != "long"
-                and r.get("field") in METRICS.get(row.get("metric", ""), [])
-            ]
-            for m_row in matching_rows:
-                if row.get("lower_bounds") and m_row.get("operator") == ">=":
-                    # if the value ends with .0 or .00, remove it)
-                    m_row["value"] = row["lower_bounds"]
-                    logging.debug(
-                        "Setting lower bounds for %s to %s",
-                        row.get("field"),
-                        m_row["value"],
-                    )
-                if row.get("upper_bounds") and m_row.get("operator") == "<=":
-                    m_row["value"] = row["upper_bounds"]
-                    logging.debug(
-                        "Setting upper bounds for %s to %s",
-                        row.get("field"),
-                        m_row["value"],
-                    )
-        # Fix some minor stuff.
-        for row in current_criteria_list:
-            if row["field"] in METRICS.get("no_of_contigs", []) and row["operator"] == ">=":
-                # Delete this row
-                current_criteria_list.remove(row)
-            # Acinetobacter baumannii,all,Sylph,species_name,regex,^,species_field
-            # Set to species
-            if (
-                row["software"] == "Sylph"
-                and row["field"] == "species_name"
-                and row["operator"] == "regex"
-                and row["value"] == "^"
-            ):
-                row["value"] = f"^{row['species']}"
-                logging.debug("Changing field from species_name to species for Sylph")
-        with open(criteria_file, "w", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=current_criteria_list[0].keys())
-            writer.writeheader()
-            writer.writerows(current_criteria_list)
-
-        logging.info("Criteria file updated successfully: %s", criteria_file)
+        update_criteria_file(args.criteria_file, args.url, args.scheme)
     except requests.RequestException as e:
-        logging.error("Failed to update criteria file: %s", e)
+        logger.error("Failed to fetch QualiBact thresholds: %s", e)
+        sys.exit(1)
+    except Exception as e:
+        logger.error("Failed to update criteria: %s", e)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    update_criteria_file(
-        "criteria.csv",
-        "https://raw.githubusercontent.com/happykhan/genomeqc/refs/heads/main/docs/summary/filtered_metrics.csv",
-    )
+    main()
