@@ -4,6 +4,10 @@ Update speccheck criteria.csv with thresholds from the QualiBact v2 API.
 Fetches published thresholds from https://static.qualibact.org/api/v2/thresholds.csv,
 maps QualiBact metrics to speccheck criteria fields, and updates the values in-place.
 
+By default, uses the best available scheme for each species: qualibact-v1.1 values
+are preferred where available, with qualibact-v1.0 as fallback. This maximises
+coverage (v1.1 has ~15 species with refined thresholds, v1.0 has ~307).
+
 Usage:
     python -m speccheck.update_criteria [criteria_file] [--url URL] [--scheme SCHEME]
 """
@@ -13,14 +17,17 @@ import csv
 import io
 import logging
 import sys
+from typing import Optional
 
 import requests
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_URL = "https://static.qualibact.org/api/v2/thresholds.csv"
-DEFAULT_SCHEME = "qualibact-v1.1"
 DEFAULT_CRITERIA_FILE = "criteria.csv"
+
+# Scheme priority order: earlier entries are preferred over later ones.
+SCHEME_PRIORITY = ["qualibact-v1.1", "qualibact-v1.0"]
 
 # Maps QualiBact metric names to (software, field) pairs used in criteria.csv.
 # Each metric may appear in multiple software columns (e.g. Checkm and Quast both
@@ -53,7 +60,7 @@ METRIC_MAP: dict[str, list[tuple[str, str]]] = {
 
 
 def fetch_qualibact_thresholds(
-    url: str, scheme: str
+    url: str, scheme: Optional[str] = None
 ) -> dict[str, dict[str, tuple[str, str]]]:
     """
     Fetch QualiBact thresholds CSV and return parsed data.
@@ -61,9 +68,19 @@ def fetch_qualibact_thresholds(
     Returns a nested dict:
         {species: {metric: (FINAL_lower, FINAL_upper)}}
 
-    Only rows matching the requested scheme are included.
+    If *scheme* is given, only rows matching that scheme are included.
+    If *scheme* is ``None`` (the default), the best available scheme is used
+    for each (species, metric) pair: qualibact-v1.1 is preferred, falling back
+    to qualibact-v1.0.
     """
-    logger.info("Fetching QualiBact thresholds from %s (scheme=%s)", url, scheme)
+    if scheme:
+        logger.info("Fetching QualiBact thresholds from %s (scheme=%s)", url, scheme)
+    else:
+        logger.info(
+            "Fetching QualiBact thresholds from %s (best available: %s)",
+            url,
+            " > ".join(SCHEME_PRIORITY),
+        )
     response = requests.get(url, timeout=30)
     response.raise_for_status()
 
@@ -71,18 +88,47 @@ def fetch_qualibact_thresholds(
         raise ValueError("Received empty response from QualiBact API")
 
     reader = csv.DictReader(io.StringIO(response.text))
-    thresholds: dict[str, dict[str, tuple[str, str]]] = {}
 
-    for row in reader:
-        if row.get("scheme") != scheme:
-            continue
-        species = row.get("species", "").strip()
-        metric = row.get("metric", "").strip()
-        if not species or not metric:
-            continue
-        lower = row.get("FINAL_lower", "").strip()
-        upper = row.get("FINAL_upper", "").strip()
-        thresholds.setdefault(species, {})[metric] = (lower, upper)
+    if scheme:
+        # Single-scheme mode: only include rows matching the requested scheme
+        thresholds: dict[str, dict[str, tuple[str, str]]] = {}
+        for row in reader:
+            if row.get("scheme") != scheme:
+                continue
+            species = row.get("species", "").strip()
+            metric = row.get("metric", "").strip()
+            if not species or not metric:
+                continue
+            lower = row.get("FINAL_lower", "").strip()
+            upper = row.get("FINAL_upper", "").strip()
+            thresholds.setdefault(species, {})[metric] = (lower, upper)
+    else:
+        # Best-available mode: for each (species, metric), prefer higher-priority schemes.
+        # Track which scheme each entry came from so we can compare priorities.
+        priority_map = {s: i for i, s in enumerate(SCHEME_PRIORITY)}
+        # Store (priority_index, lower, upper) per (species, metric)
+        ranked: dict[str, dict[str, tuple[int, str, str]]] = {}
+        for row in reader:
+            row_scheme = row.get("scheme", "").strip()
+            if row_scheme not in priority_map:
+                continue
+            species = row.get("species", "").strip()
+            metric = row.get("metric", "").strip()
+            if not species or not metric:
+                continue
+            lower = row.get("FINAL_lower", "").strip()
+            upper = row.get("FINAL_upper", "").strip()
+            prio = priority_map[row_scheme]
+            existing = ranked.setdefault(species, {}).get(metric)
+            if existing is None or prio < existing[0]:
+                ranked.setdefault(species, {})[metric] = (prio, lower, upper)
+
+        # Strip out the priority index for the return value
+        thresholds = {}
+        for species, metrics in ranked.items():
+            thresholds[species] = {
+                metric: (lower, upper) for metric, (_prio, lower, upper) in metrics.items()
+            }
 
     logger.info(
         "Loaded thresholds for %d species and up to %d metrics",
@@ -220,16 +266,24 @@ def write_criteria(criteria_file: str, rows: list[dict[str, str]]) -> None:
 def update_criteria_file(
     criteria_file: str = DEFAULT_CRITERIA_FILE,
     url: str = DEFAULT_URL,
-    scheme: str = DEFAULT_SCHEME,
+    scheme: Optional[str] = None,
 ) -> None:
     """
     Main entry point: fetch QualiBact thresholds and update the criteria file.
+
+    If *scheme* is ``None``, uses best-available logic (v1.1 preferred, v1.0 fallback).
     """
-    logger.info("Updating %s from QualiBact API (%s, scheme=%s)", criteria_file, url, scheme)
+    if scheme:
+        logger.info("Updating %s from QualiBact API (%s, scheme=%s)", criteria_file, url, scheme)
+    else:
+        logger.info("Updating %s from QualiBact API (%s, best available)", criteria_file, url)
 
     thresholds = fetch_qualibact_thresholds(url, scheme)
     if not thresholds:
-        logger.error("No thresholds found for scheme '%s'. Aborting.", scheme)
+        if scheme:
+            logger.error("No thresholds found for scheme '%s'. Aborting.", scheme)
+        else:
+            logger.error("No thresholds found. Aborting.")
         return
 
     rows = read_criteria(criteria_file)
@@ -256,8 +310,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--scheme",
-        default=DEFAULT_SCHEME,
-        help="QualiBact scheme to use (default: %(default)s)",
+        default=None,
+        help="QualiBact scheme to use.  If omitted, uses best available "
+        "(v1.1 preferred, v1.0 fallback) for maximum species coverage.",
     )
     parser.add_argument(
         "-v", "--verbose",

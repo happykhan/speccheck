@@ -11,6 +11,7 @@ import pytest
 
 from speccheck.update_criteria import (
     METRIC_MAP,
+    SCHEME_PRIORITY,
     _format_value,
     fetch_qualibact_thresholds,
     read_criteria,
@@ -43,6 +44,10 @@ Vibrio cholerae,qualibact-v1.1,Genome_Size,3700000,4300000,,,computed,,3700000,4
 Vibrio cholerae,qualibact-v1.1,GC_Content,46,49,,,computed,,46,49,,,,,
 Vibrio cholerae,qualibact-v1.1,Completeness_Specific,97,,,,computed,,97,,,,,,
 Vibrio cholerae,qualibact-v1.1,Contamination,,5,,,computed,,,5,,,,,
+Escherichia coli,qualibact-v1.0,Genome_Size,4400000,5800000,,,computed,,4400000,5800000,,,,,
+Escherichia coli,qualibact-v1.0,GC_Content,50,51,,,computed,,50,51,,,,,
+Escherichia coli,qualibact-v1.0,Completeness_Specific,95,,,,computed,,95,,,,,,
+Escherichia coli,qualibact-v1.0,Contamination,,6,,,computed,,,6,,,,,
 """
 
 SAMPLE_CRITERIA_CSV = """\
@@ -84,6 +89,14 @@ Campylobacter jejuni,short,Checkm,# contigs,<=,200,
 Campylobacter jejuni,short,Checkm,N50 (scaffolds),>=,20000,
 Campylobacter jejuni,short,Quast,# contigs (>= 0 bp),<=,200,
 Campylobacter jejuni,short,Quast,N50,>=,20000,
+Escherichia coli,all,Checkm,Completeness,>=,90,
+Escherichia coli,all,Checkm,Contamination,<=,10,
+Escherichia coli,all,Checkm,GC,<=,52,
+Escherichia coli,all,Checkm,GC,>=,49,
+Escherichia coli,all,Checkm,Genome size (bp),<=,6000000,
+Escherichia coli,all,Checkm,Genome size (bp),>=,4000000,
+Escherichia coli,all,Quast,Total length (>= 0 bp),<=,6000000,
+Escherichia coli,all,Quast,Total length (>= 0 bp),>=,4000000,
 """
 
 
@@ -118,10 +131,11 @@ class TestFetchQualibactThresholds:
         with patch("speccheck.update_criteria.requests.get", return_value=mock_response):
             result = fetch_qualibact_thresholds("http://example.com/t.csv", "qualibact-v1.1")
 
-        # v1.0 rows should be excluded
+        # v1.0-only species should be excluded
         assert "Neisseria meningitidis" in result
         assert "Campylobacter jejuni" in result
         assert "Vibrio cholerae" in result
+        assert "Escherichia coli" not in result
         # Check a specific metric value
         lower, upper = result["Neisseria meningitidis"]["Genome_Size"]
         assert lower == "1800000"
@@ -138,10 +152,62 @@ class TestFetchQualibactThresholds:
         # Only v1.0 rows
         assert "Neisseria meningitidis" in result
         assert "Campylobacter jejuni" in result
+        assert "Escherichia coli" in result
+        # v1.1-only species should be excluded
+        assert "Vibrio cholerae" not in result
         # v1.0 has different values
         lower, upper = result["Neisseria meningitidis"]["Genome_Size"]
         assert lower == "1900000"
         assert upper == "2400000"
+
+    def test_best_available_prefers_v11(self):
+        """Default (scheme=None) returns v1.1 values where available."""
+        mock_response = MagicMock()
+        mock_response.text = SAMPLE_QUALIBACT_CSV
+        mock_response.raise_for_status = MagicMock()
+
+        with patch("speccheck.update_criteria.requests.get", return_value=mock_response):
+            result = fetch_qualibact_thresholds("http://example.com/t.csv")
+
+        # N. meningitidis has both v1.0 and v1.1 -- should use v1.1
+        lower, upper = result["Neisseria meningitidis"]["Genome_Size"]
+        assert lower == "1800000"
+        assert upper == "2300000"
+
+        # C. jejuni Genome_Size also has both -- should use v1.1
+        lower, upper = result["Campylobacter jejuni"]["Genome_Size"]
+        assert lower == "1400000"
+        assert upper == "1900000"
+
+    def test_best_available_falls_back_to_v10(self):
+        """Default (scheme=None) returns v1.0 values for species not in v1.1."""
+        mock_response = MagicMock()
+        mock_response.text = SAMPLE_QUALIBACT_CSV
+        mock_response.raise_for_status = MagicMock()
+
+        with patch("speccheck.update_criteria.requests.get", return_value=mock_response):
+            result = fetch_qualibact_thresholds("http://example.com/t.csv")
+
+        # E. coli only exists in v1.0 -- should be present via fallback
+        assert "Escherichia coli" in result
+        lower, upper = result["Escherichia coli"]["Genome_Size"]
+        assert lower == "4400000"
+        assert upper == "5800000"
+
+    def test_best_available_includes_all_species(self):
+        """Default mode returns the union of species across schemes."""
+        mock_response = MagicMock()
+        mock_response.text = SAMPLE_QUALIBACT_CSV
+        mock_response.raise_for_status = MagicMock()
+
+        with patch("speccheck.update_criteria.requests.get", return_value=mock_response):
+            result = fetch_qualibact_thresholds("http://example.com/t.csv")
+
+        # Should include species from both schemes
+        assert "Neisseria meningitidis" in result  # v1.0 + v1.1
+        assert "Campylobacter jejuni" in result  # v1.0 + v1.1
+        assert "Vibrio cholerae" in result  # v1.1 only
+        assert "Escherichia coli" in result  # v1.0 only
 
     def test_empty_response_raises(self):
         mock_response = MagicMock()
@@ -151,6 +217,15 @@ class TestFetchQualibactThresholds:
         with patch("speccheck.update_criteria.requests.get", return_value=mock_response):
             with pytest.raises(ValueError, match="empty response"):
                 fetch_qualibact_thresholds("http://example.com/t.csv", "qualibact-v1.1")
+
+    def test_empty_response_raises_best_available(self):
+        mock_response = MagicMock()
+        mock_response.text = ""
+        mock_response.raise_for_status = MagicMock()
+
+        with patch("speccheck.update_criteria.requests.get", return_value=mock_response):
+            with pytest.raises(ValueError, match="empty response"):
+                fetch_qualibact_thresholds("http://example.com/t.csv")
 
     def test_handles_null_bounds(self):
         mock_response = MagicMock()
@@ -434,8 +509,8 @@ class TestReadWriteCriteria:
 
 
 class TestUpdateCriteriaFile:
-    def test_full_pipeline(self, tmp_path):
-        """End-to-end test: fetch, update, write back."""
+    def test_full_pipeline_best_available(self, tmp_path):
+        """End-to-end test: default (best available) fetches v1.1 + v1.0 fallback."""
         criteria_file = _make_criteria_file(str(tmp_path))
 
         mock_response = MagicMock()
@@ -443,20 +518,67 @@ class TestUpdateCriteriaFile:
         mock_response.raise_for_status = MagicMock()
 
         with patch("speccheck.update_criteria.requests.get", return_value=mock_response):
-            update_criteria_file(criteria_file, "http://example.com/t.csv", "qualibact-v1.1")
+            update_criteria_file(criteria_file, "http://example.com/t.csv")
 
         rows = _read_rows(criteria_file)
+
+        # N. meningitidis should use v1.1 values (preferred over v1.0)
         nm = {
             (r["software"], r["field"], r["operator"]): r["value"]
             for r in rows
             if r["species"] == "Neisseria meningitidis"
         }
-
-        # Verify values from v1.1 were applied
         assert nm[("Checkm", "Genome size (bp)", ">=")] == "1800000"
         assert nm[("Checkm", "Genome size (bp)", "<=")] == "2300000"
         assert nm[("Checkm", "GC", ">=")] == "50"
         assert nm[("Checkm", "GC", "<=")] == "54"
+
+        # E. coli should use v1.0 values (only scheme available)
+        ec = {
+            (r["software"], r["field"], r["operator"]): r["value"]
+            for r in rows
+            if r["species"] == "Escherichia coli"
+        }
+        assert ec[("Checkm", "Genome size (bp)", ">=")] == "4400000"
+        assert ec[("Checkm", "Genome size (bp)", "<=")] == "5800000"
+        assert ec[("Checkm", "GC", ">=")] == "50"
+        assert ec[("Checkm", "GC", "<=")] == "51"
+        assert ec[("Checkm", "Completeness", ">=")] == "95"
+        assert ec[("Checkm", "Contamination", "<=")] == "6"
+
+    def test_full_pipeline_explicit_scheme(self, tmp_path):
+        """When --scheme is given, only that scheme is used (no fallback)."""
+        criteria_file = _make_criteria_file(str(tmp_path))
+
+        mock_response = MagicMock()
+        mock_response.text = SAMPLE_QUALIBACT_CSV
+        mock_response.raise_for_status = MagicMock()
+
+        with patch("speccheck.update_criteria.requests.get", return_value=mock_response):
+            update_criteria_file(
+                criteria_file, "http://example.com/t.csv", "qualibact-v1.1"
+            )
+
+        rows = _read_rows(criteria_file)
+
+        # N. meningitidis should have v1.1 values
+        nm = {
+            (r["software"], r["field"], r["operator"]): r["value"]
+            for r in rows
+            if r["species"] == "Neisseria meningitidis"
+        }
+        assert nm[("Checkm", "Genome size (bp)", ">=")] == "1800000"
+        assert nm[("Checkm", "Genome size (bp)", "<=")] == "2300000"
+
+        # E. coli should NOT be updated (no v1.1 data for E. coli)
+        ec = {
+            (r["software"], r["field"], r["operator"]): r["value"]
+            for r in rows
+            if r["species"] == "Escherichia coli"
+        }
+        # Original values from sample criteria CSV
+        assert ec[("Checkm", "Genome size (bp)", ">=")] == "4000000"
+        assert ec[("Checkm", "Genome size (bp)", "<=")] == "6000000"
 
     def test_no_thresholds_for_scheme(self, tmp_path, caplog):
         """When no rows match the scheme, no changes are made."""
