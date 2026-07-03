@@ -43,6 +43,16 @@ The generated report is written to:
 
 Raw downloaded FASTA files and intermediate QUAST outputs are kept under `.demo_work/qualibact_ecoli_real/` and are intentionally not committed. The committed `real_panel/input/` files record the selected accessions and QualiBact metadata used to generate the demonstration.
 
+## Manuscript screenshots
+
+To export PNG screenshots of the example HTML reports:
+
+```bash
+scripts/export_report_screenshots.sh
+```
+
+The script writes screenshots to `examples/qualibact_ecoli/figures/`. It requires a working headless Chromium, Chrome, or Firefox installation.
+
 ## Upstream analysis template
 
 For environments where you want to rerun the upstream QC tools before `speccheck collect`, use the Slurm-ready template:

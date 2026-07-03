@@ -1,7 +1,10 @@
-import tomllib
-
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10 compatibility
+    import tomli as tomllib
 
 try:
     __version__ = version("speccheck-qc")

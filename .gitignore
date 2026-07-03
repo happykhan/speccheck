@@ -8,6 +8,10 @@ qc_report/
 qc_results/
 hottest100/
 test_summary/
+.demo_work/
+.venv*/
+detailed.*.csv
+examples/qualibact_ecoli/figures/
 # C extensions
 *.so
 jsonl

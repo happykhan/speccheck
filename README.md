@@ -21,6 +21,8 @@ Primary docs pages:
 - [Criteria Format](docs/criteria.md)
 - [Reports](docs/reports.md)
 - [QualiBact Integration](docs/qualibact.md)
+- [Manuscript Assets](docs/manuscript.md)
+- [Code Quality Audit](docs/code-quality.md)
 - [Development](docs/development.md)
 
 ## Quick Start

@@ -26,4 +26,6 @@ nav:
   - Criteria: criteria.md
   - Reports: reports.md
   - QualiBact: qualibact.md
+  - Manuscript Assets: manuscript.md
+  - Code Quality Audit: code-quality.md
   - Development: development.md

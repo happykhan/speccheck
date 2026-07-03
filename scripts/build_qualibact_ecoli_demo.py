@@ -17,7 +17,7 @@ import subprocess
 import urllib.request
 from pathlib import Path
 
-QUALIBACT_BASE = "https://static.qualibact.org/static/species/" "Escherichia_coli/qualibact-v1.0"
+QUALIBACT_BASE = "https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0"
 LISTS = {
     "PASS": f"{QUALIBACT_BASE}/Escherichia_coli_atb_pass.csv.gz",
     "WARN": f"{QUALIBACT_BASE}/Escherichia_coli_atb_warn.csv.gz",
@@ -287,7 +287,7 @@ def write_parser_inputs(work_dir: Path, selected: list[dict[str, str]]) -> None:
                 "Naive_ANI": "99.9",
                 "kmers_reassigned": "0",
                 "Contig_name": (
-                    "NZ_CP033092.2 Escherichia coli strain QualiBact " "demonstration chromosome"
+                    "NZ_CP033092.2 Escherichia coli strain QualiBact demonstration chromosome"
                 ),
             },
         )

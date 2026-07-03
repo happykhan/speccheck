@@ -6,10 +6,10 @@ import sys
 
 from speccheck.collect import check_criteria, collect_files, write_to_file
 from speccheck.criteria import get_criteria, get_species_field, validate_criteria
-from speccheck.report import (
+from speccheck.report import plot_charts
+from speccheck.report_tables import (
     build_metric_summary_frames,
     export_summary_workbook,
-    plot_charts,
 )
 from speccheck.update_criteria import QUALIBACT_DEFAULT_URL, update_criteria_file
 from speccheck.util import get_all_files, load_modules_with_checks

@@ -38,3 +38,22 @@ def test_get_failure_reasons_all_passed():
     # Should not raise TypeError
     result = get_failure_reasons(df, software_dict)
     assert isinstance(result, str)
+
+
+def test_get_failure_reasons_does_not_duplicate_items():
+    df = pd.DataFrame(
+        {
+            "Checkm.all_checks_passed": [False],
+            "Quast.all_checks_passed": [True],
+            "all_checks_passed": [False],
+        }
+    )
+    software_dict = {
+        "Checkm": {"name": "CheckM"},
+        "Quast": {"name": "QUAST"},
+    }
+
+    result = get_failure_reasons(df, software_dict)
+
+    assert result.count("<li>") == 1
+    assert "CheckM" in result
