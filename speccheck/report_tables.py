@@ -1,7 +1,6 @@
+import pandas as pd
 from collections import OrderedDict
 from html import escape
-
-import pandas as pd
 
 PASS_VALUES = {"passed", "true", "1", "yes"}
 FAIL_VALUES = {"failed", "false", "0", "no"}
