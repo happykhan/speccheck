@@ -1,5 +1,3 @@
-
-
 class Plot_Sylph:
     def __init__(self, df):
         self.df = df
@@ -31,7 +29,9 @@ class Plot_Sylph:
         """
         # Add a summary of the analysis
         status = self.df["all_checks_passed"].astype(str).str.lower()
-        passed_mask = status.isin(["passed", "true", "1", "yes"])  # add values that is expected expect
+        passed_mask = status.isin(
+            ["passed", "true", "1", "yes"]
+        )  # add values that is expected expect
 
         # If any sample did not pass, add summary
         # Add a summary of the analysis
@@ -46,7 +46,7 @@ class Plot_Sylph:
             """
             for col in self.df.columns:
                 if col.endswith(".check") and col != "all_checks_passed":
-                     # normalize this column to boolean (True = passed)
+                    # normalize this column to boolean (True = passed)
                     col_series = self.df[col].astype(str).str.lower()
                     col_pass_mask = col_series.isin(["passed", "true", "1", "yes"])
                     fail_count = len(self.df) - int(col_pass_mask.sum())

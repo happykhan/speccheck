@@ -1,5 +1,4 @@
 import os
-
 import pytest
 
 from speccheck.modules.quast import Quast

@@ -14,15 +14,17 @@ Usage:
 """
 
 import logging
-
 import typer
 from rich.console import Console
 from rich.logging import RichHandler
 
 from speccheck import __version__
+from speccheck.config import get_default_criteria_path
 from speccheck.main import check as check_func
 from speccheck.main import collect as collect_func
 from speccheck.main import summary as summary_func
+from speccheck.report import get_default_template_path
+from speccheck.update_criteria import QUALIBACT_DEFAULT_URL
 
 app = typer.Typer(help="Process QC reports for genomic data")
 console = Console()
@@ -70,7 +72,7 @@ def collect(
     ),
     sample: str = typer.Option(None, "--sample", help="Sample name"),
     criteria_file: str = typer.Option(
-        "criteria.csv",
+        get_default_criteria_path(),
         "--criteria-file",
         help="File with criteria for processing",
     ),
@@ -107,9 +109,24 @@ def summary(
     species: str = typer.Option("Speciator.speciesName", "--species", help="Field for species"),
     sample: str = typer.Option("sample_id", "--sample", help="Field for sample name"),
     templates: str = typer.Option(
-        "templates/report.html", "--templates", help="Template HTML file"
+        get_default_template_path(), "--templates", help="Template HTML file"
     ),
     plot: bool = typer.Option(False, "--plot", help="Enable plotting"),
+    xlsx_output: str | None = typer.Option(
+        None,
+        "--xlsx-output",
+        help="Optional XLSX workbook path for merged summary output",
+    ),
+    interactive_tables: bool = typer.Option(
+        True,
+        "--interactive-tables/--no-interactive-tables",
+        help="Enable sortable and filterable report tables",
+    ),
+    qualifyr_style: bool = typer.Option(
+        False,
+        "--qualifyr-style/--no-qualifyr-style",
+        help="Render compact built-in summary tables in a qualifyr-like layout",
+    ),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
     version: bool = typer.Option(
         False,
@@ -123,19 +140,29 @@ def summary(
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    summary_func(directory, output, species, sample, templates, plot)
+    summary_func(
+        directory,
+        output,
+        species,
+        sample,
+        templates,
+        plot,
+        xlsx_output=xlsx_output,
+        interactive_tables=interactive_tables,
+        qualifyr_style=qualifyr_style,
+    )
 
 
 @app.command()
 def check(
     criteria_file: str = typer.Option(
-        "criteria.csv",
+        get_default_criteria_path(),
         "--criteria-file",
         help="File with criteria for processing",
     ),
     update: bool = typer.Option(False, "--update", help="Update criteria with latest values"),
     update_url: str = typer.Option(
-        "https://raw.githubusercontent.com/happykhan/genomeqc/refs/heads/main/docs/summary/filtered_metrics.csv",
+        QUALIBACT_DEFAULT_URL,
         "--update-url",
         help="URL to update criteria from",
     ),

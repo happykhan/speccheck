@@ -1,0 +1,4 @@
+species,scheme,metric,FINAL_lower,FINAL_upper,WARN_lower,WARN_upper,source,engine_severity,lower,upper,ml_lower,ml_upper,auto_lower,auto_upper,refseq_lower,refseq_upper
+Escherichia coli,enterobase-v2.3,Genome_Size,3700000,6400000,,,external,,3700000,6400000,,,,,,
+Escherichia coli,enterobase-v2.3,N50,13000,,,,external,,13000,,,,,,,
+Escherichia coli,enterobase-v2.3,no_of_contigs,,1000,,,external,,,1000,,,,,,

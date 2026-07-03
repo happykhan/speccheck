@@ -1,6 +1,5 @@
 import csv
 import os
-
 import pytest
 
 from speccheck.criteria import get_species_field

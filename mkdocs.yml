@@ -1,0 +1,29 @@
+site_name: speccheck
+site_url: https://happykhan.github.io/speccheck/
+repo_url: https://github.com/happykhan/speccheck
+repo_name: happykhan/speccheck
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - CLI Usage: cli.md
+  - Criteria: criteria.md
+  - Reports: reports.md
+  - QualiBact: qualibact.md
+  - Development: development.md

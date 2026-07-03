@@ -1,9 +1,8 @@
 import importlib
 import os
-from unittest.mock import MagicMock, patch
-
 import pandas as pd
 import pytest
+from unittest.mock import MagicMock, patch
 
 from speccheck.report import get_failure_reasons, load_modules_with_checks
 

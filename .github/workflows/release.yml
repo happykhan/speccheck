@@ -2,7 +2,7 @@ name: Release
 
 # Runs on every push to main (i.e. merged PR).
 # 1. Determines bump type from the most recent PR title.
-# 2. Bumps version in pyproject.toml and speccheck/__init__.py.
+# 2. Bumps the version in pyproject.toml.
 # 3. Commits the bump and creates an annotated git tag.
 # 4. Creates a GitHub release.
 # 5. Builds and pushes the Docker image to Docker Hub.
@@ -105,10 +105,6 @@ jobs:
           print("Updated pyproject.toml")
           EOF
 
-          # Update speccheck/__init__.py
-          sed -i "s/__version__ = \"${CURRENT}\"/__version__ = \"${NEW}\"/" speccheck/__init__.py
-          grep "__version__" speccheck/__init__.py
-
           echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
 
       # ------------------------------------------------------------------ #
@@ -119,7 +115,7 @@ jobs:
           NEW_VERSION="${{ steps.version.outputs.new_version }}"
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add pyproject.toml speccheck/__init__.py
+          git add pyproject.toml
           git commit -m "chore: bump version to ${NEW_VERSION} [skip ci]"
           git tag "v${NEW_VERSION}"
           git push origin main

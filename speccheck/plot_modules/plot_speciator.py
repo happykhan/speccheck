@@ -42,43 +42,26 @@ class Plot_Speciator:
             html_fragment += """
             <p><span style="color: green; font-weight: bold;">✓</span> All samples were assigned to a single species:
             <strong>{}</strong>.</p>
-            """.format(
-                self.df["speciesName"].unique()[0]
-            )
+            """.format(self.df["speciesName"].unique()[0])
             html_fragment += """<p>Hopefully, this is the one your were expecting!</p>"""
-        # Create a table of speciator results
-        html_fragment += '<div class="table-container">'
-        # Only include columns taxid, mashDistance, pValue, matchingHashes, confidence, source.
-        columns_to_include = [
-            "speciesName",
-            "taxId",
-            "mashDistance",
-            "pValue",
-            "matchingHashes",
-            "confidence",
-        ]
-        table_df = self.df[columns_to_include].copy()
-        # Rename columns to be more user-friendly
-        table_df.rename(
-            columns={
-                "speciesName": "Species Name",
-                "taxId": "Tax ID",
-                "mashDistance": "Mash Distance",
-                "pValue": "P-Value",
-                "matchingHashes": "Matching Hashes",
-                "confidence": "Confidence",
-            },
-            inplace=True,
+        interactive_tables = self.df.attrs.get("interactive_tables", True)
+        table_class = "table is-striped is-hover is-fullwidth"
+        if interactive_tables:
+            table_class += " js-sort-filter"
+        html_fragment += (
+            f'<div class="table-container"><table class="{table_class}" id="speciator-results">'
         )
-        styled_table = table_df.style.set_table_attributes(
-            'class="table is-striped is-hover is-fullwidth"'
+        html_fragment += (
+            '<thead><tr><th data-type="string">Species</th>'
+            '<th data-type="string">Confidence</th></tr></thead><tbody>'
         )
-
-        html_fragment += styled_table.to_html()
-        html_fragment += "</div>"
+        table_df = self.df[["speciesName", "confidence"]].copy()
+        for _, row in table_df.iterrows():
+            html_fragment += f"<tr><td>{row['speciesName']}</td><td>{row['confidence']}</td></tr>"
+        html_fragment += "</tbody></table></div>"
 
         # Create a stacked bar chart for all_checks_passed grouped by species
-        species_count = table_df["Species Name"].value_counts().reset_index()
+        species_count = table_df["speciesName"].value_counts().reset_index()
         species_count.columns = ["Species Name", "Count"]
         species_fig = px.pie(
             species_count,
@@ -87,7 +70,7 @@ class Plot_Speciator:
             title="Distribution of Species in Dataset",
             labels={"Species Name": "Species Name", "Count": "Count"},
         )
-        species_fig.update_layout(hovermode="x unified")
+        species_fig.update_layout(hovermode="x unified", height=620)
         html_fragment += pyo.plot(species_fig, include_plotlyjs=False, output_type="div")
 
         return html_fragment

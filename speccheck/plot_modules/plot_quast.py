@@ -27,14 +27,16 @@ class Plot_Quast:
             marginal_x="violin",
             marginal_y="violin",
             title=title,
-            hover_data=[self.df.index],
+            hover_name="sample_id" if "sample_id" in self.df.columns else None,
+            hover_data={"species": False},
         )
 
         # Check if there is only one unique species
         if self.df["species"].nunique() == 1:
-            fig.update_layout(showlegend=False)  # Hide legend if only one species
+            fig.update_layout(showlegend=False)
         else:
             fig.update_layout(hovermode="closest", legend_title=color.title())
+        fig.update_layout(height=760)
         return pyo.plot(fig, include_plotlyjs=False, output_type="div")
 
     def plot(self):

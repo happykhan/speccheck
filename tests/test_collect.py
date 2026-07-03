@@ -1,5 +1,4 @@
 import os
-
 import pytest
 
 from speccheck.collect import collect_files, write_to_file

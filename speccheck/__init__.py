@@ -1,15 +1,18 @@
-"""
-SpecCheck: A bioinformatics software focused on quality control based on species criteria
+import tomllib
 
-This package provides tools for quality control in bioinformatics data
-with a focus on species-specific criteria.
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
-Author: Nabil-Fareed Alikhan (nabil@happykhan.com)
-License: GPLv3
-Version: 1.1.3
-"""
+try:
+    __version__ = version("speccheck-qc")
+except PackageNotFoundError:  # pragma: no cover - fallback for source-only execution
+    pyproject_path = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    if pyproject_path.exists():
+        with open(pyproject_path, "rb") as handle:
+            __version__ = tomllib.load(handle)["project"]["version"]
+    else:
+        __version__ = "0+unknown"
 
-__version__ = "1.2.2"
 __author__ = "Nabil-Fareed Alikhan"
 __email__ = "nabil@happykhan.com"
 __license__ = "GPLv3"
@@ -17,7 +20,6 @@ __description__ = "A bioinformatics software focused on quality control based on
 __module_name__ = "speccheck"
 __url__ = "https://github.com/happykhan/speccheck"
 
-# Import main entry point for CLI
 from speccheck.cli import main
 
 __all__ = [

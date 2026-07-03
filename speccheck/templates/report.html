@@ -1,10 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" /> <!-- It is necessary to use the UTF-8 encoding with plotly graphics to get e.g. negative signs to render correctly -->
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.plot.ly/plotly-3.0.0-rc.2.min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="bulma.css">
+    <style>
+        {% if interactive_tables %}
+        .table-tools { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; }
+        .table-filter { min-width: 16rem; }
+        {% endif %}
+        .qc-pass { background: #d7f7dd; }
+        .qc-fail { background: #ffd8d8; }
+        .qc-pass-text { color: #1f8b4c; font-weight: 600; }
+        .qc-fail-text { color: #b42318; font-weight: 600; }
+        .metric-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .metric-summary-card { border: 1px solid #d9dee8; border-radius: 0.75rem; padding: 1rem; background: #fff; }
+        .metric-summary-card h3 { margin-top: 0; }
+        .plotly-graph-div { min-height: 520px; }
+    </style>
 </head>
 <body>
     <div class="container is-max-desktop">
@@ -24,7 +38,13 @@
             <div>
                 {{ summary_table }}
             </div>
-            <p>Note: QC_PASS column is <em>Pass</em> if all software checks passed, <em>Fail</em> otherwise.</p>
+            <p>Note: QC_PASS is <em>PASSED</em> if all software checks passed and <em>FAILED</em> otherwise.</p>
+            <div>
+                {{ metric_summary_tables }}
+            </div>
+            <div>
+                {{ qualifyr_style_table }}
+            </div>
             <div>
                 {{ software_charts }}
             </div>
@@ -34,6 +54,57 @@
         <div class="content has-text-centered">
             {{ footer }}
         </div>  
-    </footer>                   
+    </footer>
+    {% if interactive_tables %}
+    <script>
+        (() => {
+            const parseValue = (value, type) => {
+                const raw = value.trim();
+                if (type === "numeric") {
+                    const parsed = Number(raw.replace(/,/g, ""));
+                    return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
+                }
+                if (type === "status") {
+                    if (raw === "PASSED") return 1;
+                    if (raw === "FAILED") return 0;
+                }
+                return raw.toLowerCase();
+            };
+
+            document.querySelectorAll("table.js-sort-filter thead th").forEach((header, index) => {
+                header.style.cursor = "pointer";
+                header.addEventListener("click", () => {
+                    const table = header.closest("table");
+                    const tbody = table.querySelector("tbody");
+                    const rows = Array.from(tbody.querySelectorAll("tr"));
+                    const currentDirection = header.dataset.direction === "asc" ? "desc" : "asc";
+                    table.querySelectorAll("thead th").forEach((th) => delete th.dataset.direction);
+                    header.dataset.direction = currentDirection;
+                    const type = header.dataset.type || "string";
+                    rows.sort((left, right) => {
+                        const leftValue = parseValue(left.children[index].innerText, type);
+                        const rightValue = parseValue(right.children[index].innerText, type);
+                        if (leftValue < rightValue) return currentDirection === "asc" ? -1 : 1;
+                        if (leftValue > rightValue) return currentDirection === "asc" ? 1 : -1;
+                        return 0;
+                    });
+                    rows.forEach((row) => tbody.appendChild(row));
+                });
+            });
+
+            document.querySelectorAll(".table-filter").forEach((input) => {
+                input.addEventListener("input", () => {
+                    const term = input.value.trim().toLowerCase();
+                    const table = document.getElementById(input.dataset.target);
+                    if (!table) return;
+                    table.querySelectorAll("tbody tr").forEach((row) => {
+                        const text = row.innerText.toLowerCase();
+                        row.style.display = text.includes(term) ? "" : "none";
+                    });
+                });
+            });
+        })();
+    </script>
+    {% endif %}
 </body>
 </html>

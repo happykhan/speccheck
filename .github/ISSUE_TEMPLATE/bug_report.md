@@ -23,7 +23,7 @@ assignees: ''
 ## Environment
 - **OS**: [macOS/Linux/Windows]
 - **Python Version**: [e.g., 3.11.4]
-- **BactScout Version**: [e.g., main branch / v1.0.0]
+- **speccheck Version**: [e.g., main branch / v1.2.2]
 - **Installation Method**: [pip/conda/source]
 
 ## Error Output

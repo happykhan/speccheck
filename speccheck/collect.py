@@ -139,7 +139,7 @@ def write_to_file(output_file, qc_report):
     """
     if os.path.dirname(output_file):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    
+
     def _format_cell(key, val):
         """
         Convert only QC result fields (*.all_checks_passed, *.check)
@@ -191,10 +191,9 @@ def write_to_file(output_file, qc_report):
     ]
 
     # Heuristic: determine if this is a full speccheck QC report
-    looks_like_qc = (
-        any(k.startswith(("Speciator.", "Depth.", "Sylph.", "Quast.", "Checkm.")) for k in qc_report)
-        or ("sample_id" in qc_report and "all_checks_passed" in qc_report)
-    )
+    looks_like_qc = any(
+        k.startswith(("Speciator.", "Depth.", "Sylph.", "Quast.", "Checkm.")) for k in qc_report
+    ) or ("sample_id" in qc_report and "all_checks_passed" in qc_report)
 
     if looks_like_qc:
         # Sanitize Sylph.genomes to contain only accession IDs
@@ -206,10 +205,14 @@ def write_to_file(output_file, qc_report):
         # 1) Write detailed CSV (legacy, all fields) as detailed.<basename>
         detailed_dir = os.path.dirname(output_file)
         base = os.path.basename(output_file)
-        detailed_path = os.path.join(detailed_dir, f"detailed.{base}") if detailed_dir else f"detailed.{base}"
+        detailed_path = (
+            os.path.join(detailed_dir, f"detailed.{base}") if detailed_dir else f"detailed.{base}"
+        )
 
         sample_id_cols = [k for k in qc_report.keys() if k in ["Sample", "sample_id"]]
-        all_checks_passed_cols = sorted([k for k in qc_report.keys() if k.endswith("all_checks_passed")])
+        all_checks_passed_cols = sorted(
+            [k for k in qc_report.keys() if k.endswith("all_checks_passed")]
+        )
         check_cols = sorted([k for k in qc_report.keys() if k.endswith(".check")])
         other_cols = sorted(
             [
@@ -224,7 +227,9 @@ def write_to_file(output_file, qc_report):
 
         with open(detailed_path, "w", encoding="utf-8") as f_det:
             f_det.write(",".join(detailed_keys) + "\n")
-            f_det.write(",".join(_format_cell(key, qc_report.get(key, "")) for key in detailed_keys) + "\n")
+            f_det.write(
+                ",".join(_format_cell(key, qc_report.get(key, "")) for key in detailed_keys) + "\n"
+            )
         logging.info("Detailed results written to %s", detailed_path)
 
         # 2) Write concise CSV with only the requested columns, in that exact order
@@ -237,7 +242,9 @@ def write_to_file(output_file, qc_report):
 
     # Legacy/simple behavior (e.g., unit tests): keep original, minimal writer
     sample_id_cols = [k for k in qc_report.keys() if k in ["Sample", "sample_id"]]
-    all_checks_passed_cols = sorted([k for k in qc_report.keys() if k.endswith("all_checks_passed")])
+    all_checks_passed_cols = sorted(
+        [k for k in qc_report.keys() if k.endswith("all_checks_passed")]
+    )
     check_cols = sorted([k for k in qc_report.keys() if k.endswith(".check")])
     other_cols = sorted(
         [

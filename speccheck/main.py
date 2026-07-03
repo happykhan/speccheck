@@ -1,15 +1,20 @@
 import csv
 import logging
 import os
+import pandas as pd
 import shutil
 import sys
-
-import pandas as pd
+from pathlib import Path
 
 from speccheck.collect import check_criteria, collect_files, write_to_file
 from speccheck.criteria import get_criteria, get_species_field, validate_criteria
-from speccheck.report import plot_charts
-from speccheck.update_criteria import update_criteria_file
+from speccheck.report import (
+    build_metric_summary_frames,
+    export_summary_workbook,
+    get_default_stylesheet_path,
+    plot_charts,
+)
+from speccheck.update_criteria import QUALIBACT_DEFAULT_URL, update_criteria_file
 from speccheck.util import get_all_files, load_modules_with_checks
 
 
@@ -135,7 +140,17 @@ def collect(organism, input_filepaths, criteria_file, output_file, sample_id, me
     logging.info("All checks completed.")
 
 
-def summary(directory, output, species, sample_id, template, plot=False):
+def summary(
+    directory,
+    output,
+    species,
+    sample_id,
+    template,
+    plot=False,
+    xlsx_output=None,
+    interactive_tables=True,
+    qualifyr_style=False,
+):
     # TODO. CHECK ALL SAMPLE NAMES ARE UNIQUE
     os.makedirs(output, exist_ok=True)
     csv_files = []
@@ -159,52 +174,54 @@ def summary(directory, output, species, sample_id, template, plot=False):
         logging.error("Sample names not found in the data.")
         return
     logging.info("Merged data for %d samples from %d files", len(merged_data), len(csv_files))
-    # write merged data to a csv file
-    output_file = os.path.join(output, "report.csv")
-    if plot:
-        plot_dict = merged_data.copy()
-
-    # Collect all unique fieldnames
+    plot_dict = merged_data.copy()
     all_fieldnames = set()
     for values in merged_data.values():
         all_fieldnames.update(values.keys())
-
-    # Sort fieldnames: sample_id first, then .check columns, then alphabetically
     check_columns = sorted([col for col in all_fieldnames if col.endswith(".check")])
     other_columns = sorted([col for col in all_fieldnames if not col.endswith(".check")])
     fieldnames = ["sample_id"] + check_columns + other_columns
-
-    # Sort merged_data by sample_id keys
     sorted_sample_ids = sorted(merged_data.keys())
+    rows = []
+    for sample_id_key in sorted_sample_ids:
+        values = merged_data[sample_id_key]
+        row = {"sample_id": sample_id_key}
+        row.update(values)
+        rows.append(row)
+        plot_dict[sample_id_key]["sample_id"] = sample_id_key
 
-    with open(output_file, "w", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        for sample_id_key in sorted_sample_ids:
-            values = merged_data[sample_id_key]
-            row = {"sample_id": sample_id_key}
-            row.update(values)
-            writer.writerow(row)
-            if plot:
-                plot_dict[sample_id_key]["sample_id"] = sample_id_key
+    report_df = pd.DataFrame(rows)
+    report_df = report_df.reindex(columns=[col for col in fieldnames if col in report_df.columns])
+    output_file = os.path.join(output, "report.csv")
+    report_df.to_csv(output_file, index=False)
+
     # run plotting for each software (if available)
     if plot:
-        plot_charts(
+        _report_df, summary_frames = plot_charts(
             plot_dict,
             species,
             output_html_path=os.path.join(output, "report.html"),
             input_template_path=template,
+            interactive_tables=interactive_tables,
+            qualifyr_style=qualifyr_style,
         )
-        shutil.copy(
-            os.path.join(os.path.dirname(template), "bulma.css"), os.path.join(output, "bulma.css")
-        )
+        stylesheet_source = Path(template).with_name("bulma.css")
+        if not stylesheet_source.exists():
+            stylesheet_source = Path(get_default_stylesheet_path())
+        shutil.copy(stylesheet_source, os.path.join(output, "bulma.css"))
         logging.info("Plots generated.")
+    else:
+        summary_frames = build_metric_summary_frames(report_df)
+
+    if xlsx_output:
+        export_summary_workbook(report_df, xlsx_output, summary_frames)
+        logging.info("Wrote XLSX summary to %s", xlsx_output)
 
 
 def check(
     criteria_file,
     update=False,
-    update_url="https://raw.githubusercontent.com/happykhan/genomeqc/refs/heads/main/docs/summary/filtered_metrics.csv",
+    update_url=QUALIBACT_DEFAULT_URL,
 ):
     logging.info("Checking criteria file: %s", criteria_file)
     # Check criteria file if it has all the required fields

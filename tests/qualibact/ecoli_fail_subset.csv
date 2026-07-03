@@ -1,0 +1,3 @@
+sample,species_sylph,N50,number,longest,total_length,Completeness_Specific,Contamination,Total_Coding_Sequences,Genome_Size,GC_Content,N50_verdict,no_of_contigs_verdict,GC_Content_verdict,Completeness_verdict,Contamination_verdict,Total_Coding_Sequences_verdict,Genome_Size_verdict,qc_verdict,no_of_contigs_reason,Total_Coding_Sequences_reason,Genome_Size_reason,GC_Content_reason,N50_reason,Completeness_reason,Contamination_reason
+SAMN42765982,Escherichia coli,126621.0,679.0,312707.0,5738641.0,100.0,0.40,6105.0,5738641.0,50.5585,pass,fail,pass,pass,pass,warn,warn,fail,>670.0,>5800.0,>5700000.0,,,,
+SAMD00006077,Escherichia coli,19474.0,522.0,69909.0,4153626.0,100.0,0.25,4264.0,4153626.0,50.8872,fail,pass,warn,pass,pass,pass,warn,fail,,,<4400000.0,>50.88,<20000.0,,
