@@ -79,6 +79,12 @@ Build docs:
 mkdocs build
 ```
 
+Regenerate manuscript figures and example summary tables:
+
+```bash
+python scripts/create_manuscript_assets.py
+```
+
 Build a wheel:
 
 ```bash

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1520" height="940" viewBox="0 0 1520 940">
+<rect width="100%" height="100%" fill="#f6f8fa" />
+<text x="60" y="70" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#1f2933">speccheck report snapshot</text>
+<text x="60" y="108" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#52616f">Static paper-friendly rendering of the real-panel report summary</text>
+<rect x="60" y="145" width="1400" height="170" rx="18" fill="#ffffff" stroke="#cbd5df" />
+<text x="95" y="200" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#1f2933">9 samples</text>
+<text x="95" y="240" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#52616f">3 QualiBact PASS, 3 WARN, 3 FAIL</text>
+<text x="520" y="200" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#2f6f5e">8 speccheck PASSED</text>
+<text x="520" y="240" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#b42318">1 speccheck FAILED</text>
+<text x="980" y="200" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#1f2933">Outputs</text>
+<text x="980" y="240" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#52616f">report.csv, report.html, report.xlsx</text>
+<rect x="60" y="360" width="1400" height="520" rx="18" fill="#ffffff" stroke="#cbd5df" />
+<text x="95" y="410" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#1f2933">Real-panel sample table</text>
+<text x="95" y="455" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#334155">Sample</text>
+<text x="300" y="455" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#334155">QualiBact</text>
+<text x="475" y="455" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#334155">speccheck</text>
+<text x="660" y="455" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#334155">N50</text>
+<text x="790" y="455" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#334155">Contigs</text>
+<text x="930" y="455" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#334155">Reason</text>
+<text x="95" y="490" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">SAMD00006077</text>
+<text x="300" y="490" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#b42318">FAIL</text>
+<text x="475" y="490" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#b42318">FAILED</text>
+<text x="660" y="490" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">19,510</text>
+<text x="790" y="490" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">522</text>
+<text x="930" y="490" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">Genome_Size &lt;4400000.0; GC_Content &gt;50.88; N50 &lt;20000.0</text>
+<line x1="95" y1="503" x2="1415" y2="503" stroke="#e5eaf0" />
+<text x="95" y="533" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">SAMN42764698</text>
+<text x="300" y="533" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#b7791f">WARN</text>
+<text x="475" y="533" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASSED</text>
+<text x="660" y="533" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">90,639</text>
+<text x="790" y="533" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">532</text>
+<text x="930" y="533" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">Total_Coding_Sequences &gt;5800.0; GC_Content &lt;50.25</text>
+<line x1="95" y1="546" x2="1415" y2="546" stroke="#e5eaf0" />
+<text x="95" y="576" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">SAMN42764704</text>
+<text x="300" y="576" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#b42318">FAIL</text>
+<text x="475" y="576" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASSED</text>
+<text x="660" y="576" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">114,681</text>
+<text x="790" y="576" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">675</text>
+<text x="930" y="576" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">no_of_contigs &gt;670.0; Total_Coding_Sequences &gt;5800.0;...</text>
+<line x1="95" y1="589" x2="1415" y2="589" stroke="#e5eaf0" />
+<text x="95" y="619" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">SAMN42764706</text>
+<text x="300" y="619" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#b7791f">WARN</text>
+<text x="475" y="619" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASSED</text>
+<text x="660" y="619" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">114,262</text>
+<text x="790" y="619" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">665</text>
+<text x="930" y="619" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">no_of_contigs &gt;600.0; Total_Coding_Sequences &gt;5800.0</text>
+<line x1="95" y1="632" x2="1415" y2="632" stroke="#e5eaf0" />
+<text x="95" y="662" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">SAMN42764709</text>
+<text x="300" y="662" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#b7791f">WARN</text>
+<text x="475" y="662" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASSED</text>
+<text x="660" y="662" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">118,350</text>
+<text x="790" y="662" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">660</text>
+<text x="930" y="662" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">no_of_contigs &gt;600.0; Total_Coding_Sequences &gt;5800.0</text>
+<line x1="95" y1="675" x2="1415" y2="675" stroke="#e5eaf0" />
+<text x="95" y="705" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">SAMN42765982</text>
+<text x="300" y="705" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#b42318">FAIL</text>
+<text x="475" y="705" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASSED</text>
+<text x="660" y="705" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">126,621</text>
+<text x="790" y="705" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">679</text>
+<text x="930" y="705" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">no_of_contigs &gt;670.0; Total_Coding_Sequences &gt;5800.0;...</text>
+<line x1="95" y1="718" x2="1415" y2="718" stroke="#e5eaf0" />
+<text x="95" y="748" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">SAMN42766885</text>
+<text x="300" y="748" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASS</text>
+<text x="475" y="748" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASSED</text>
+<text x="660" y="748" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">125,326</text>
+<text x="790" y="748" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">184</text>
+<text x="930" y="748" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">none</text>
+<line x1="95" y1="761" x2="1415" y2="761" stroke="#e5eaf0" />
+<text x="95" y="791" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">SAMN42766886</text>
+<text x="300" y="791" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASS</text>
+<text x="475" y="791" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASSED</text>
+<text x="660" y="791" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">172,285</text>
+<text x="790" y="791" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">159</text>
+<text x="930" y="791" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">none</text>
+<line x1="95" y1="804" x2="1415" y2="804" stroke="#e5eaf0" />
+<text x="95" y="834" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">SAMN42766887</text>
+<text x="300" y="834" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASS</text>
+<text x="475" y="834" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#2f6f5e">PASSED</text>
+<text x="660" y="834" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">123,055</text>
+<text x="790" y="834" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">154</text>
+<text x="930" y="834" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#1f2933">none</text>
+<line x1="95" y1="847" x2="1415" y2="847" stroke="#e5eaf0" />
+</svg>

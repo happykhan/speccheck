@@ -14,6 +14,7 @@ markdown_extensions:
   - admonition
   - attr_list
   - def_list
+  - pymdownx.snippets
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.superfences
@@ -27,5 +28,6 @@ nav:
   - Reports: reports.md
   - QualiBact: qualibact.md
   - Manuscript Assets: manuscript.md
+  - Manuscript Methods: methods.md
   - Code Quality Audit: code-quality.md
   - Development: development.md

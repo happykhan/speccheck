@@ -22,5 +22,6 @@ It is designed for:
 - QualiBact import path for criteria refresh
 - interactive tables in HTML reports
 - compact qualifyr-style summary tables
+- manuscript-ready E. coli example reports and static figures
 
 See the rest of the docs for installation, CLI details, criteria structure, and development notes.

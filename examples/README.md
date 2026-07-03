@@ -45,7 +45,15 @@ Raw downloaded FASTA files and intermediate QUAST outputs are kept under `.demo_
 
 ## Manuscript screenshots
 
-To export PNG screenshots of the example HTML reports:
+To export deterministic manuscript figures, PNGs, SVGs, and the real-panel summary table:
+
+```bash
+python scripts/create_manuscript_assets.py
+```
+
+This writes committed manuscript assets to `examples/qualibact_ecoli/manuscript_assets/` and mirrors figure files into `docs/assets/figures/` for MkDocs.
+
+To export browser screenshots of the full example HTML reports:
 
 ```bash
 scripts/export_report_screenshots.sh
