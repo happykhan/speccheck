@@ -11,6 +11,7 @@
 
 - `report.csv`
 - `report.html` when `--plot` is enabled
+- `report.html` is self-contained, with embedded report styles
 - `report.xlsx` when `--xlsx-output` is supplied
 
 ## HTML report
@@ -30,6 +31,21 @@ python scripts/generate_qualibact_example_reports.py
 ```
 
 This creates manuscript-oriented example outputs under `examples/qualibact_ecoli/`.
+
+Real QualiBact ATB E. coli panel generation:
+
+```bash
+python scripts/build_qualibact_ecoli_demo.py
+```
+
+For Slurm:
+
+```bash
+sbatch scripts/slurm_qualibact_ecoli_demo.sh
+```
+
+This writes `examples/qualibact_ecoli/real_panel/report/` and keeps raw FASTA
+downloads/intermediate QUAST output in `.demo_work/qualibact_ecoli_real/`.
 
 Interactive table behavior:
 

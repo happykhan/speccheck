@@ -14,15 +14,24 @@ FAIL_VALUES = {"failed", "false", "0", "no"}
 PACKAGE_DIR = Path(__file__).resolve().parent
 TEMPLATE_DIR = PACKAGE_DIR / "templates"
 DEFAULT_TEMPLATE_PATH = TEMPLATE_DIR / "report.html"
-DEFAULT_STYLESHEET_PATH = TEMPLATE_DIR / "bulma.css"
+DEFAULT_STYLE_PATH = TEMPLATE_DIR / "report.css"
 
 
 def get_default_template_path():
     return str(DEFAULT_TEMPLATE_PATH)
 
 
-def get_default_stylesheet_path():
-    return str(DEFAULT_STYLESHEET_PATH)
+def get_default_style_path():
+    return str(DEFAULT_STYLE_PATH)
+
+
+def get_embedded_report_styles(template_path=None):
+    style_path = DEFAULT_STYLE_PATH
+    if template_path is not None:
+        candidate = Path(template_path).with_name("report.css")
+        if candidate.exists():
+            style_path = candidate
+    return style_path.read_text(encoding="utf-8")
 
 
 def normalize_status(value):
@@ -111,7 +120,7 @@ def dataframe_to_interactive_table(df, table_id, searchable=True, interactive=Tr
             f'placeholder="Filter rows" data-target="{table_id}" /></div>'
         )
 
-    table_class = "table is-striped is-hover is-fullwidth"
+    table_class = "table report-table"
     if interactive:
         table_class += " js-sort-filter"
 
@@ -411,10 +420,10 @@ def build_report_context(
     if species not in df.columns:
         df[species] = "Unknown"
 
-    groups = df.columns.to_series().str.split(".").str[0]
-    unique_groups = groups.unique()
-    unique_groups = unique_groups[unique_groups != "sample_id"]
     software_dict = {}
+    software_modules = load_modules_with_checks()
+    groups = df.columns.to_series().str.split(".").str[0]
+    unique_groups = [group for group in groups.unique() if group in software_modules]
     for software in unique_groups:
         group_df = df[[col for col in df.columns if col.startswith(software)]].copy()
         group_df = group_df.join(df[species].rename("species"))
@@ -432,12 +441,9 @@ def build_report_context(
             for source, target in alias_map.items():
                 if source in group_df.columns and target not in group_df.columns:
                     group_df[target] = group_df[source]
-        if software in software_modules:
-            software_obj = software_modules[software](group_df)
-            software_dict[software] = software_obj.summary()
-            plotly_jinja_data["software_charts"] += software_obj.plot()
-        else:
-            logging.warning("No plot module found for %s. Skipping plotting.", software)
+        software_obj = software_modules[software](group_df)
+        software_dict[software] = software_obj.summary()
+        plotly_jinja_data["software_charts"] += software_obj.plot()
 
     report_df = df.copy()
     if overall_status is not None:
@@ -494,6 +500,7 @@ def plot_charts(
         interactive_tables=interactive_tables,
         qualifyr_style=qualifyr_style,
     )
+    plotly_jinja_data["embedded_styles"] = get_embedded_report_styles(template_path)
     required_keys = [
         "software_charts",
         "summary_table",
@@ -505,6 +512,7 @@ def plot_charts(
         "metric_summary_tables",
         "qualifyr_style_table",
         "version",
+        "embedded_styles",
     ]
     for key in required_keys:
         if key not in plotly_jinja_data:

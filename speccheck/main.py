@@ -2,16 +2,13 @@ import csv
 import logging
 import os
 import pandas as pd
-import shutil
 import sys
-from pathlib import Path
 
 from speccheck.collect import check_criteria, collect_files, write_to_file
 from speccheck.criteria import get_criteria, get_species_field, validate_criteria
 from speccheck.report import (
     build_metric_summary_frames,
     export_summary_workbook,
-    get_default_stylesheet_path,
     plot_charts,
 )
 from speccheck.update_criteria import QUALIBACT_DEFAULT_URL, update_criteria_file
@@ -205,10 +202,9 @@ def summary(
             interactive_tables=interactive_tables,
             qualifyr_style=qualifyr_style,
         )
-        stylesheet_source = Path(template).with_name("bulma.css")
-        if not stylesheet_source.exists():
-            stylesheet_source = Path(get_default_stylesheet_path())
-        shutil.copy(stylesheet_source, os.path.join(output, "bulma.css"))
+        legacy_stylesheet = os.path.join(output, "bulma.css")
+        if os.path.exists(legacy_stylesheet):
+            os.remove(legacy_stylesheet)
         logging.info("Plots generated.")
     else:
         summary_frames = build_metric_summary_frames(report_df)

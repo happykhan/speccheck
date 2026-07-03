@@ -1,0 +1,10 @@
+sample,species_sylph,N50,number,longest,total_length,Completeness_Specific,Contamination,Total_Coding_Sequences,Genome_Size,GC_Content,N50_verdict,no_of_contigs_verdict,GC_Content_verdict,Completeness_verdict,Contamination_verdict,Total_Coding_Sequences_verdict,Genome_Size_verdict,qc_verdict,no_of_contigs_reason,Total_Coding_Sequences_reason,Genome_Size_reason,GC_Content_reason,N50_reason,Completeness_reason,Contamination_reason
+SAMN42766885,Escherichia coli,120461.0,184.0,684542.0,5043262.0,100.0,0.21,4844.0,5043262.0,50.4198,pass,pass,pass,pass,pass,pass,pass,pass,,,,,,,
+SAMN42766886,Escherichia coli,172285.0,159.0,578018.0,5269811.0,100.0,0.5,5050.0,5269811.0,50.6951,pass,pass,pass,pass,pass,pass,pass,pass,,,,,,,
+SAMN42766887,Escherichia coli,123055.0,154.0,433693.0,5057626.0,100.0,1.06,4871.0,5057626.0,50.2734,pass,pass,pass,pass,pass,pass,pass,pass,,,,,,,
+SAMN42764706,Escherichia coli,114262.0,665.0,297694.0,5695351.0,100.0,0.31,6055.0,5695351.0,50.4387,pass,warn,pass,pass,pass,warn,pass,warn,>600.0,>5800.0,,,,,
+SAMN42764709,Escherichia coli,115086.0,660.0,288131.0,5698775.0,100.0,0.34,6064.0,5698775.0,50.4426,pass,warn,pass,pass,pass,warn,pass,warn,>600.0,>5800.0,,,,,
+SAMN42764698,Escherichia coli,90639.0,532.0,203846.0,5580317.0,100.0,0.35,5833.0,5580317.0,50.2482,pass,pass,warn,pass,pass,warn,pass,warn,,>5800.0,,<50.25,,,
+SAMN42765982,Escherichia coli,126621.0,679.0,312707.0,5738641.0,100.0,0.4,6105.0,5738641.0,50.5585,pass,fail,pass,pass,pass,warn,warn,fail,>670.0,>5800.0,>5700000.0,,,,
+SAMN42764704,Escherichia coli,107916.0,675.0,291178.0,5700804.0,100.0,0.33,6080.0,5700804.0,50.4458,pass,fail,pass,pass,pass,warn,warn,fail,>670.0,>5800.0,>5700000.0,,,,
+SAMD00006077,Escherichia coli,19474.0,522.0,69909.0,4153626.0,100.0,0.25,4264.0,4153626.0,50.8872,fail,pass,warn,pass,pass,pass,warn,fail,,,<4400000.0,>50.88,<20000.0,,

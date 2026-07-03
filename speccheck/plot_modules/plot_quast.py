@@ -2,10 +2,16 @@ import plotly.express as px
 import plotly.offline as pyo
 
 
+def _is_passed(value):
+    return str(value).strip().lower() in {"passed", "pass", "true", "1", "yes"}
+
+
 class Plot_Quast:
     def __init__(self, df):
         self.df = df
-        self.description = "QUAST (Quality Assessment Tool for Genome Assemblies) evaluates genome assemblies by providing metrics such as N50, GC content, and the number of contigs to assess assembly quality."
+        self.description = (
+            "QUAST evaluates assembly contiguity, size, GC content, and related assembly metrics."
+        )
         self.url = "https://quast.sourceforge.net/"
         self.name = "QUAST"
         self.citation = "https://doi.org/10.1093/bioinformatics/btt086"
@@ -18,6 +24,18 @@ class Plot_Quast:
             "citation": self.citation,
         }
 
+    def _apply_layout(self, fig, height):
+        fig.update_layout(
+            height=height,
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#f6f8fa",
+            font={"color": "#1f2933"},
+            margin={"l": 56, "r": 24, "t": 64, "b": 56},
+        )
+        fig.update_xaxes(gridcolor="#d7dde3", zerolinecolor="#aeb8c2")
+        fig.update_yaxes(gridcolor="#d7dde3", zerolinecolor="#aeb8c2")
+        return fig
+
     def _make_scatter_plot(self, col, row, color, title):
         fig = px.scatter(
             self.df,
@@ -29,68 +47,60 @@ class Plot_Quast:
             title=title,
             hover_name="sample_id" if "sample_id" in self.df.columns else None,
             hover_data={"species": False},
+            color_discrete_sequence=["#1f5f8b", "#667085", "#2f6f5e", "#8a6f3d"],
         )
-
-        # Check if there is only one unique species
         if self.df["species"].nunique() == 1:
             fig.update_layout(showlegend=False)
         else:
             fig.update_layout(hovermode="closest", legend_title=color.title())
-        fig.update_layout(height=760)
-        return pyo.plot(fig, include_plotlyjs=False, output_type="div")
+        self._apply_layout(fig, 720)
+        return f'<div class="chart-frame">{pyo.plot(fig, include_plotlyjs=False, output_type="div")}</div>'
+
+    def _status_html(self):
+        status = self.df["all_checks_passed"].astype(str).str.lower()
+        passed_mask = status.isin(["passed", "true", "1", "yes"])
+        if passed_mask.sum() == len(self.df):
+            return (
+                '<div class="status-note pass"><p><strong>Pass:</strong> '
+                "all samples passed the QUAST assembly checks.</p></div>"
+            )
+
+        items = []
+        for col in self.df.columns:
+            if col.endswith(".check") and col != "all_checks_passed":
+                fail_count = len(self.df) - int(self.df[col].map(_is_passed).sum())
+                if fail_count > 0:
+                    col_name = col.split(".")[0]
+                    items.append(f"<li>{fail_count} sample(s) failed the {col_name} check.</li>")
+        return (
+            '<div class="status-note fail"><p><strong>Attention:</strong> '
+            "one or more samples failed QUAST assembly QC.</p><ul>" + "".join(items) + "</ul></div>"
+        )
 
     def plot(self):
         info = self.summary()
-        html_fragment = f"<h2 id=\"{info.get('name').lower()}\">{info.get('name')}</h2>"
-        # Add explanation text
-        html_fragment += f"""
-        <p>QUAST (Quality Assessment Tool for Genome Assemblies) is a tool used to evaluate genome assemblies.
-        It provides various metrics such as N50, GC content, and the number of contigs to assess the quality of assemblies (<a href="{info.get('citation')}">ref</a>).
-        For more information, visit <a href="{info.get('url')}">{info.get('name')}</a>.</p>
-        </p>
-        """
-        # Add a summary of the analysis
-        status = self.df["all_checks_passed"].astype(str).str.lower()
-        passed_mask = status.isin(["passed", "true", "1", "yes"])  # add values you expect
-
-        # If any sample did not pass, add summary
-        if passed_mask.sum() < len(self.df):
-            html_fragment += """
-            <p>In this analysis:</p>
-            <ul>
-            """
-            for col in self.df.columns:
-                if col.endswith(".check") and col != "all_checks_passed":
-                    fail_count = len(self.df) - int(self.df[col].sum())
-                    col_name = col.split(".")[0]
-                    if fail_count > 0:
-                        html_fragment += f'<li><span style="color: red; font-weight: bold;">❌</span> Number of samples that failed due to {col_name}: {fail_count}</li>'
-                    else:
-                        html_fragment += f'<li><span style="color: green; font-weight: bold;">✓</span> All samples that passed {col_name} check.</li>'
-            html_fragment += """
-            </ul>
-            """
-        else:
-            html_fragment += """
-            <p><span style="color: green; font-weight: bold;">✓</span> All samples passed quality checks.</p>
-            """
-        html_fragment += self._make_scatter_plot(
-            col="N50",
-            row="Total length (>= 0 bp)",
-            color="species",
-            title="Distribution of N50 vs Total length",
+        html_fragment = (
+            '<section class="software-block">'
+            '<div class="software-kicker">Assembly contiguity</div>'
+            f'<h2 id="{info["name"].lower()}">{info["name"]}</h2>'
+            f'<p class="software-lede"><a href="{info["url"]}" target="_blank"><strong>QUAST</strong></a> '
+            "summarizes contiguity and assembly size metrics such as N50, contig count, GC content, "
+            f'and total length. <a href="{info["citation"]}" target="_blank">Citation</a>.</p>'
+            '<div class="note-panel"><p>N50 captures the contig length threshold at which half of the assembly '
+            "is contained in contigs of that size or longer. Larger values generally indicate better contiguity.</p></div>"
+            f"{self._status_html()}"
+            + self._make_scatter_plot(
+                col="N50",
+                row="Total length (>= 0 bp)",
+                color="species",
+                title="N50 vs total assembly length",
+            )
+            + self._make_scatter_plot(
+                col="# contigs (>= 0 bp)",
+                row="Largest contig",
+                color="species",
+                title="Contig count vs largest contig",
+            )
+            + "</section>"
         )
-        html_fragment += self._make_scatter_plot(
-            col="# contigs (>= 0 bp)",
-            row="Largest contig",
-            color="species",
-            title="Distribution of # contigs vs largest contig size",
-        )
-        # Add a short explanation of what N50 is,  as a note.
-        # Add a short explanation of what N50 is, as a note.
-        html_fragment += """
-        <p><strong>Note:</strong> N50 is a metric used to assess the quality of genome assemblies.
-        It represents the length of the shortest contig for which the sum of contigs of that length or longer
-        covers at least 50% of the total assembly length. A higher N50 value indicates better assembly quality.</p>
-        """
         return html_fragment

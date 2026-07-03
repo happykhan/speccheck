@@ -1,0 +1,10 @@
+sample_id,qualibact_tier,qualibact_species_sylph,qualibact_reasons,qualibact_N50,qualibact_contigs,qualibact_genome_size,qualibact_gc_content,qualibact_completeness_specific,qualibact_contamination
+SAMN42766885,PASS,Escherichia coli,none,120461.0,184.0,5043262.0,50.4198,100.0,0.21
+SAMN42766886,PASS,Escherichia coli,none,172285.0,159.0,5269811.0,50.6951,100.0,0.5
+SAMN42766887,PASS,Escherichia coli,none,123055.0,154.0,5057626.0,50.2734,100.0,1.06
+SAMN42764706,WARN,Escherichia coli,no_of_contigs >600.0; Total_Coding_Sequences >5800.0,114262.0,665.0,5695351.0,50.4387,100.0,0.31
+SAMN42764709,WARN,Escherichia coli,no_of_contigs >600.0; Total_Coding_Sequences >5800.0,115086.0,660.0,5698775.0,50.4426,100.0,0.34
+SAMN42764698,WARN,Escherichia coli,Total_Coding_Sequences >5800.0; GC_Content <50.25,90639.0,532.0,5580317.0,50.2482,100.0,0.35
+SAMN42765982,FAIL,Escherichia coli,no_of_contigs >670.0; Total_Coding_Sequences >5800.0; Genome_Size >5700000.0,126621.0,679.0,5738641.0,50.5585,100.0,0.4
+SAMN42764704,FAIL,Escherichia coli,no_of_contigs >670.0; Total_Coding_Sequences >5800.0; Genome_Size >5700000.0,107916.0,675.0,5700804.0,50.4458,100.0,0.33
+SAMD00006077,FAIL,Escherichia coli,Genome_Size <4400000.0; GC_Content >50.88; N50 <20000.0,19474.0,522.0,4153626.0,50.8872,100.0,0.25

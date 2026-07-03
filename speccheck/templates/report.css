@@ -1,0 +1,464 @@
+:root {
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --surface-muted: #f1f4f7;
+  --ink: #1f2933;
+  --muted: #5b6773;
+  --line: #d7dde3;
+  --line-strong: #aeb8c2;
+  --accent: #1f5f8b;
+  --accent-muted: #e7f0f8;
+  --pass-bg: #e8f5ee;
+  --pass-ink: #17663a;
+  --fail-bg: #f9e8e8;
+  --fail-ink: #a03333;
+  --warn-bg: #fff6dc;
+  --warn-ink: #7a5a00;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.page-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.page-shell,
+.report-main,
+.overview-grid,
+.panel,
+.hero-card,
+.hero-copy,
+.hero-note,
+.report-charts,
+.report-charts > * {
+  min-width: 0;
+}
+
+.report-header {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  background: var(--surface);
+}
+
+.eyebrow,
+.software-kicker {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.report-header h1,
+.panel h2,
+.metric-summary-card h3,
+.report-charts h2,
+.report-charts h3,
+.hero-copy h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.report-header h1 {
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.report-header h1 span {
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.report-intro {
+  max-width: 76ch;
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+
+.hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(240px, 0.8fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.hero-copy,
+.hero-note,
+.panel,
+.metric-summary-card,
+.software-block {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.hero-copy,
+.hero-note {
+  padding: 14px 16px;
+}
+
+.hero-copy h2,
+.hero-note strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.hero-copy p,
+.hero-note span {
+  margin: 0;
+  color: var(--muted);
+}
+
+.hero-note {
+  background: var(--surface-muted);
+}
+
+.hero-note strong {
+  color: var(--ink);
+  letter-spacing: 0;
+}
+
+.report-main {
+  margin-top: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.panel {
+  padding: 18px;
+  overflow: hidden;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.section-heading h2,
+.panel > h2,
+.software-block > h2 {
+  font-size: 1.2rem;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  color: var(--muted);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.2rem;
+}
+
+.prose li + li {
+  margin-top: 0.25rem;
+}
+
+.software-block {
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.software-block:first-of-type {
+  margin-top: 0;
+}
+
+.software-block > h2 {
+  margin: 0 0 8px;
+}
+
+.software-lede {
+  margin: 0 0 12px;
+  max-width: 78ch;
+  color: var(--muted);
+}
+
+.status-note,
+.note-panel {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.status-note.pass {
+  border-color: #b7dec8;
+  background: var(--pass-bg);
+  color: var(--pass-ink);
+}
+
+.status-note.fail {
+  border-color: #e5bcbc;
+  background: var(--fail-bg);
+  color: var(--fail-ink);
+}
+
+.status-note p,
+.status-note ul,
+.status-note ol,
+.note-panel p {
+  margin: 0;
+}
+
+.status-note ul {
+  margin-top: 8px;
+}
+
+.chart-frame {
+  margin: 12px 0 18px;
+}
+
+.report-charts > p,
+.report-charts > ul,
+.report-charts > ol {
+  max-width: 78ch;
+}
+
+.report-charts div[style*="height"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.report-charts .js-plotly-plot,
+.report-charts .plot-container,
+.report-charts .svg-container,
+.report-charts .plotly,
+.report-charts .plotly-graph-div,
+.report-charts .table-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.report-charts .table-container {
+  margin: 12px 0 18px;
+}
+
+.table-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+
+.table-tools label {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.table-filter {
+  min-width: 14rem;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+}
+
+.table-filter:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(31, 95, 139, 0.16);
+}
+
+.table-container {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table.js-sort-filter thead th {
+  cursor: pointer;
+}
+
+.table.js-sort-filter thead th::after {
+  content: "^";
+  margin-left: 6px;
+  color: #87929d;
+  font-size: 0.75rem;
+}
+
+.table.js-sort-filter thead th[data-direction="asc"]::after {
+  content: "up";
+  color: var(--accent);
+}
+
+.table.js-sort-filter thead th[data-direction="desc"]::after {
+  content: "down";
+  color: var(--accent);
+}
+
+.table tbody td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.table tbody tr:nth-child(even) td {
+  background: #fafbfc;
+}
+
+.table tbody tr:hover td {
+  background: #f2f6fa;
+}
+
+.qc-pass {
+  background: var(--pass-bg) !important;
+  color: var(--pass-ink);
+  font-weight: 700;
+}
+
+.qc-fail {
+  background: var(--fail-bg) !important;
+  color: var(--fail-ink);
+  font-weight: 700;
+}
+
+.qc-pass-text {
+  color: var(--pass-ink);
+  font-weight: 700;
+}
+
+.qc-fail-text {
+  color: var(--fail-ink);
+  font-weight: 700;
+}
+
+.metric-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.metric-summary-card {
+  padding: 14px;
+}
+
+.metric-summary-card h3 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.metric-summary-card .table {
+  min-width: 100%;
+}
+
+.report-charts .table {
+  min-width: 0;
+}
+
+.report-charts td,
+.report-charts th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.plotly-graph-div {
+  min-height: 520px;
+}
+
+.report-footer {
+  max-width: 1180px;
+  margin: 0 auto 24px;
+  padding: 0 20px;
+  color: var(--muted);
+  text-align: left;
+}
+
+.report-footer p {
+  margin: 0;
+}
+
+@media (max-width: 920px) {
+  .hero-card,
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    padding: 16px 12px 36px;
+  }
+
+  .report-header,
+  .panel,
+  .software-block {
+    padding: 14px;
+  }
+
+  .table {
+    min-width: 620px;
+  }
+
+  .plotly-graph-div {
+    min-height: 440px;
+  }
+}

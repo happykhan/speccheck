@@ -1,7 +1,9 @@
 class Plot_Sylph:
     def __init__(self, df):
         self.df = df
-        self.description = "Sylph is a tool for phylogenetic placement of microbiome samples, providing metrics to understand the taxonomic composition of microbial communities."
+        self.description = (
+            "Sylph estimates dominant species composition and abundance across samples."
+        )
         self.url = "https://github.com/bluenote-1577/sylph"
         self.name = "Sylph"
         self.citation = "https://www.nature.com/articles/s41587-024-02412-y"
@@ -14,107 +16,66 @@ class Plot_Sylph:
             "citation": self.citation,
         }
 
-    def plot(self):
-        # TODO: Improve reporting of **multiple species** per sample.
-        # TODO: Add explanation for **why a sample failed**, if applicable.
-
-        # Create a plot for # contigs (>= 1000 bp) group by species
-        html_fragment = '<h2 id="sylph">Sylph Plots</h2>'
-        summary = self.summary()
-        html_fragment += f"""
-        <p>Sylph is a tool for phylogenetic placement of microbiome samples.
-        It analyzes sequencing data and provides metrics to understand the taxonomic composition of microbial communities.
-        For more information, visit the <a href="{summary.get('url')}" target="_blank">the website</a>. [citation: <a href="{summary.get('citation')}" target="_blank">Sylph paper</a>]</p>
-        </p>
-        """
-        # Add a summary of the analysis
+    def _status_html(self):
         status = self.df["all_checks_passed"].astype(str).str.lower()
-        passed_mask = status.isin(
-            ["passed", "true", "1", "yes"]
-        )  # add values that is expected expect
+        passed_mask = status.isin(["passed", "true", "1", "yes"])
+        if passed_mask.sum() == len(self.df):
+            return (
+                '<div class="status-note pass"><p><strong>Pass:</strong> '
+                "all samples passed the Sylph checks.</p></div>"
+            )
 
-        # If any sample did not pass, add summary
-        # Add a summary of the analysis
-        status = self.df["all_checks_passed"].astype(str).str.lower()
-        passed_mask = status.isin(["passed", "true", "1", "yes"])  # add values you expect
-
-        # If any sample did not pass, add summary
-        if passed_mask.sum() < len(self.df):
-            html_fragment += """
-            <p>In this analysis:</p>
-            <ul>
-            """
-            for col in self.df.columns:
-                if col.endswith(".check") and col != "all_checks_passed":
-                    # normalize this column to boolean (True = passed)
-                    col_series = self.df[col].astype(str).str.lower()
-                    col_pass_mask = col_series.isin(["passed", "true", "1", "yes"])
-                    fail_count = len(self.df) - int(col_pass_mask.sum())
+        items = []
+        for col in self.df.columns:
+            if col.endswith(".check") and col != "all_checks_passed":
+                col_series = self.df[col].astype(str).str.lower()
+                col_pass_mask = col_series.isin(["passed", "true", "1", "yes"])
+                fail_count = len(self.df) - int(col_pass_mask.sum())
+                if fail_count > 0:
                     col_name = col.split(".")[0]
-                    if fail_count > 0:
-                        html_fragment += f'<li><span style="color: red; font-weight: bold;">❌</span> Number of samples that failed due to {col_name}: {fail_count}</li>'
-                    else:
-                        html_fragment += f'<li><span style="color: green; font-weight: bold;">✓</span> All samples that passed {col_name} check.</li>'
-            html_fragment += """
-            </ul>
-            """
-        else:
-            html_fragment += """
-            <p><span style="color: green; font-weight: bold;">✓</span> All samples passed quality checks.</p>
-            """
-        # Create a table of the dataframe, with the check results
-        html_fragment += """
-        <div class="table-container">
-            <table class="table is-striped is-fullwidth">
-                <thead>
-                    <tr>
-                        <th>Sample</th>
-                        <th>Top Species</th>
-                        <th>Top Species ANI</th>
-                        <th># Genomes</th>
-                        <th>All Detected Species</th>
-                        <th>All Checks Passed</th>
-                    </tr>
-                </thead>
-                <tbody>
-        """
+                    items.append(f"<li>{fail_count} sample(s) failed the {col_name} check.</li>")
+        return (
+            '<div class="status-note fail"><p><strong>Attention:</strong> '
+            "one or more samples failed Sylph QC.</p><ul>" + "".join(items) + "</ul></div>"
+        )
+
+    def plot(self):
+        summary = self.summary()
+        html_fragment = (
+            '<section class="software-block">'
+            '<div class="software-kicker">Taxonomic abundance</div>'
+            '<h2 id="sylph">Sylph</h2>'
+            f'<p class="software-lede"><a href="{summary["url"]}" target="_blank"><strong>Sylph</strong></a> '
+            "summarizes dominant species calls and abundance-style signals from the sample set. "
+            f'<a href="{summary["citation"]}" target="_blank">Citation</a>.</p>'
+            f"{self._status_html()}"
+            '<div class="table-container"><table class="table report-table"><thead><tr>'
+            "<th>Sample</th><th>Top species</th><th>Top species ANI</th><th># genomes</th>"
+            "<th>All detected species</th><th>QC</th></tr></thead><tbody>"
+        )
 
         for idx, row in self.df.iterrows():
-            # convert everthing in the row into a string
             row = {k: str(v) if v is not None else "N/A" for k, v in row.items()}
-            sample_id = idx
-            top_species = row.get("top_species", "N/A")
-            top_ani = row.get("top_adjusted_ani", "N/A")
-            num_genomes = row.get("number_of_genomes", "N/A")
-
-            # Get all species and abundances for the tooltip
             all_species = row.get("species_name", "").split(";")
             all_abundances = row.get("taxonomic_abundances", "").split(";")
-
-            # Create a formatted list for all species
             species_breakdown = "<br>".join(
                 [f"{s}: {a}%" for s, a in zip(all_species, all_abundances, strict=False) if s]
             )
-
             all_checks_val = str(row.get("all_checks_passed", "")).lower()
             all_checks_passed = all_checks_val in ["passed", "true", "1", "yes"]
-            all_checks_display = "✓" if all_checks_passed else "❌"
-            all_checks_color = "color: green;" if all_checks_passed else "color: red;"
+            qc_label = "PASSED" if all_checks_passed else "FAILED"
+            qc_class = "qc-pass" if all_checks_passed else "qc-fail"
 
-            html_fragment += f"""
-                    <tr>
-                        <td>{sample_id}</td>
-                        <td>{top_species}</td>
-                        <td>{top_ani}</td>
-                        <td>{num_genomes}</td>
-                        <td>{species_breakdown}</td>
-                        <td style="{all_checks_color}">{all_checks_display}</td>
-                    </tr>
-            """
+            html_fragment += (
+                "<tr>"
+                f"<td>{idx}</td>"
+                f"<td>{row.get('top_species', 'N/A')}</td>"
+                f"<td>{row.get('top_adjusted_ani', 'N/A')}</td>"
+                f"<td>{row.get('number_of_genomes', 'N/A')}</td>"
+                f"<td>{species_breakdown}</td>"
+                f'<td class="{qc_class}">{qc_label}</td>'
+                "</tr>"
+            )
 
-        html_fragment += """
-                </tbody>
-            </table>
-        </div>
-        """
+        html_fragment += "</tbody></table></div></section>"
         return html_fragment

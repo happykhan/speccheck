@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>speccheck QC report</title>
+    <script src="https://cdn.plot.ly/plotly-3.0.0-rc.2.min.js" charset="utf-8"></script>
+    <style>
+:root {
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --surface-muted: #f1f4f7;
+  --ink: #1f2933;
+  --muted: #5b6773;
+  --line: #d7dde3;
+  --line-strong: #aeb8c2;
+  --accent: #1f5f8b;
+  --accent-muted: #e7f0f8;
+  --pass-bg: #e8f5ee;
+  --pass-ink: #17663a;
+  --fail-bg: #f9e8e8;
+  --fail-ink: #a03333;
+  --warn-bg: #fff6dc;
+  --warn-ink: #7a5a00;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.page-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.page-shell,
+.report-main,
+.overview-grid,
+.panel,
+.hero-card,
+.hero-copy,
+.hero-note,
+.report-charts,
+.report-charts > * {
+  min-width: 0;
+}
+
+.report-header {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  background: var(--surface);
+}
+
+.eyebrow,
+.software-kicker {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.report-header h1,
+.panel h2,
+.metric-summary-card h3,
+.report-charts h2,
+.report-charts h3,
+.hero-copy h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.report-header h1 {
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.report-header h1 span {
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.report-intro {
+  max-width: 76ch;
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+
+.hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(240px, 0.8fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.hero-copy,
+.hero-note,
+.panel,
+.metric-summary-card,
+.software-block {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.hero-copy,
+.hero-note {
+  padding: 14px 16px;
+}
+
+.hero-copy h2,
+.hero-note strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.hero-copy p,
+.hero-note span {
+  margin: 0;
+  color: var(--muted);
+}
+
+.hero-note {
+  background: var(--surface-muted);
+}
+
+.hero-note strong {
+  color: var(--ink);
+  letter-spacing: 0;
+}
+
+.report-main {
+  margin-top: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.panel {
+  padding: 18px;
+  overflow: hidden;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.section-heading h2,
+.panel > h2,
+.software-block > h2 {
+  font-size: 1.2rem;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  color: var(--muted);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.2rem;
+}
+
+.prose li + li {
+  margin-top: 0.25rem;
+}
+
+.software-block {
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.software-block:first-of-type {
+  margin-top: 0;
+}
+
+.software-block > h2 {
+  margin: 0 0 8px;
+}
+
+.software-lede {
+  margin: 0 0 12px;
+  max-width: 78ch;
+  color: var(--muted);
+}
+
+.status-note,
+.note-panel {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.status-note.pass {
+  border-color: #b7dec8;
+  background: var(--pass-bg);
+  color: var(--pass-ink);
+}
+
+.status-note.fail {
+  border-color: #e5bcbc;
+  background: var(--fail-bg);
+  color: var(--fail-ink);
+}
+
+.status-note p,
+.status-note ul,
+.status-note ol,
+.note-panel p {
+  margin: 0;
+}
+
+.status-note ul {
+  margin-top: 8px;
+}
+
+.chart-frame {
+  margin: 12px 0 18px;
+}
+
+.report-charts > p,
+.report-charts > ul,
+.report-charts > ol {
+  max-width: 78ch;
+}
+
+.report-charts div[style*="height"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.report-charts .js-plotly-plot,
+.report-charts .plot-container,
+.report-charts .svg-container,
+.report-charts .plotly,
+.report-charts .plotly-graph-div,
+.report-charts .table-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.report-charts .table-container {
+  margin: 12px 0 18px;
+}
+
+.table-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+
+.table-tools label {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.table-filter {
+  min-width: 14rem;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+}
+
+.table-filter:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(31, 95, 139, 0.16);
+}
+
+.table-container {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table.js-sort-filter thead th {
+  cursor: pointer;
+}
+
+.table.js-sort-filter thead th::after {
+  content: "^";
+  margin-left: 6px;
+  color: #87929d;
+  font-size: 0.75rem;
+}
+
+.table.js-sort-filter thead th[data-direction="asc"]::after {
+  content: "up";
+  color: var(--accent);
+}
+
+.table.js-sort-filter thead th[data-direction="desc"]::after {
+  content: "down";
+  color: var(--accent);
+}
+
+.table tbody td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.table tbody tr:nth-child(even) td {
+  background: #fafbfc;
+}
+
+.table tbody tr:hover td {
+  background: #f2f6fa;
+}
+
+.qc-pass {
+  background: var(--pass-bg) !important;
+  color: var(--pass-ink);
+  font-weight: 700;
+}
+
+.qc-fail {
+  background: var(--fail-bg) !important;
+  color: var(--fail-ink);
+  font-weight: 700;
+}
+
+.qc-pass-text {
+  color: var(--pass-ink);
+  font-weight: 700;
+}
+
+.qc-fail-text {
+  color: var(--fail-ink);
+  font-weight: 700;
+}
+
+.metric-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.metric-summary-card {
+  padding: 14px;
+}
+
+.metric-summary-card h3 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.metric-summary-card .table {
+  min-width: 100%;
+}
+
+.report-charts .table {
+  min-width: 0;
+}
+
+.report-charts td,
+.report-charts th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.plotly-graph-div {
+  min-height: 520px;
+}
+
+.report-footer {
+  max-width: 1180px;
+  margin: 0 auto 24px;
+  padding: 0 20px;
+  color: var(--muted);
+  text-align: left;
+}
+
+.report-footer p {
+  margin: 0;
+}
+
+@media (max-width: 920px) {
+  .hero-card,
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    padding: 16px 12px 36px;
+  }
+
+  .report-header,
+  .panel,
+  .software-block {
+    padding: 14px;
+  }
+
+  .table {
+    min-width: 620px;
+  }
+
+  .plotly-graph-div {
+    min-height: 440px;
+  }
+}
+
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <header class="report-header">
+            <div class="eyebrow">speccheck quality control report</div>
+            
+                <h1>QC Report <span>speccheck 1.2.2</span></h1>
+            
+            <p class="report-intro">
+                Summary of assembled sample QC results, criteria checks, and software-specific diagnostics.
+            </p>
+            <div class="hero-card">
+                <div class="hero-copy">
+                    <h2>Dataset overview</h2>
+                    <p>There are 9 samples included with <span class='qc-pass-text'>8 passing</span> and <span class='qc-fail-text'>1 failing</span> (88.89% pass rate).</p>
+                </div>
+                <div class="hero-note">
+                    <strong>QC_PASS</strong>
+                    <span>Passed indicates that every enabled software check passed for that sample.</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="report-main">
+            <section class="overview-grid">
+                <article class="panel prose">
+                    <h2>Software in report</h2>
+                    <p>Software included in this report:</p><ul><li><b><a href="#checkm">CheckM</a></b>: CheckM assesses assembly completeness and contamination using conserved marker genes. (<a href="https://github.com/Ecogenomics/CheckM">website</a>) (<a href="https://genome.cshlp.org/content/25/7/1043">ref</a>)</li><li><b><a href="#quast">QUAST</a></b>: QUAST evaluates assembly contiguity, size, GC content, and related assembly metrics. (<a href="https://quast.sourceforge.net/">website</a>) (<a href="https://doi.org/10.1093/bioinformatics/btt086">ref</a>)</li><li><b><a href="#speciator">Speciator</a></b>: Speciator assigns assembled genomes to species. (<a href="https://cgps.gitbook.io/pathogenwatch/technical-descriptions/species-assignment/speciator">website</a>)</li><li><b><a href="#sylph">Sylph</a></b>: Sylph estimates dominant species composition and abundance across samples. (<a href="https://github.com/bluenote-1577/sylph">website</a>) (<a href="https://www.nature.com/articles/s41587-024-02412-y">ref</a>)</li></ul>
+                </article>
+                <article class="panel prose">
+                    <h2>Top failure reasons</h2>
+                    <p>This was the top reason for failure:</p><ol><li><b><a href="#quast">QUAST</a></b>: 1 failures</li></ol>
+                </article>
+            </section>
+
+            <section class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Overview</div>
+                        <h2>Sample QC status</h2>
+                    </div>
+                </div>
+                <p>This table shows the overall QC status for each sample.</p><div class="table-container"><table id="summary-table" class="table report-table"><thead><tr><th data-type="string">sample_id</th><th data-type="status">Checkm</th><th data-type="status">Quast</th><th data-type="status">Speciator</th><th data-type="status">Sylph</th><th data-type="status">all_checks_passed</th><th data-type="status">QC_PASS</th></tr></thead><tbody><tr><td class="">SAMN42766886</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMN42764704</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMN42764706</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMN42766885</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMN42764709</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMN42765982</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMN42764698</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMN42766887</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMD00006077</td><td class="qc-pass">PASSED</td><td class="qc-fail">FAILED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-fail">FAILED</td><td class="qc-fail">FAILED</td></tr></tbody></table></div>
+            </section>
+
+            <section class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Metrics</div>
+                        <h2>Compact summary tables</h2>
+                    </div>
+                </div>
+                <p>Compact summary tables give a quick view of key QC metrics across the dataset.</p><section class="metric-summary-grid"><article class="metric-summary-card"><h3>Species assignment</h3><div class="table-container"><table id="metric-summary-1" class="table report-table"><thead><tr><th data-type="string">Metric</th><th data-type="string">Most common</th><th data-type="numeric">Unique values</th><th data-type="numeric">Missing</th><th data-type="string">Min</th><th data-type="string">Median</th><th data-type="string">Max</th></tr></thead><tbody><tr><td class="">Speciator.speciesName</td><td class="">Escherichia coli</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">Speciator.confidence</td><td class="">good</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">Sylph.top_species</td><td class="">Escherichia coli</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">Sylph.top_taxonomic_abundance</td><td class=""></td><td class=""></td><td class="">0</td><td class="">100</td><td class="">100</td><td class="">100</td></tr></tbody></table></div></article><article class="metric-summary-card"><h3>Assembly quality</h3><div class="table-container"><table id="metric-summary-2" class="table report-table"><thead><tr><th data-type="string">Metric</th><th data-type="string">Min</th><th data-type="string">Median</th><th data-type="string">Max</th><th data-type="numeric">Missing</th></tr></thead><tbody><tr><td class="">Quast.N50</td><td class="">19510</td><td class="">118,350</td><td class="">172285</td><td class="">0</td></tr><tr><td class="">Quast.# contigs (&gt;= 0 bp)</td><td class="">154</td><td class="">532</td><td class="">679</td><td class="">0</td></tr><tr><td class="">Quast.Total length</td><td class="">4122722</td><td class="">5,503,754</td><td class="">5624280</td><td class="">0</td></tr><tr><td class="">Quast.GC (%)</td><td class="">50.23</td><td class="">50.39</td><td class="">50.90</td><td class="">0</td></tr><tr><td class="">Quast.Largest contig</td><td class="">69909</td><td class="">297,694</td><td class="">684542</td><td class="">0</td></tr></tbody></table></div></article><article class="metric-summary-card"><h3>Completeness and contamination</h3><div class="table-container"><table id="metric-summary-3" class="table report-table"><thead><tr><th data-type="string">Metric</th><th data-type="string">Min</th><th data-type="string">Median</th><th data-type="string">Max</th><th data-type="numeric">Missing</th></tr></thead><tbody><tr><td class="">Checkm.Completeness</td><td class="">100</td><td class="">100</td><td class="">100</td><td class="">0</td></tr><tr><td class="">Checkm.Contamination</td><td class="">0.21</td><td class="">0.34</td><td class="">1.06</td><td class="">0</td></tr></tbody></table></div></article><article class="metric-summary-card"><h3>Coverage and abundance</h3><div class="table-container"><table id="metric-summary-4" class="table report-table"><thead><tr><th data-type="string">Metric</th><th data-type="status">Min</th><th data-type="status">Median</th><th data-type="status">Max</th><th data-type="numeric">Missing</th></tr></thead><tbody><tr><td class="">Sylph.number_of_genomes</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="">0</td></tr></tbody></table></div></article></section>
+            </section>
+
+            
+
+            <section class="panel prose report-charts">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Diagnostics</div>
+                        <h2>Software-specific plots</h2>
+                    </div>
+                </div>
+                <section class="software-block"><div class="software-kicker">Assembly integrity</div><h2 id="checkm">CheckM</h2><p class="software-lede"><a href="https://github.com/Ecogenomics/CheckM" target="_blank"><strong>CheckM</strong></a> estimates completeness and contamination from lineage-specific single-copy markers. <a href="https://genome.cshlp.org/content/25/7/1043" target="_blank">Citation</a>.</p><div class="note-panel"><p>Interpretation focuses on marker completeness, contamination, GC content, and estimated genome size relative to the expected organism profile.</p></div><div class="status-note pass"><p><strong>Pass:</strong> all samples passed the CheckM QC checks.</p></div><div class="chart-frame"><div style="height:700px; width:100%;">                            <div id="d45e0950-b716-46f9-9eb9-19486d9744b7" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("d45e0950-b716-46f9-9eb9-19486d9744b7")) {                    Plotly.newPlot(                        "d45e0950-b716-46f9-9eb9-19486d9744b7",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eContamination=%{x}\u003cbr\u003eCompleteness=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAAAAA4D8fhetRuB7VP9ejcD0K19M\u002f4XoUrkfhyj\u002fD9Shcj8LVP5qZmZmZmdk\u002fZmZmZmZm1j\u002f2KFyPwvXwPwAAAAAAANA\u002f"},"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAWUAAAAAAAABZQAAAAAAAAFlAAAAAAAAAWUAAAAAAAABZQAAAAAAAAFlAAAAAAAAAWUAAAAAAAABZQAAAAAAAAFlA"},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eContamination=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"f8","bdata":"AAAAAAAA4D8fhetRuB7VP9ejcD0K19M\u002f4XoUrkfhyj\u002fD9Shcj8LVP5qZmZmZmdk\u002fZmZmZmZm1j\u002f2KFyPwvXwPwAAAAAAANA\u002f"},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eCompleteness=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"f8","bdata":"AAAAAAAAWUAAAAAAAABZQAAAAAAAAFlAAAAAAAAAWUAAAAAAAABZQAAAAAAAAFlAAAAAAAAAWUAAAAAAAABZQAAAAAAAAFlA"},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":700,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Contamination vs completeness"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Contamination"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"Completeness"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div><div class="chart-frame"><div style="height:700px; width:100%;">                            <div id="f3bff803-a06b-405d-9fb6-f9fab19cfb64" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("f3bff803-a06b-405d-9fb6-f9fab19cfb64")) {                    Plotly.newPlot(                        "f3bff803-a06b-405d-9fb6-f9fab19cfb64",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eGenome_Size=%{x}\u003cbr\u003eGC_Content=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAwEwaVEEAAAAAMb9VQQAAAMDduVVBAAAAgA89U0EAAADANb1VQQAAAEAk5FVBAAAAQIdJVUEAAACAFktTQQAAAACNsE9B"},"xaxis":"x","y":{"dtype":"f8","bdata":"jLlrCflYSUBFR3L5DzlJQKpgVFInOElAL26jAbw1SUDUmuYdpzhJQHNoke18R0lAAG+BBMUfSUD7XG3F\u002fiJJQG+BBMWPcUlA"},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eGenome_Size=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"f8","bdata":"AAAAwEwaVEEAAAAAMb9VQQAAAMDduVVBAAAAgA89U0EAAADANb1VQQAAAEAk5FVBAAAAQIdJVUEAAACAFktTQQAAAACNsE9B"},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eGC_Content=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"f8","bdata":"jLlrCflYSUBFR3L5DzlJQKpgVFInOElAL26jAbw1SUDUmuYdpzhJQHNoke18R0lAAG+BBMUfSUD7XG3F\u002fiJJQG+BBMWPcUlA"},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":700,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Estimated genome size vs GC content"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Genome_Size"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"GC_Content"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div><div class="chart-frame"><div style="height:700px; width:100%;">                            <div id="d9798707-4048-4888-8b70-919740e1a434" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("d9798707-4048-4888-8b70-919740e1a434")) {                    Plotly.newPlot(                        "d9798707-4048-4888-8b70-919740e1a434",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eTotal_Contigs=%{x}\u003cbr\u003eContig_N50=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAAADgY0AAAAAAABiFQAAAAAAAyIRAAAAAAAAAZ0AAAAAAAKCEQAAAAAAAOIVAAAAAAACggEAAAAAAAEBjQAAAAAAAUIBA"},"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAOgHBUEAAAAAwFj6QAAAAABg5ftAAAAAANBo\u002fUAAAAAA4Bj8QAAAAADQ6f5AAAAAAPAg9kAAAAAA8Ar+QAAAAACABNNA"},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eTotal_Contigs=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"f8","bdata":"AAAAAADgY0AAAAAAABiFQAAAAAAAyIRAAAAAAAAAZ0AAAAAAAKCEQAAAAAAAOIVAAAAAAACggEAAAAAAAEBjQAAAAAAAUIBA"},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eContig_N50=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"f8","bdata":"AAAAAOgHBUEAAAAAwFj6QAAAAABg5ftAAAAAANBo\u002fUAAAAAA4Bj8QAAAAADQ6f5AAAAAAPAg9kAAAAAA8Ar+QAAAAACABNNA"},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":700,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Contig count vs N50"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Total_Contigs"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"Contig_N50"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div></section><section class="software-block"><div class="software-kicker">Assembly contiguity</div><h2 id="quast">QUAST</h2><p class="software-lede"><a href="https://quast.sourceforge.net/" target="_blank"><strong>QUAST</strong></a> summarizes contiguity and assembly size metrics such as N50, contig count, GC content, and total length. <a href="https://doi.org/10.1093/bioinformatics/btt086" target="_blank">Citation</a>.</p><div class="note-panel"><p>N50 captures the contig length threshold at which half of the assembly is contained in contigs of that size or longer. Larger values generally indicate better contiguity.</p></div><div class="status-note fail"><p><strong>Attention:</strong> one or more samples failed QUAST assembly QC.</p><ul><li>1 sample(s) failed the N50 check.</li></ul></div><div class="chart-frame"><div style="height:720px; width:100%;">                            <div id="67bd1216-35d6-4e47-a86a-0dfb6cf2e5ba" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("67bd1216-35d6-4e47-a86a-0dfb6cf2e5ba")) {                    Plotly.newPlot(                        "67bd1216-35d6-4e47-a86a-0dfb6cf2e5ba",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eTotal length (\u003e= 0 bp)=%{x}\u003cbr\u003eN50=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"i4","bdata":"M2lQAMT8VgB351YAPvRMANf0VgCRkFcAHSZVAFosTQAaYT8A"},"xaxis":"x","y":{"dtype":"i4","bdata":"\u002faACAPm\u002fAQBWvgEAjukBAE7OAQCd7gEAD2IBAK\u002fgAQA2TAAA"},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eTotal length (\u003e= 0 bp)=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"i4","bdata":"M2lQAMT8VgB351YAPvRMANf0VgCRkFcAHSZVAFosTQAaYT8A"},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eN50=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"i4","bdata":"\u002faACAPm\u002fAQBWvgEAjukBAE7OAQCd7gEAD2IBAK\u002fgAQA2TAAA"},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":720,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"N50 vs total assembly length"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Total length (\u003e= 0 bp)"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"N50"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div><div class="chart-frame"><div style="height:720px; width:100%;">                            <div id="6f7d3417-994b-4003-a5b6-6015ba0fc0a6" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("6f7d3417-994b-4003-a5b6-6015ba0fc0a6")) {                    Plotly.newPlot(                        "6f7d3417-994b-4003-a5b6-6015ba0fc0a6",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eLargest contig=%{x}\u003cbr\u003e# contigs (\u003e= 0 bp)=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"i4","bdata":"4tEIAGpxBADeigQA\u002fnEKAINlBACDxQQARhwDAB2eBgAVEQEA"},"xaxis":"x","y":{"dtype":"i2","bdata":"nwCjApkCuACUAqcCFAKaAAoC"},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eLargest contig=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"i4","bdata":"4tEIAGpxBADeigQA\u002fnEKAINlBACDxQQARhwDAB2eBgAVEQEA"},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003e# contigs (\u003e= 0 bp)=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766886","SAMN42764704","SAMN42764706","SAMN42766885","SAMN42764709","SAMN42765982","SAMN42764698","SAMN42766887","SAMD00006077"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"i2","bdata":"nwCjApkCuACUAqcCFAKaAAoC"},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":720,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Contig count vs largest contig"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Largest contig"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"# contigs (\u003e= 0 bp)"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div></section><section class="software-block"><div class="software-kicker">Species assignment</div><h2 id="speciator">Speciator</h2><p class="software-lede"><a href="https://cgps.gitbook.io/pathogenwatch/technical-descriptions/species-assignment/speciator" target="_blank"><strong>Speciator</strong></a> assigns each assembly to a species and reports assignment confidence.</p><div class="status-note pass"><p><strong>Single-species assignment:</strong> Escherichia coli across all samples.</p></div><div class="table-container"><table class="table report-table" id="speciator-results"><thead><tr><th data-type="string">Species</th><th data-type="string">Confidence</th></tr></thead><tbody><tr><td>Escherichia coli</td><td>good</td></tr><tr><td>Escherichia coli</td><td>good</td></tr><tr><td>Escherichia coli</td><td>good</td></tr><tr><td>Escherichia coli</td><td>good</td></tr><tr><td>Escherichia coli</td><td>good</td></tr><tr><td>Escherichia coli</td><td>good</td></tr><tr><td>Escherichia coli</td><td>good</td></tr><tr><td>Escherichia coli</td><td>good</td></tr><tr><td>Escherichia coli</td><td>good</td></tr></tbody></table></div><div class="chart-frame"><div style="height:560px; width:100%;">                            <div id="48058ed8-e111-4be3-a02c-7bcaf2c74bc6" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("48058ed8-e111-4be3-a02c-7bcaf2c74bc6")) {                    Plotly.newPlot(                        "48058ed8-e111-4be3-a02c-7bcaf2c74bc6",                        [{"domain":{"x":[0.0,1.0],"y":[0.0,1.0]},"hovertemplate":"Species=%{label}\u003cbr\u003eCount=%{value}\u003cextra\u003e\u003c\u002fextra\u003e","labels":["Escherichia coli"],"legendgroup":"","name":"","showlegend":true,"values":{"dtype":"i1","bdata":"CQ=="},"type":"pie"}],                        {"font":{"color":"#1f2933"},"height":560,"hovermode":"closest","legend":{"tracegroupgap":0},"margin":{"b":24,"l":24,"r":24,"t":64},"paper_bgcolor":"#ffffff","piecolorway":["#1f5f8b","#667085","#2f6f5e","#8a6f3d"],"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Species distribution"}},                        {"responsive": true}                    )                };            </script>        </div></div></section><section class="software-block"><div class="software-kicker">Taxonomic abundance</div><h2 id="sylph">Sylph</h2><p class="software-lede"><a href="https://github.com/bluenote-1577/sylph" target="_blank"><strong>Sylph</strong></a> summarizes dominant species calls and abundance-style signals from the sample set. <a href="https://www.nature.com/articles/s41587-024-02412-y" target="_blank">Citation</a>.</p><div class="status-note pass"><p><strong>Pass:</strong> all samples passed the Sylph checks.</p></div><div class="table-container"><table class="table report-table"><thead><tr><th>Sample</th><th>Top species</th><th>Top species ANI</th><th># genomes</th><th>All detected species</th><th>QC</th></tr></thead><tbody><tr><td>SAMN42766886</td><td>Escherichia coli</td><td>99.9</td><td>1</td><td>Escherichia coli: 100.0%</td><td class="qc-pass">PASSED</td></tr><tr><td>SAMN42764704</td><td>Escherichia coli</td><td>99.9</td><td>1</td><td>Escherichia coli: 100.0%</td><td class="qc-pass">PASSED</td></tr><tr><td>SAMN42764706</td><td>Escherichia coli</td><td>99.9</td><td>1</td><td>Escherichia coli: 100.0%</td><td class="qc-pass">PASSED</td></tr><tr><td>SAMN42766885</td><td>Escherichia coli</td><td>99.9</td><td>1</td><td>Escherichia coli: 100.0%</td><td class="qc-pass">PASSED</td></tr><tr><td>SAMN42764709</td><td>Escherichia coli</td><td>99.9</td><td>1</td><td>Escherichia coli: 100.0%</td><td class="qc-pass">PASSED</td></tr><tr><td>SAMN42765982</td><td>Escherichia coli</td><td>99.9</td><td>1</td><td>Escherichia coli: 100.0%</td><td class="qc-pass">PASSED</td></tr><tr><td>SAMN42764698</td><td>Escherichia coli</td><td>99.9</td><td>1</td><td>Escherichia coli: 100.0%</td><td class="qc-pass">PASSED</td></tr><tr><td>SAMN42766887</td><td>Escherichia coli</td><td>99.9</td><td>1</td><td>Escherichia coli: 100.0%</td><td class="qc-pass">PASSED</td></tr><tr><td>SAMD00006077</td><td>Escherichia coli</td><td>99.9</td><td>1</td><td>Escherichia coli: 100.0%</td><td class="qc-pass">PASSED</td></tr></tbody></table></div></section>
+            </section>
+        </main>
+    </div>
+
+    <footer class="report-footer">
+        <p>Produced with <a href="https://github.com/happykhan/speccheck">speccheck</a> version 1.2.2</p>
+    </footer>
+
+    
+</body>
+</html>

@@ -1,7 +1,7 @@
 class Plot_Ariba:
     def __init__(self, df):
         self.df = df
-        self.description = "ARIBA is a tool for genotyping from sequencing reads."
+        self.description = "ARIBA summarizes resistance or genotyping hits from sequencing reads."
         self.url = "https://github.com/sanger-pathogens/ariba"
         self.name = "ARIBA"
         self.citation = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5695208/"
@@ -15,33 +15,19 @@ class Plot_Ariba:
         }
 
     def plot(self):
-        # Create a summary table instead of a bar chart
-        html_fragment = '<h2 id="ariba">Ariba Results</h2>'
+        summary = self.summary()
+        html_fragment = (
+            '<section class="software-block">'
+            '<div class="software-kicker">Genotyping summary</div>'
+            '<h2 id="ariba">ARIBA</h2>'
+            f'<p class="software-lede"><a href="{summary["url"]}" target="_blank"><strong>ARIBA</strong></a> '
+            "identifies resistance genes and variant calls from read data. "
+            f'<a href="{summary["citation"]}" target="_blank">Citation</a>.</p>'
+            '<div class="table-container"><table class="table report-table"><thead><tr>'
+            "<th>Sample</th><th>Species</th><th>Passed</th><th>Total</th>"
+            "<th>Percent (%)</th><th>Percent check</th></tr></thead><tbody>"
+        )
 
-        # Add description
-        html_fragment += """
-        <p>ARIBA (Antimicrobial Resistance Identification By Assembly) identifies antimicrobial resistance genes
-        and variants from sequencing reads. The table below summarizes the results for each sample.</p>
-        """
-
-        # Create table HTML
-        html_fragment += """
-        <div class="table-container">
-            <table class="table is-striped is-fullwidth">
-                <thead>
-                    <tr>
-                        <th>Sample</th>
-                        <th>Species</th>
-                        <th>Passed</th>
-                        <th>Total</th>
-                        <th>Percent (%)</th>
-                        <th>Percent Check</th>
-                    </tr>
-                </thead>
-                <tbody>
-        """
-
-        # Add data rows
         for idx, row in self.df.iterrows():
             sample_id = str(idx)
             species = row.get("species", "N/A")
@@ -49,53 +35,35 @@ class Plot_Ariba:
             total = row.get("total", "N/A")
             percent = row.get("percent", "N/A")
             percent_check = row.get("percent.check", "N/A")
-
-            # Format percent with 1 decimal place if it's a number
-            if isinstance(percent, (int, float)):
-                percent_display = f"{percent:.1f}%"
+            percent_display = (
+                f"{percent:.1f}%" if isinstance(percent, (int, float)) else str(percent)
+            )
+            if percent_check is False:
+                percent_check_display = '<span class="qc-fail">FAILED</span>'
+            elif percent_check:
+                percent_check_display = '<span class="qc-pass">PASSED</span>'
             else:
-                percent_display = str(percent)
+                percent_check_display = str(percent_check)
 
-            # Color code the check results
-            percent_check_display = (
-                "✓" if percent_check else "❌" if percent_check is False else str(percent_check)
+            html_fragment += (
+                "<tr>"
+                f"<td>{sample_id}</td><td>{species}</td><td>{passed}</td><td>{total}</td>"
+                f"<td>{percent_display}</td><td>{percent_check_display}</td>"
+                "</tr>"
             )
 
-            percent_check_color = (
-                "color: green;"
-                if percent_check
-                else "color: red;" if percent_check is False else ""
-            )
-
-            html_fragment += f"""
-                    <tr>
-                        <td>{sample_id}</td>
-                        <td>{species}</td>
-                        <td>{passed}</td>
-                        <td>{total}</td>
-                        <td>{percent_display}</td>
-                        <td style="{percent_check_color}">{percent_check_display}</td>
-                    </tr>
-            """
-
-        html_fragment += """
-                </tbody>
-            </table>
-        </div>
-        """
-
-        # Add summary statistics as a single text line
+        html_fragment += "</tbody></table></div>"
         if len(self.df) > 0:
             total_samples = len(self.df)
             passed_samples = (
                 self.df["all_checks_passed"].sum() if "all_checks_passed" in self.df.columns else 0
             )
             failed_samples = total_samples - passed_samples
-
-            html_fragment += f"""
-            <div class="content">
-            <p><strong>Summary:</strong> Total samples: {total_samples} | <span style="color: green;">Passed: {passed_samples}</span> | <span style="color: red;">Failed: {failed_samples}</span></p>
-            </div>
-            """
-
+            html_fragment += (
+                '<div class="status-note">'
+                f"<p><strong>Summary:</strong> {total_samples} samples, "
+                f'<span class="qc-pass-text">{passed_samples} passed</span>, '
+                f'<span class="qc-fail-text">{failed_samples} failed</span>.</p></div>'
+            )
+        html_fragment += "</section>"
         return html_fragment

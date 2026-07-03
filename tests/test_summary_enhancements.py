@@ -74,12 +74,14 @@ def test_summary_generates_interactive_html_and_xlsx(tmp_path):
     report_html = (output_dir / "report.html").read_text(encoding="utf-8")
     assert (output_dir / "report.csv").exists()
     assert (output_dir / "report.html").exists()
-    assert (output_dir / "bulma.css").exists()
+    assert not (output_dir / "bulma.css").exists()
     assert xlsx_output.exists()
     assert "table-filter" in report_html
     assert "qualifyr-like layout" in report_html
     assert "Speciator" in report_html
     assert "Confidence" in report_html
+    assert '<link rel="stylesheet" href="bulma.css">' not in report_html
+    assert ".report-header" in report_html
 
     workbook = openpyxl.load_workbook(xlsx_output)
     assert "report" in workbook.sheetnames
@@ -105,6 +107,7 @@ def test_summary_respects_no_interactive_tables(tmp_path):
     )
 
     report_html = (output_dir / "report.html").read_text(encoding="utf-8")
-    assert "table-filter" not in report_html
-    assert "js-sort-filter" not in report_html
+    assert 'class="table-filter"' not in report_html
+    assert 'class="table report-table js-sort-filter"' not in report_html
     assert "parseValue" not in report_html
+    assert '<link rel="stylesheet" href="bulma.css">' not in report_html
