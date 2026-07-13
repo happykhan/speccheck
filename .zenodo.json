@@ -1,0 +1,30 @@
+{
+  "title": "speccheck: species-aware quality-control reporting for bacterial genomes",
+  "upload_type": "software",
+  "description": "speccheck collects outputs from bacterial genome quality-control and species-assignment tools, applies species-aware and generic QC criteria, and produces reproducible CSV, HTML, and XLSX reports. Version 1.3.0 includes a completed 100-sample read-backed Escherichia coli case study, QualiBact E. coli v1 compatibility reporting, Fastp and BUSCO parser support, GHRU-assembly downstream collection, and manuscript-ready documentation assets.",
+  "creators": [
+    {
+      "name": "Alikhan, Nabil-Fareed",
+      "affiliation": "University of Oxford"
+    }
+  ],
+  "license": "GPL-3.0-only",
+  "keywords": [
+    "bacterial genomics",
+    "quality control",
+    "bioinformatics",
+    "genome assembly",
+    "QualiBact",
+    "GHRU",
+    "Escherichia coli"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/happykhan/speccheck",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ],
+  "communities": [],
+  "access_right": "open"
+}

@@ -57,6 +57,22 @@ entry-point group.
 
 Releases are cut manually from the GitHub Actions **Release** workflow after the version has been prepared and merged. Enter the exact version already recorded in `pyproject.toml`, `CHANGELOG.md`, and `CITATION.cff`; the workflow verifies that they agree before creating the tag/release and publishing the Docker image. It intentionally does not run on every push to `main`, so documentation and CI-only commits do not create release churn.
 
+## Archival DOI
+
+Zenodo is not a CI job in this repository. It is normally enabled once in the
+Zenodo web interface for the GitHub repository. After that, each GitHub Release
+is archived by Zenodo and receives a DOI. The repository includes `.zenodo.json`
+so the archived release has useful title, creator, license, keyword, and
+description metadata.
+
+Release sequence:
+
+1. Merge the release-prepared branch to `main`.
+2. Confirm GitHub Actions are green and GitHub Pages has deployed.
+3. Run the manual GitHub Actions **Release** workflow with the prepared version.
+4. Confirm Zenodo archived the GitHub Release and minted a DOI.
+5. Update the manuscript to cite that exact version DOI.
+
 ## Upstream QC on Slurm
 
 If you want to rerun upstream QC tools before collecting with `speccheck`, use the Slurm template:

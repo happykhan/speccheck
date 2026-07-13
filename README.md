@@ -105,4 +105,4 @@ python -m build
 
 ## Citation
 
-If you use `speccheck` in a manuscript, cite the software and include the repository URL. Structured citation metadata is provided in [`CITATION.cff`](CITATION.cff).
+If you use `speccheck` in a manuscript, cite the software and include the repository URL. Structured citation metadata is provided in [`CITATION.cff`](CITATION.cff). Zenodo archive metadata is provided in `.zenodo.json`; after a GitHub Release is archived by Zenodo, cite the release DOI for the exact version used.
