@@ -44,7 +44,7 @@ column prefix `Checkm.*` is retained for compatibility with earlier `speccheck`
 outputs, but CheckM1 marker-lineage fields are not part of the supported
 QualiBact criteria model.
 
-## Demonstration panel
+## Demonstration datasets
 
 For manuscript demonstration, a small *Escherichia coli* panel was selected from pinned QualiBact ATB PASS, WARN, and FAIL metadata and then resolved to real short-read data. Those reads were processed through a local `GHRU-assembly` run, and the resulting upstream outputs were consumed with `speccheck`.
 
@@ -58,6 +58,18 @@ The report preserves the original QualiBact tier and reason metadata and adds
 `qualibact_compat_tier`, a pinned QualiBact E. coli v1 compatibility tier computed from
 the report metrics. WARN remains a warning tier by default and does not fail the binary
 `all_checks_passed` column unless `--qualibact-warn-as-fail` is used.
+
+The primary case study scaled the same design to 100 read-backed genomes: 70
+historical PASS, 20 WARN, and 10 FAIL. Within each tier, rows were traversed in
+source order and the first samples resolving to paired *E. coli* ENA reads were
+selected. The full accession and historical-metadata table is committed as
+`examples/qualibact_ecoli/real_run_100/cohort_accessions.csv`.
+
+Fresh GHRU-derived metrics produced 90 PASS, 6 WARN, and 4 FAIL compatibility
+tiers, with exact tier agreement in 73/100 samples. Three samples had an
+unidentified Speciator result. These values quantify concordance between
+historical labels and current measurements; they are not an accuracy estimate
+because the historical labels are not a ground-truth reference.
 
 ## Reproducibility
 
@@ -80,11 +92,14 @@ Manuscript figures and summary tables can be regenerated with:
 
 ```bash
 pixi run python scripts/create_manuscript_assets.py
+pixi run python scripts/create_real_run_100_assets.py
 ```
 
-## Current validation boundary
+## Reproducibility boundary
 
-The current real-panel workflow is validated on a small GHRU-backed read set rather than
-the larger intended cohort. The remaining scale-up work should continue on the same
-read-backed `GHRU-assembly` path. The compatibility tier source is pinned to
+The compatibility policy is pinned specifically to QualiBact E. coli v1 at
 `https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0`.
+The manuscript must not imply equivalent PASS/WARN/FAIL behavior for other
+species. The upstream workflow commit, local patch, container inventory, criteria
+and environment hashes, exact commands, and downstream benchmark are recorded in
+`examples/qualibact_ecoli/real_run_100/analysis/summary.json`.

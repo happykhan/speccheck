@@ -1,0 +1,42 @@
+{
+  "criteria_sha256": "94ca578103ce4fcd06e80c89e7d76ef7f29a6df0799aacfa92c0acd625506607",
+  "current_compatibility_tiers": {
+    "FAIL": 4,
+    "PASS": 90,
+    "WARN": 6
+  },
+  "discordant_count": 27,
+  "downstream_benchmark": {
+    "collect_max_rss_kib": 89084,
+    "collect_wall_seconds": 26.11,
+    "filesystem_note": "Measured on BMRC shared storage; wall time includes metadata latency and HTML/XLSX serialization.",
+    "summary_max_rss_kib": 129960,
+    "summary_wall_seconds": 31.18
+  },
+  "exact_tier_agreement_count": 73,
+  "exact_tier_agreement_fraction": 0.73,
+  "ghru_assembly_commit": "271e0d9e5593a4e4a59409f12f83e816794ad6a3",
+  "ghru_local_patch": {
+    "path": "scripts/ghru_disable_upstream_speccheck.patch",
+    "purpose": "Disable GHRU's bundled speccheck stage so this repository consumes canonical upstream outputs.",
+    "sha256": "40eb9621821b2631e4d05c8054c0b00c41f17911bf8928752a907f163292b053"
+  },
+  "historical_tiers": {
+    "FAIL": 10,
+    "PASS": 70,
+    "WARN": 20
+  },
+  "pixi_lock_sha256": "633b4ed157bf1fd0b0b07f5bfea6a8a26a34ab1e132df225fb6fd786f2fd7d84",
+  "qualibact_snapshot_sha256": "fd732a8631184cbff5884604acfc2b6bc1ac6e587f1a616646bf6461e0f10b53",
+  "sample_count": 100,
+  "selection_rule": "First 70 PASS, 20 WARN, and 10 FAIL rows in the pinned E. coli v1 lists that resolved to paired E. coli ENA reads.",
+  "unidentified_species_count": 3,
+  "upstream_containers": [
+    "shovill_1.1.0-2022Dec.sif",
+    "quast_5.2.0--py312pl5321hc60241a_4.sif",
+    "checkm2_0.1.0.sif",
+    "speciator_4.0.0.sif",
+    "sylph_0.1.0.sif",
+    "ariba_contam_0.1.1.sif"
+  ]
+}

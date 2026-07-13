@@ -1,4 +1,22 @@
-# Next Session Implementation Handoff
+# Publication-readiness implementation handoff
+
+> Status update, 2026-07-13: the real 100-sample run and its compact manuscript
+> assets are complete. The older "Immediate Next Steps" below are retained as
+> historical context but are superseded by the current release checklist here.
+
+## Current release checklist
+
+1. Run full lint, formatting, tests with coverage, strict docs build, package and
+   wheel smoke tests, Docker build, and generated-artifact consistency checks.
+2. Reconcile the publication branch with the v1.2.6 version-only commit on
+   `origin/main`, then prepare the next minor release metadata.
+3. Push `agent/publication-readiness`, open a draft PR, allow CI to complete, and
+   merge through the normal review path.
+4. Create the archival GitHub/PyPI release and connect the resulting DOI when the
+   repository's Zenodo integration is available.
+
+Primary case-study assets now live under
+`examples/qualibact_ecoli/real_run_100/`.
 
 This document is the source of truth for the current implementation direction.
 

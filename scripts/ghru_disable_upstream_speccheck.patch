@@ -1,0 +1,105 @@
+diff --git a/nextflow.config b/nextflow.config
+index cf99557..90d6568 100755
+--- a/nextflow.config
++++ b/nextflow.config
+@@ -24,6 +24,7 @@ params {
+     max_time = '10.h'
+     min_contig_length = 500
+     medaka_model = 'r941_e81_fast_g514'
++    run_speccheck = true
+ }
+ 
+ validation {
+diff --git a/workflows/hybrid_assembly.nf b/workflows/hybrid_assembly.nf
+index b830eea..cb6d2fb 100755
+--- a/workflows/hybrid_assembly.nf
++++ b/workflows/hybrid_assembly.nf
+@@ -91,15 +91,17 @@ workflow HY_ASSEMBLY{
+         .join(COMBINE_DEPTH_REPORTS.out, failOnDuplicate: true)
+         .join(SYLPH_FASTQS.out, failOnDuplicate: true)
+ 
+-    //run speccheck    
+-    SPECCHECK(combined_reports_speccheck)
++    if (params.run_speccheck) {
++        //run speccheck    
++        SPECCHECK(combined_reports_speccheck)
+ 
+-    // Collect files from SPECCHECK and give to SPECCHECK_SUMMARY
+-    sum_detailed = SPECCHECK.out.detailed_report.map({ meta, filepath -> filepath}).collect()
+-    SPECCHECK_SUMMARY_DETAILED(sum_detailed, "hybrid")
++        // Collect files from SPECCHECK and give to SPECCHECK_SUMMARY
++        sum_detailed = SPECCHECK.out.detailed_report.map({ meta, filepath -> filepath}).collect()
++        SPECCHECK_SUMMARY_DETAILED(sum_detailed, "hybrid")
+ 
+-    //to generate simple summary as well
+-    sum = SPECCHECK.out.detailed_report.map({ meta, filepath -> filepath}).collect()
+-    SPECCHECK_SUMMARY(sum, "hybrid")
++        //to generate simple summary as well
++        sum = SPECCHECK.out.detailed_report.map({ meta, filepath -> filepath}).collect()
++        SPECCHECK_SUMMARY(sum, "hybrid")
++    }
+ 
+- }
+\ No newline at end of file
++ }
+diff --git a/workflows/lr_assembly.nf b/workflows/lr_assembly.nf
+index 5e31909..a1e54a9 100755
+--- a/workflows/lr_assembly.nf
++++ b/workflows/lr_assembly.nf
+@@ -66,15 +66,17 @@ workflow LR_ASSEMBLY{
+         .join(ASSEMBLY_DEPTH.out, failOnDuplicate: true)
+         .join(SYLPH_FASTQS_LR.out, failOnDuplicate: true)
+ 
+-    //give combined reports to speccheck
+-    SPECCHECK_LR(combined_reports_speccheck)
+-
+-    // Collect files from SPECCHECK and give to SPECCHECK_SUMMARY
+-    sum_detailed = SPECCHECK_LR.out.detailed_report.map({ meta, filepath -> filepath}).collect()
+-    SPECCHECK_SUMMARY_DETAILED(sum_detailed, "long")
+-
+-    //to generate simple summary as well
+-    sum = SPECCHECK_LR.out.report.map({ meta, filepath -> filepath}).collect()
+-    SPECCHECK_SUMMARY(sum, "long")
++    if (params.run_speccheck) {
++        //give combined reports to speccheck
++        SPECCHECK_LR(combined_reports_speccheck)
++
++        // Collect files from SPECCHECK and give to SPECCHECK_SUMMARY
++        sum_detailed = SPECCHECK_LR.out.detailed_report.map({ meta, filepath -> filepath}).collect()
++        SPECCHECK_SUMMARY_DETAILED(sum_detailed, "long")
++
++        //to generate simple summary as well
++        sum = SPECCHECK_LR.out.report.map({ meta, filepath -> filepath}).collect()
++        SPECCHECK_SUMMARY(sum, "long")
++    }
+ 
+ }
+diff --git a/workflows/sr_assembly.nf b/workflows/sr_assembly.nf
+index 303f9fb..ccee689 100755
+--- a/workflows/sr_assembly.nf
++++ b/workflows/sr_assembly.nf
+@@ -64,14 +64,15 @@ workflow SR_ASSEMBLY{
+        .join(ASSEMBLY_DEPTH.out, failOnDuplicate: true)
+        .join(SYLPH_FASTQS.out, failOnDuplicate: true)
+     
+-    //run speccheck
+-    SPECCHECK(combined_reports_speccheck)
+-
+-    // Collect files from SPECCHECK and give to SPECCHECK_SUMMARY
+-    sum_detailed = SPECCHECK.out.detailed_report.map({ meta, filepath -> filepath}).collect()
+-    SPECCHECK_SUMMARY_DETAILED(sum_detailed, "short")
+-    //to generate simple summary as well
+-    sum = SPECCHECK.out.report.map({ meta, filepath -> filepath}).collect()
+-    SPECCHECK_SUMMARY(sum, "short")
++    if (params.run_speccheck) {
++        SPECCHECK(combined_reports_speccheck)
++
++        // Collect files from SPECCHECK and give to SPECCHECK_SUMMARY
++        sum_detailed = SPECCHECK.out.detailed_report.map({ meta, filepath -> filepath}).collect()
++        SPECCHECK_SUMMARY_DETAILED(sum_detailed, "short")
++        //to generate simple summary as well
++        sum = SPECCHECK.out.report.map({ meta, filepath -> filepath}).collect()
++        SPECCHECK_SUMMARY(sum, "short")
++    }
+ 
+ }

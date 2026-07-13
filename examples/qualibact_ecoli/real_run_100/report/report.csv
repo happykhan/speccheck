@@ -1,0 +1,101 @@
+sample_id,overall_qc,all_checks_passed,baseline_qc,qualibact_tier,qualibact_compat_tier,species,species_confidence,n50,contigs,genome_size,gc_percent,completeness,contamination,depth,top_species,top_abundance,reason_summary,threshold_source
+SAMD00000699,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,42440,311,4991825,50.6,100.0,0.17,224.42,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMD00000724,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,85526,134,4923986,50.65,100.0,0.13,555.44,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMD00003398,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,55862,345,5341424,50.25,100.0,0.41,141.27,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMD00008661,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,28634,392,4707333,50.77,100.0,0.35,203.81,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMD00019005,FAIL,FAILED,False,FAIL,FAIL,Unidentified,,5377,1,5377,56.82,6.3,0.0,15391.42,Escherichia coli,100.0,N50 <20000.0; GC_Content >50.88; Genome_Size <4400000.0,QualiBact Escherichia coli qualibact-v1.1
+SAMD00019007,FAIL,FAILED,False,FAIL,FAIL,Unidentified,,2909,11,22526,51.43,4.75,0.02,4880.42,Escherichia coli,100.0,N50 <20000.0; GC_Content >50.88; Genome_Size <4400000.0,QualiBact Escherichia coli qualibact-v1.1
+SAMD00019012,FAIL,FAILED,False,FAIL,FAIL,Unidentified,,1571,164,236815,50.46,7.21,0.04,440.54,Escherichia coli,100.0,N50 <20000.0; Genome_Size <4400000.0,QualiBact Escherichia coli qualibact-v1.1
+SAMD00062394,WARN,PASSED,True,FAIL,WARN,Escherichia coli,good,112151,213,5865761,50.06,100.0,1.17,25.89,Escherichia coli,100.0,GC_Content <50.25; Genome_Size >5700000.0,QualiBact Escherichia coli qualibact-v1.1
+SAMD00071305,WARN,PASSED,True,FAIL,WARN,Escherichia coli,good,23419,353,4406998,51.23,100.0,0.01,37.19,Escherichia coli,100.0,GC_Content >50.88,QualiBact Escherichia coli qualibact-v1.1
+SAMN42689957,FAIL,FAILED,True,FAIL,FAIL,Escherichia coli,good,9019,1033,5177536,50.35,100.0,3.12,46.28,Escherichia coli,100.0,N50 <20000.0; no_of_contigs >670.0,QualiBact Escherichia coli qualibact-v1.1
+SAMN42720371,PASS,PASSED,True,FAIL,PASS,Escherichia coli,good,26247,546,4825099,50.58,99.98,0.41,23.45,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744342,WARN,FAILED,True,FAIL,WARN,Escherichia coli,good,57220,550,6288281,49.98,100.0,7.76,236.87,Escherichia coli,100.0,GC_Content <50.25; Genome_Size >5700000.0; Total_Coding_Sequences >5800.0,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744370,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,252309,50,4772358,50.8,100.0,0.1,96.8,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744371,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,154495,69,4758085,50.61,100.0,0.12,77.04,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744372,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,189971,64,4760273,50.61,100.0,0.12,97.9,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744374,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,242527,86,5335222,50.67,100.0,0.45,101.94,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744375,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,242527,93,5343219,50.68,100.0,0.45,110.02,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744376,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,183671,75,4901876,50.88,100.0,0.08,82.01,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744378,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,205135,86,5132086,50.71,100.0,0.2,109.76,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744379,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,162210,90,5130399,50.71,100.0,0.2,84.49,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744380,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,205135,86,5131884,50.71,100.0,0.2,82.72,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744381,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,190393,88,5131326,50.72,100.0,0.2,64.03,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744382,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,205135,87,5186789,50.68,100.0,0.18,114.9,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744383,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,201289,69,4901367,50.88,100.0,0.08,77.7,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744385,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,341708,61,5077036,50.38,100.0,0.76,173.4,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744387,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,357673,57,5076069,50.38,100.0,0.76,112.47,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744389,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,202201,94,4928099,50.8,100.0,0.29,106.02,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744391,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,189705,93,4932742,50.8,100.0,0.31,119.58,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744393,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,171258,73,4897100,50.88,100.0,0.08,95.55,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744400,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,198906,76,4901804,50.88,100.0,0.08,118.91,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744401,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,176679,68,4904180,50.88,100.0,0.08,91.36,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744402,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,182677,86,4893872,50.88,100.0,0.08,32.63,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744403,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,198958,70,4903315,50.88,100.0,0.08,85.82,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744404,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,199537,75,4900451,50.88,100.0,0.08,56.16,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744405,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,176148,78,4900968,50.88,100.0,0.08,109.93,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744406,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,145188,82,4892715,50.87,100.0,0.08,50.73,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744407,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,177018,76,4901460,50.88,100.0,0.08,98.4,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744408,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,199369,74,4901397,50.88,100.0,0.08,55.78,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744409,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,177018,80,4896123,50.88,100.0,0.08,53.41,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744410,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,135476,81,4892832,50.87,100.0,0.09,62.72,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744411,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,199369,74,4900119,50.88,100.0,0.08,73.29,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744412,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,199589,73,4900582,50.88,100.0,0.08,48.33,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744413,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,156427,73,4899931,50.88,100.0,0.08,96.91,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744414,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,208992,68,4899821,50.88,100.0,0.08,58.13,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744415,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,176156,80,4898570,50.88,100.0,0.09,66.81,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744416,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,198958,82,4895457,50.87,100.0,0.08,50.07,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744418,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,279495,43,5031920,50.8,100.0,0.09,205.34,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744419,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,321759,43,5031653,50.79,100.0,0.08,108.38,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744420,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,200400,62,5025641,50.79,100.0,0.09,50.79,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744421,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,256567,46,5026887,50.81,100.0,0.09,85.07,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744422,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,244756,84,5347772,50.68,100.0,0.46,84.45,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744423,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,268501,63,5227819,50.69,100.0,0.06,133.49,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744424,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,224816,49,4994949,50.86,100.0,0.08,76.91,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744425,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,256567,43,5032637,50.79,100.0,0.09,54.19,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744426,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,181737,73,5162995,50.53,100.0,0.98,173.61,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744427,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,267412,66,5163584,50.53,100.0,0.99,96.36,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744428,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,181737,76,5170588,50.51,100.0,0.98,141.97,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744430,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,321175,48,5031207,50.8,100.0,0.09,100.8,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744646,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,126359,139,5066673,50.32,100.0,0.34,74.67,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42744647,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,137568,94,4745431,50.62,100.0,0.14,52.6,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764205,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,134071,113,5436796,50.59,100.0,0.6,70.44,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764206,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,90113,139,5425996,50.45,100.0,0.8,74.7,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764349,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,118054,234,5441675,50.48,100.0,0.31,50.21,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764350,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,182288,206,5512724,50.56,100.0,0.38,65.42,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764352,PASS,FAILED,True,PASS,PASS,Shigella flexneri,good,33229,329,4482070,50.4,100.0,0.14,68.42,Escherichia coli,100.0,Speciator.genusName; Speciator.speciesName,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764354,PASS,FAILED,True,PASS,PASS,Shigella sonnei,good,25362,365,4451925,50.84,100.0,0.0,74.68,Escherichia coli,100.0,Speciator.genusName; Speciator.speciesName,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764356,PASS,FAILED,True,PASS,PASS,Shigella flexneri,good,31449,350,4568793,50.52,100.0,0.48,44.37,Escherichia coli,100.0,Speciator.genusName; Speciator.speciesName,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764594,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,135589,214,5351895,50.6,100.0,0.3,48.43,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764595,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,124770,229,5420315,50.53,100.0,0.29,34.27,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764596,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,135589,235,5557044,50.44,100.0,0.29,53.97,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764691,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,157662,215,5367988,50.49,100.0,0.25,104.38,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764692,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,99677,205,5197183,50.45,100.0,0.16,83.1,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764693,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,99132,284,5560082,50.38,100.0,0.24,78.03,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764694,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,101184,246,5493116,50.4,100.0,0.23,84.3,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764697,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,163093,150,4887108,50.64,100.0,0.16,48.14,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764698,WARN,PASSED,True,WARN,WARN,Escherichia coli,good,90639,307,5497684,50.22,100.0,0.39,66.54,Escherichia coli,100.0,GC_Content <50.25,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764699,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,165900,135,4921757,50.64,100.0,0.23,37.45,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764700,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,210905,138,5297478,50.61,100.0,0.18,44.84,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764701,WARN,PASSED,True,PASS,WARN,Escherichia coli,good,130515,197,5461046,50.23,100.0,0.55,59.79,Escherichia coli,100.0,GC_Content <50.25,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764702,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,276532,89,4809569,50.63,100.0,0.71,56.27,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764703,WARN,PASSED,True,PASS,WARN,Escherichia coli,good,115531,201,5458302,50.23,100.0,0.14,69.15,Escherichia coli,100.0,GC_Content <50.25,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764704,PASS,PASSED,True,FAIL,PASS,Escherichia coli,good,78617,374,5573641,50.37,100.0,0.37,45.68,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764705,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,144363,211,5290064,50.48,100.0,0.26,40.89,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764706,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,112461,304,5575799,50.38,100.0,0.33,65.49,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764707,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,117831,222,5317485,50.58,100.0,0.28,47.66,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764708,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,120582,309,5421744,50.37,100.0,0.27,46.5,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764709,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,107917,317,5576464,50.38,100.0,0.33,66.89,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42765271,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,155496,71,4812943,50.58,100.0,0.01,124.49,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42765982,PASS,PASSED,True,FAIL,PASS,Escherichia coli,good,126621,302,5625334,50.51,100.0,0.38,50.19,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42765983,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,185085,82,5000691,50.65,100.0,0.08,55.59,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42765984,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,104197,208,5397941,50.25,100.0,0.37,44.43,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42765985,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,134860,218,5186332,50.47,100.0,0.11,39.26,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42765986,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,132300,227,5253972,50.57,100.0,0.45,27.17,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42766884,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,102449,92,4842950,50.47,100.0,0.13,38.3,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42766885,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,119508,121,5023793,50.41,100.0,0.21,35.66,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42766886,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,160407,109,5251580,50.69,100.0,0.18,22.96,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42766887,PASS,FAILED,True,PASS,PASS,Shigella dysenteriae,good,103730,125,5045016,50.27,100.0,1.06,44.68,Escherichia coli,100.0,Speciator.genusName; Speciator.speciesName,QualiBact Escherichia coli qualibact-v1.1
+SAMN42766888,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,210405,91,5103246,50.36,100.0,0.34,56.85,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42766889,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,262999,41,4715477,50.62,100.0,0.21,38.41,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42766890,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,255498,63,5116752,50.39,100.0,0.72,46.38,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1

@@ -59,6 +59,16 @@ https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0
 
 Default warning policy is `warn-as-warn`: WARN remains visible as a tier but does not fail `all_checks_passed`. Use `--qualibact-warn-as-fail` when WARN should fail the binary summary status.
 
+Historical `qualibact_tier` and `qualibact_reasons` values are comparison
+metadata. They do not define `overall_qc` and do not replace freshly computed
+compatibility reasons. This separation prevents older assemblies or exports from
+silently overriding the current QC verdict.
+
+The completed 100-sample case study found 73% exact tier agreement (68/70
+historical PASS, 1/20 historical WARN, and 4/10 historical FAIL remained in the
+same tier). These are concordance results, not sensitivity or specificity,
+because historical tiers are not treated as ground truth.
+
 ## Regression fixtures
 
 Pinned E. coli fixtures are kept under `tests/qualibact/`:

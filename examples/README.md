@@ -59,6 +59,15 @@ That route:
 
 The generic staging logic lives in `scripts/stage_ghru_ecoli_cohort.py`.
 
+The run is complete. Compact publication assets are committed under
+`examples/qualibact_ecoli/real_run_100/`; raw reads, assemblies, databases, and
+Nextflow work files remain under `.demo_work/` and are excluded from Git. Rebuild
+the analysis tables and figures with:
+
+```bash
+pixi run python scripts/create_real_run_100_assets.py
+```
+
 ## Manuscript screenshots
 
 To export deterministic manuscript figures, PNGs, SVGs, and the real-panel summary table:

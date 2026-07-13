@@ -1,5 +1,23 @@
 # speccheck Deep Codebase Audit
 
+## 2026-07-13 resolution update
+
+The publication-readiness implementation has addressed the audit's largest
+structural and reproducibility findings:
+
+- parser and plotting discovery now use an explicit registry;
+- CheckM2/legacy aliases have one canonical registry;
+- collection and summary orchestration are split into focused modules;
+- historical QualiBact metadata no longer owns the current QC verdict;
+- criteria refresh tests no longer mutate packaged provenance;
+- a completed 100-sample read-backed GHRU case study now records accessions,
+  upstream commit/patch and containers, criteria/environment hashes, analyses,
+  reports, figures, and downstream resource use.
+
+Typed report models, broader multi-species compatibility, and strict-mode policy
+remain post-publication architectural work rather than blockers for the scoped
+E. coli v1 manuscript claim.
+
 Date: 2026-07-04
 
 Scope: repository source, tests, documentation, packaging, workflows, example reports, and public GitHub state available during review.

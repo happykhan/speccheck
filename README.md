@@ -7,6 +7,12 @@
 
 `speccheck` is a Python command-line tool for collecting, validating, and summarizing genome QC metrics from multiple bioinformatics tools. It is designed for species-aware QC workflows and reproducible reporting.
 
+The publication case study processes 100 real, read-backed *Escherichia coli*
+samples through `GHRU-assembly`, then applies a pinned QualiBact E. coli
+compatibility policy. The committed case-study outputs include accessions,
+provenance, reports, concordance analysis, and manuscript figures under
+[`examples/qualibact_ecoli/real_run_100`](examples/qualibact_ecoli/real_run_100/).
+
 ## Documentation
 
 Project documentation is built with MkDocs Material and intended for GitHub Pages:
@@ -61,7 +67,7 @@ speccheck check --criteria-file speccheck/config/criteria.csv --update
 
 ## Features
 
-- Automatic module detection for CheckM2-style QC tables, QUAST, Speciator, ARIBA, Sylph, and DepthParser outputs
+- Explicitly registered parsers for CheckM2-style QC tables, QUAST, Speciator, ARIBA, Sylph, and depth outputs
 - Criteria-driven pass/fail validation
 - HTML reporting with Plotly charts and interactive sortable/filterable tables
 - Compact qualifyr-style summary tables
@@ -87,6 +93,7 @@ Regenerate manuscript figures and example summary tables:
 
 ```bash
 python scripts/create_manuscript_assets.py
+python scripts/create_real_run_100_assets.py
 ```
 
 Build a wheel:
