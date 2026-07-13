@@ -52,7 +52,7 @@ Typical usage:
 docker run --rm \
   -v "$PWD":/data \
   happykhan/speccheck \
-  speccheck summary /data/qc_collect --output /data/qc_report --plot
+  summary /data/qc_collect --output /data/qc_report --plot
 ```
 
 ## Version note

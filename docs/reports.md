@@ -136,5 +136,5 @@ docker run --rm \
   -v $(pwd):/data \
   -v $(pwd)/output:/output \
   happykhan/speccheck \
-  speccheck summary /data --output /output --plot
+  summary /data --output /output --plot
 ```
