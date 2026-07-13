@@ -33,13 +33,25 @@ class MyTool(SingleRowTsvParser):
     exact_headers = False
 ```
 
-Register it in `speccheck/registry.py`:
+For a parser that lives in this repository, register it in
+`speccheck/registry.py`:
 
 ```python
 from speccheck.modules.mytool import MyTool
 
 PARSER_CLASSES = (..., MyTool)
 ```
+
+For a parser shipped by a separate Python package, expose it through the
+`speccheck.parsers` entry point group instead:
+
+```toml
+[project.entry-points."speccheck.parsers"]
+mytool = "my_package.mytool:MyTool"
+```
+
+Speccheck validates entry points at runtime. The entry point must load a
+`Parser` subclass and its `software_name` must not duplicate an existing parser.
 
 Add criteria rows:
 
@@ -62,6 +74,7 @@ make the content validation real:
 
 ```python
 import json
+from pathlib import Path
 
 from speccheck.modules.base import Parser
 
@@ -73,7 +86,7 @@ class MyJsonTool(Parser):
 
     @property
     def has_valid_filename(self):
-        return self.file_path.name.endswith(".mytool.json")
+        return Path(self.file_path).name.endswith(".mytool.json")
 
     @property
     def has_valid_fileformat(self):
