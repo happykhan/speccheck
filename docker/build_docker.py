@@ -1,32 +1,30 @@
+import argparse
 import logging
 import os
 import shutil
 import subprocess
 import sys
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.getcwd())
-import argparse
-
 from speccheck import __version__
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
+
 
 def find_docker_executable():
     """Find the docker executable in common locations."""
     # First try shutil.which with expanded PATH
-    docker_path = shutil.which('docker')
+    docker_path = shutil.which("docker")
     if docker_path:
         return docker_path
 
     # Check common macOS locations
     common_paths = [
-        '/usr/local/bin/docker',
-        '/opt/homebrew/bin/docker',
-        '/Applications/Docker.app/Contents/Resources/bin/docker',
-        '/Applications/OrbStack.app/Contents/MacOS/xbin/docker'
+        "/usr/local/bin/docker",
+        "/opt/homebrew/bin/docker",
+        "/Applications/Docker.app/Contents/Resources/bin/docker",
+        "/Applications/OrbStack.app/Contents/MacOS/xbin/docker",
     ]
 
     for path in common_paths:
@@ -40,36 +38,38 @@ def find_docker_executable():
         logger.error("  - %s", path)
     sys.exit(1)
 
+
 def get_docker_env():
     """Get environment with Docker credential helper in PATH."""
     env = os.environ.copy()
 
     # Add common credential helper locations to PATH
     credential_paths = [
-        '/Applications/OrbStack.app/Contents/MacOS/xbin',
-        '/Applications/Docker.app/Contents/Resources/bin',
-        '/usr/local/bin',
-        '/opt/homebrew/bin'
+        "/Applications/OrbStack.app/Contents/MacOS/xbin",
+        "/Applications/Docker.app/Contents/Resources/bin",
+        "/usr/local/bin",
+        "/opt/homebrew/bin",
     ]
 
-    current_path = env.get('PATH', '')
+    current_path = env.get("PATH", "")
     new_paths = [p for p in credential_paths if os.path.exists(p)]
 
     if new_paths:
-        env['PATH'] = ':'.join(new_paths + [current_path])
+        env["PATH"] = ":".join(new_paths + [current_path])
 
     return env
+
 
 def check_required_files():
     """Check if all required files exist before building."""
     required_files = [
-        'pyproject.toml',
-        'README.md',
-        'LICENSE',
-        'criteria.csv',
-        'speccheck/__init__.py',
-        'templates/report.html',
-        'docker/Dockerfile'
+        "pyproject.toml",
+        "README.md",
+        "LICENSE",
+        "speccheck/__init__.py",
+        "speccheck/config/criteria.csv",
+        "speccheck/templates/report.html",
+        "docker/Dockerfile",
     ]
 
     missing_files = []
@@ -86,6 +86,7 @@ def check_required_files():
         return False
 
     return True
+
 
 def run_docker_commands():
     try:
@@ -104,18 +105,13 @@ def run_docker_commands():
 
         # Check if already logged in to Docker
         try:
-            result = subprocess.run(
+            subprocess.run(
                 [docker_cmd, "info"],
                 capture_output=True,
                 text=True,
                 check=True,
-                env=docker_env
+                env=docker_env,
             )
-            if "Username:" in result.stdout:
-                logger.info("Already logged in to Docker")
-            else:
-                logger.info("Running docker login...")
-                subprocess.run([docker_cmd, "login"], check=True, env=docker_env)
         except subprocess.CalledProcessError:
             logger.info("Running docker login...")
             subprocess.run([docker_cmd, "login"], check=True, env=docker_env)
@@ -128,24 +124,34 @@ def run_docker_commands():
         logger.info("Platform: linux/amd64")
         logger.info("")
 
-        subprocess.run([
-            docker_cmd, "build",
-            "--platform", "linux/amd64",
-            "-t", image_name,
-            "-f", "docker/Dockerfile",
-            "."
-        ], check=True, env=docker_env)
+        subprocess.run(
+            [
+                docker_cmd,
+                "build",
+                "--platform",
+                "linux/amd64",
+                "--build-arg",
+                f"VERSION={__version__}",
+                "-t",
+                image_name,
+                "-f",
+                "docker/Dockerfile",
+                ".",
+            ],
+            check=True,
+            env=docker_env,
+        )
 
         logger.info("")
         logger.info("✓ Build successful!")
         logger.info("")
 
         parser = argparse.ArgumentParser(add_help=False)
-        parser.add_argument('--push', action='store_true', help='Automatically push image to Docker Hub', default=True)
+        parser.add_argument("--push", action="store_true", help="Push image to Docker Hub")
         args, _ = parser.parse_known_args()
 
         if args.push:
-            logger.info("Auto-pushing to Docker Hub (--push)...")
+            logger.info("Pushing to Docker Hub (--push)...")
             subprocess.run([docker_cmd, "push", image_name], check=True, env=docker_env)
             logger.info("✓ Push successful!")
         else:

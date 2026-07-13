@@ -1,7 +1,8 @@
 name: Publish to PyPI
 
-# This workflow publishes the package to PyPI when a new release is created
-# To use: Create a release on GitHub with a tag like v1.0.1
+# Fallback publisher for releases created manually outside release.yml.
+# The manual Release workflow publishes PyPI directly because releases created
+# with GITHUB_TOKEN do not trigger separate release-event workflows.
 
 on:
   release:
@@ -49,5 +50,4 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true

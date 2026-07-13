@@ -5,7 +5,7 @@
 set -e
 
 # Configuration
-IMAGE="happykhan/speccheck:1.1.1"
+IMAGE="${IMAGE:-happykhan/speccheck:1.3.0}"
 DATA_DIR="${DATA_DIR:-$(pwd)}"
 OUTPUT_DIR="${OUTPUT_DIR:-$(pwd)/docker_output}"
 
@@ -64,31 +64,23 @@ if ! command -v docker &> /dev/null; then
     fi
 fi
 
-# Determine if we need to prepend 'speccheck'
-CMD_PREFIX=""
-if [ "$1" != "bash" ] && [ "$1" != "sh" ] && [ "$1" != "/bin/bash" ] && [ "$1" != "/bin/sh" ]; then
-    CMD_PREFIX="speccheck"
-fi
-
 # Run the container
 echo -e "${GREEN}Running SpecCheck Docker container${NC}"
 echo -e "Data directory: ${YELLOW}$DATA_DIR${NC} -> /data"
 echo -e "Output directory: ${YELLOW}$OUTPUT_DIR${NC} -> /output"
-if [ -n "$CMD_PREFIX" ]; then
-    echo -e "Command: ${YELLOW}$CMD_PREFIX $@${NC}"
-else
-    echo -e "Command: ${YELLOW}$@${NC}"
-fi
+echo -e "Image: ${YELLOW}$IMAGE${NC}"
+echo -e "Command: ${YELLOW}$@${NC}"
 echo ""
 
-if [ -n "$CMD_PREFIX" ]; then
-    $DOCKER_CMD run --rm \
+if [ "$1" = "bash" ] || [ "$1" = "sh" ] || [ "$1" = "/bin/bash" ] || [ "$1" = "/bin/sh" ]; then
+    $DOCKER_CMD run --rm -it \
         -v "$DATA_DIR":/data \
         -v "$OUTPUT_DIR":/output \
+        --entrypoint "$1" \
         "$IMAGE" \
-        $CMD_PREFIX "$@"
+        "${@:2}"
 else
-    $DOCKER_CMD run --rm -it \
+    $DOCKER_CMD run --rm \
         -v "$DATA_DIR":/data \
         -v "$OUTPUT_DIR":/output \
         "$IMAGE" \

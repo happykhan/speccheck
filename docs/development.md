@@ -54,7 +54,13 @@ rejection, and parsed values. Built-in parsers are registered in
 `speccheck/registry.py`; third-party parsers can use the `speccheck.parsers`
 entry-point group.
 
-Releases are cut manually from the GitHub Actions **Release** workflow after the version has been prepared and merged. Enter the exact version already recorded in `pyproject.toml`, `CHANGELOG.md`, and `CITATION.cff`; the workflow verifies that they agree before creating the tag/release and publishing the Docker image. It intentionally does not run on every push to `main`, so documentation and CI-only commits do not create release churn.
+Releases are cut manually from the GitHub Actions **Release** workflow after the version has been prepared and merged. Enter the exact version already recorded in `pyproject.toml`, `CHANGELOG.md`, and `CITATION.cff`; the workflow verifies that they agree before creating the tag/release, publishing to PyPI, and publishing the Docker image. It intentionally does not run on every push to `main`, so documentation and CI-only commits do not create release churn.
+
+The manual release workflow publishes PyPI directly. Do not rely on a second
+release-event workflow being triggered by the automated GitHub Release: events
+created with the repository `GITHUB_TOKEN` do not start most other workflows.
+The standalone **Publish to PyPI** workflow is kept as a fallback for releases
+created manually outside the release workflow.
 
 ## Archival DOI
 
