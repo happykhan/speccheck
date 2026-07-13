@@ -83,7 +83,13 @@ def infer_value_type(series):
     return "string"
 
 
-def dataframe_to_interactive_table(df, table_id, searchable=True, interactive=True):
+def dataframe_to_interactive_table(
+    df,
+    table_id,
+    searchable=True,
+    interactive=True,
+    page_size=50,
+):
     rendered_df = df.copy()
     column_types = {}
     for column in rendered_df.columns:
@@ -126,10 +132,23 @@ def dataframe_to_interactive_table(df, table_id, searchable=True, interactive=Tr
     if interactive:
         table_class += " js-sort-filter"
 
+    pagination = ""
+    page_size_attr = ""
+    if interactive and page_size and len(rendered_df) > page_size:
+        page_size_attr = f' data-page-size="{int(page_size)}" data-current-page="1"'
+        pagination = (
+            f'<div class="table-pagination" data-target="{table_id}">'
+            '<button type="button" class="table-page-prev">Previous</button>'
+            '<span class="table-page-status"></span>'
+            '<button type="button" class="table-page-next">Next</button>'
+            "</div>"
+        )
+
     return (
         f'{filter_box}<div class="table-container">'
-        f'<table id="{table_id}" class="{table_class}">'
+        f'<table id="{table_id}" class="{table_class}"{page_size_attr}>'
         f"<thead><tr>{thead}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
+        f"{pagination}"
     )
 
 
@@ -270,6 +289,7 @@ def build_large_run_summary_table(df, interactive_tables=True):
         summary_df,
         table_id="sample-review-table",
         interactive=interactive_tables,
+        page_size=25,
     )
 
 
@@ -278,6 +298,7 @@ def build_full_detail_table(df, interactive_tables=True):
         df,
         table_id="full-detail-table",
         interactive=interactive_tables,
+        page_size=25,
     )
 
 
@@ -397,7 +418,7 @@ def render_metric_summary_tables(summary_frames, qualifyr_style=False, interacti
     if qualifyr_style:
         intro = (
             "<p>Compact summary tables are rendered in a built-in qualifyr-style layout "
-            "for quick manuscript-friendly comparison across samples.</p>"
+            "for quick comparison across samples.</p>"
         )
     sections = ['<section class="metric-summary-grid">']
     for index, (category, frame) in enumerate(summary_frames.items(), start=1):

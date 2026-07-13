@@ -25,3 +25,4 @@ speccheck-qc = { path = ".", editable = true }
 [tasks]
 test = "pytest -q"
 summary-demo = "python scripts/generate_qualibact_example_reports.py"
+worked-example-assets = "python scripts/create_worked_example_assets.py"

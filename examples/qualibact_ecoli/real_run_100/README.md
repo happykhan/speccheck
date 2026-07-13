@@ -14,21 +14,24 @@ historical metrics, labels, and reasons.
 
 ## Results
 
-Fresh GHRU-derived measurements produced 90 PASS, 6 WARN, and 4 FAIL compatibility
-tiers. Exact tier agreement with the historical labels was 73/100. Three samples
-had an unidentified Speciator result. This comparison measures concordance, not
-accuracy: historical labels are not treated as ground truth, and differences can
-reflect changed reads, assemblies, tools, databases, or threshold interpretation.
+Fresh GHRU-derived measurements produced 85 PASS, 4 WARN, 4 FAIL, and 7
+NOT_AVAILABLE compatibility states. Exact tier agreement with the historical
+labels was 69/100. Seven samples had no pinned E. coli compatibility result
+because the current species assignment was outside the pinned E. coli policy or
+was unidentified. Three of those samples had an unidentified Speciator result.
+This comparison measures concordance, not accuracy: historical labels are not
+treated as ground truth, and differences can reflect changed reads, assemblies,
+tools, databases, species assignment, or threshold interpretation.
 
 Committed outputs include:
 
 - `report/`: concise/full CSV, self-contained HTML, and XLSX reports;
 - `analysis/tier_concordance.csv`: historical-by-current tier matrix;
-- `analysis/discordant_samples.csv`: all 27 tier-discordant samples;
+- `analysis/discordant_samples.csv`: all 31 tier-discordant or unavailable samples;
 - `analysis/current_reason_counts.csv`: current WARN/FAIL reason counts;
 - `analysis/metric_distributions.csv`: five-number summaries by historical tier;
 - `analysis/summary.json`: results, hashes, upstream provenance, and benchmarks;
-- `figures/`: deterministic SVG and PNG manuscript figures.
+- `figures/`: deterministic SVG and PNG worked-example figures.
 
 ## Rebuild
 

@@ -1,20 +1,22 @@
 # Quick Start
 
-## 1. Inspect recognised inputs
+This page assumes you already have QC output files from upstream tools.
 
-Before collecting anything, check which files `speccheck` will parse:
+## 1. See what Speccheck can read
 
 ```bash
 speccheck inspect path/to/qc_outputs/
 speccheck modules
 ```
 
-`inspect` is deliberately read-only. Use it when wiring a new workflow into
-`speccheck` or when a file is missing from a report.
+`inspect` does not write outputs. Use it before `collect`, especially when you
+are connecting a new workflow.
 
 ## 2. Collect one sample
 
 ```bash
+mkdir -p qc_collect
+
 speccheck collect path/to/qc_outputs/SAMPLE_001/ \
   --sample SAMPLE_001 \
   --organism "Escherichia coli" \
@@ -22,12 +24,35 @@ speccheck collect path/to/qc_outputs/SAMPLE_001/ \
   --output-file qc_collect/SAMPLE_001.csv
 ```
 
-If `--organism` is omitted, `speccheck` tries to infer the species from parser
-outputs configured as species fields in the criteria file. If no single species
-can be resolved, collection stops by default. Use `--allow-unknown-organism`
-only when generic fallback thresholds are the intended policy.
+The output CSV contains:
 
-## 3. Summarise a cohort
+- parsed metrics, for example `Quast.N50` or `Checkm.Contamination`;
+- status/check columns from the criteria CSV;
+- provenance, including Speccheck version and criteria checksum.
+
+## 3. Collect many samples
+
+For a directory-per-sample layout:
+
+```bash
+mkdir -p qc_collect
+
+for sample_dir in path/to/run/*; do
+  sample="$(basename "$sample_dir")"
+  speccheck collect "$sample_dir" \
+    --sample "$sample" \
+    --organism "Escherichia coli" \
+    --assembly-type short \
+    --output-file "qc_collect/${sample}.csv"
+done
+```
+
+If the organism is not supplied, Speccheck tries to infer it from parser outputs
+configured as species fields in the criteria file. If no single species can be
+resolved, collection stops by default. Use `--allow-unknown-organism` only when
+generic fallback thresholds are the intended policy.
+
+## 4. Build the report
 
 ```bash
 speccheck summary qc_collect \
@@ -36,36 +61,38 @@ speccheck summary qc_collect \
   --xlsx-output qc_report/report.xlsx
 ```
 
-The summary directory contains:
+Outputs:
 
-- `report.csv`: merged machine-readable result;
-- `report.full.csv`: full wide report where available;
-- `report.html`: self-contained review report when `--plot` is enabled;
-- `report.xlsx`: optional workbook when `--xlsx-output` is supplied.
+| File | Use |
+| --- | --- |
+| `report.csv` | compact merged result for review and downstream scripts |
+| `report.full.csv` | wide table with parser, metadata, and provenance columns |
+| `report.html` | interactive human review report |
+| `report.xlsx` | optional workbook with summary and full sheets |
 
-## 4. Run after a Nextflow pipeline
+## 5. Read the first three columns
 
-For a published pipeline output layout, use the pipeline collector:
+Start with:
+
+- `overall_qc`: `PASS`, `WARN`, `FAIL`, or `NOT_EVALUATED`;
+- `all_checks_passed`: binary convenience value;
+- `reason_summary`: compact explanation of warnings, failures, and missing
+  checks.
+
+`NOT_EVALUATED` means Speccheck expected a metric from the selected criteria but
+could not find it in the parsed input. It is not the same as failing a threshold.
+
+## 6. Pipeline layout shortcut
+
+For a published workflow output layout such as GHRU Assembly:
 
 ```bash
 speccheck collect-pipeline results/ qc_collect \
   --layout ghru \
   --organism "Escherichia coli" \
   --work-dir work/
+
+speccheck summary qc_collect --output qc_report --plot
 ```
 
-This currently supports the GHRU Assembly output layout.
-
-## 5. Interpret status columns
-
-At report level, start with:
-
-- `overall_qc`: review status summarised as `PASS`, `WARN`, `FAIL`, or
-  `NOT_EVALUATED`;
-- `all_checks_passed`: binary convenience column for strict pass/fail handling;
-- `reason_summary`: compact explanation of warnings, failures, and missing
-  checks.
-
-Tool-specific columns ending in `.status` carry the same four-state vocabulary.
-`NOT_EVALUATED` means the criteria expected a metric that was not present in the
-available upstream output; it is not the same as a failed threshold.
+See [Pipeline Integration](ghru.md) for details.

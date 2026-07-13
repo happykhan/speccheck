@@ -2,10 +2,11 @@
   "criteria_sha256": "6b21d56411908a87ca67636a2ee6c7712040ce5da009204f4dd3fc0762b64b0e",
   "current_compatibility_tiers": {
     "FAIL": 4,
-    "PASS": 90,
-    "WARN": 6
+    "NOT_AVAILABLE": 7,
+    "PASS": 85,
+    "WARN": 4
   },
-  "discordant_count": 27,
+  "discordant_count": 31,
   "downstream_benchmark": {
     "collect_max_rss_kib": 89084,
     "collect_wall_seconds": 26.11,
@@ -13,8 +14,8 @@
     "summary_max_rss_kib": 129960,
     "summary_wall_seconds": 31.18
   },
-  "exact_tier_agreement_count": 73,
-  "exact_tier_agreement_fraction": 0.73,
+  "exact_tier_agreement_count": 69,
+  "exact_tier_agreement_fraction": 0.69,
   "ghru_assembly_commit": "271e0d9e5593a4e4a59409f12f83e816794ad6a3",
   "ghru_local_patch": {
     "path": "scripts/ghru_disable_upstream_speccheck.patch",
@@ -26,7 +27,7 @@
     "PASS": 70,
     "WARN": 20
   },
-  "pixi_lock_sha256": "2ea1d24a6fbeaca7cfe47d0d8c970d9d3150e78c4a8006eb92af75c2296fc4db",
+  "pixi_lock_sha256": "1b00e1656b2f63dfac0f6569a49b0801ea8aef0897702c1a740be5a0ed149c29",
   "qualibact_snapshot_sha256": "9db2176278874f4b7ebf9936606710af5770b4f1b362913a6961ff17ac08bd1c",
   "sample_count": 100,
   "selection_rule": "First 70 PASS, 20 WARN, and 10 FAIL rows in the pinned E. coli v1 lists that resolved to paired E. coli ENA reads.",

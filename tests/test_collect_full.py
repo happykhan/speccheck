@@ -137,7 +137,7 @@ def test_collect_reports_not_evaluated_missing_metrics(tmp_path):
         "\n".join(
             [
                 "species,assembly_type,software,field,operator,value,special_field",
-                "Mycoplasma genitalium,all,Quast,Missing manuscript metric,>=,1,",
+                "Mycoplasma genitalium,all,Quast,Missing review metric,>=,1,",
             ]
         )
         + "\n",
@@ -155,7 +155,7 @@ def test_collect_reports_not_evaluated_missing_metrics(tmp_path):
 
     with open(output_file, encoding="utf-8", newline="") as handle:
         row = next(csv.DictReader(handle))
-    assert row["Quast.Missing manuscript metric.check"] == "NOT_EVALUATED"
+    assert row["Quast.Missing review metric.check"] == "NOT_EVALUATED"
     assert row["Quast.all_checks_passed"] == "PASSED"
     assert row["all_checks_passed"] == "PASSED"
     assert row["speccheck_not_evaluated_count"] == "1"
@@ -167,7 +167,7 @@ def test_collect_can_fail_on_not_evaluated_missing_metrics(tmp_path):
         "\n".join(
             [
                 "species,assembly_type,software,field,operator,value,special_field",
-                "Mycoplasma genitalium,all,Quast,Missing manuscript metric,>=,1,",
+                "Mycoplasma genitalium,all,Quast,Missing review metric,>=,1,",
             ]
         )
         + "\n",
@@ -186,6 +186,6 @@ def test_collect_can_fail_on_not_evaluated_missing_metrics(tmp_path):
 
     with open(output_file, encoding="utf-8", newline="") as handle:
         row = next(csv.DictReader(handle))
-    assert row["Quast.Missing manuscript metric.check"] == "NOT_EVALUATED"
+    assert row["Quast.Missing review metric.check"] == "NOT_EVALUATED"
     assert row["Quast.all_checks_passed"] == "FAILED"
     assert row["all_checks_passed"] == "FAILED"

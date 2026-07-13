@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create deterministic manuscript assets for the real 100-sample cohort."""
+"""Create deterministic worked-example assets for the real 100-sample cohort."""
 
 from __future__ import annotations
 
@@ -21,7 +21,13 @@ DEFAULT_REPORT_ROOT = ROOT / ".demo_work/publication_100_final/report"
 DEFAULT_OUTPUT = ROOT / "examples/qualibact_ecoli/real_run_100"
 DOC_FIGURE_DIR = ROOT / "docs/assets/figures"
 TIERS = ("PASS", "WARN", "FAIL")
-COLORS = {"PASS": "#2f6f5e", "WARN": "#b7791f", "FAIL": "#b42318"}
+CURRENT_TIERS = ("PASS", "WARN", "FAIL", "NOT_AVAILABLE")
+COLORS = {
+    "PASS": "#2f6f5e",
+    "WARN": "#b7791f",
+    "FAIL": "#b42318",
+    "NOT_AVAILABLE": "#64748b",
+}
 METRICS = {
     "n50": "N50 (bp)",
     "contigs": "Contigs",
@@ -68,7 +74,7 @@ def write_svg(path: Path, width: int, height: int, body: list[str]):
 
 def concordance_table(report: pd.DataFrame) -> pd.DataFrame:
     table = pd.crosstab(report["qualibact_tier"], report["qualibact_compat_tier"])
-    return table.reindex(index=TIERS, columns=TIERS, fill_value=0)
+    return table.reindex(index=TIERS, columns=CURRENT_TIERS, fill_value=0)
 
 
 def write_concordance_figure(path: Path, matrix: pd.DataFrame):
@@ -82,8 +88,8 @@ def write_concordance_figure(path: Path, matrix: pd.DataFrame):
             fill="#52616f",
         ),
     ]
-    x0, y0, cell = 300, 175, 155
-    for column_index, tier in enumerate(TIERS):
+    x0, y0, cell = 250, 175, 135
+    for column_index, tier in enumerate(CURRENT_TIERS):
         body.append(
             svg_text(
                 x0 + column_index * cell + cell / 2,
@@ -105,7 +111,7 @@ def write_concordance_figure(path: Path, matrix: pd.DataFrame):
                 anchor="end",
             )
         )
-        for column_index, current_tier in enumerate(TIERS):
+        for column_index, current_tier in enumerate(CURRENT_TIERS):
             value = int(matrix.loc[historical_tier, current_tier])
             opacity = 0.12 + (value / matrix.to_numpy().max()) * 0.68
             x = x0 + column_index * cell
@@ -114,7 +120,7 @@ def write_concordance_figure(path: Path, matrix: pd.DataFrame):
                 f'<rect x="{x}" y="{y}" width="{cell - 8}" height="{cell - 8}" '
                 f'rx="12" fill="{COLORS[current_tier]}" fill-opacity="{opacity:.3f}"/>'
             )
-            body.append(svg_text(x + 74, y + 92, value, size=38, weight=700, anchor="middle"))
+            body.append(svg_text(x + 64, y + 92, value, size=38, weight=700, anchor="middle"))
     agreement = int(sum(matrix.loc[tier, tier] for tier in TIERS))
     total = int(matrix.to_numpy().sum())
     body.extend(
@@ -207,7 +213,7 @@ def write_metric_figure(path: Path, statistics: pd.DataFrame):
 
 
 def write_report_snapshot(path: Path, report: pd.DataFrame):
-    review = report[report["qualibact_compat_tier"].isin(["FAIL", "WARN"])].copy()
+    review = report[report["qualibact_compat_tier"].isin(["FAIL", "WARN", "NOT_AVAILABLE"])].copy()
     review = review.sort_values(["qualibact_compat_tier", "sample_id"]).head(10)
     body = [
         svg_text(50, 58, "speccheck 100-sample review snapshot", size=30, weight=700),
@@ -229,7 +235,7 @@ def write_report_snapshot(path: Path, report: pd.DataFrame):
             row["sample_id"],
             row["qualibact_tier"],
             row["qualibact_compat_tier"],
-            f'{int(row["n50"]):,}',
+            f"{int(row['n50']):,}",
             int(row["contigs"]),
             row["reason_summary"],
         )

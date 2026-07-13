@@ -4,16 +4,26 @@ repo_url: https://github.com/happykhan/speccheck
 repo_name: happykhan/speccheck
 theme:
   name: material
+  icon:
+    logo: material/table-check
   features:
+    - navigation.tabs
     - navigation.sections
     - navigation.expand
+    - navigation.top
+    - toc.follow
     - content.code.copy
     - search.suggest
     - search.highlight
+  palette:
+    - scheme: default
+      primary: teal
+      accent: deep orange
 markdown_extensions:
   - admonition
   - attr_list
   - def_list
+  - md_in_html
   - pymdownx.snippets
   - pymdownx.highlight
   - pymdownx.inlinehilite
@@ -25,14 +35,15 @@ nav:
   - Getting Started:
       - Installation: installation.md
       - Quick Start: quickstart.md
+      - Worked Examples: worked-examples.md
       - CLI Usage: cli.md
   - Inputs and Pipelines:
-      - Supported Inputs and Extensions: modules.md
+      - Supported Modules: modules.md
       - Pipeline Integration: ghru.md
       - Criteria and Thresholds: criteria.md
       - QualiBact Compatibility: qualibact.md
-  - Reports and Manuscript:
+      - Adding a Module: extending.md
+  - Reports and Examples:
       - Reports: reports.md
-      - Manuscript Assets: manuscript.md
-      - Manuscript Methods: methods.md
+      - 100-sample E. coli Case Study: case-study.md
   - Development: development.md

@@ -7,10 +7,10 @@
 
 `speccheck` is a Python command-line tool for collecting, validating, and summarizing genome QC metrics from multiple bioinformatics tools. It is designed for species-aware QC workflows and reproducible reporting.
 
-The publication case study processes 100 real, read-backed *Escherichia coli*
+The 100-sample case study processes real, read-backed *Escherichia coli*
 samples through `GHRU-assembly`, then applies a pinned QualiBact E. coli
 compatibility policy. The committed case-study outputs include accessions,
-provenance, reports, concordance analysis, and manuscript figures under
+provenance, reports, concordance analysis, and figures under
 [`examples/qualibact_ecoli/real_run_100`](examples/qualibact_ecoli/real_run_100/).
 
 ## Documentation
@@ -23,25 +23,26 @@ Project documentation is built with MkDocs Material and intended for GitHub Page
 Primary docs pages:
 
 - [Installation](docs/installation.md)
+- [Quick Start](docs/quickstart.md)
+- [Worked Examples](docs/worked-examples.md)
 - [CLI Usage](docs/cli.md)
-- [Modules and Extensions](docs/modules.md)
+- [Supported Modules](docs/modules.md)
+- [Adding a Module](docs/extending.md)
 - [Criteria Format](docs/criteria.md)
 - [Reports](docs/reports.md)
 - [QualiBact Integration](docs/qualibact.md)
 - [Pipeline Integration](docs/ghru.md)
-- [Manuscript Assets](docs/manuscript.md)
+- [100-sample E. coli Case Study](docs/case-study.md)
 - [Development](docs/development.md)
 
 ## Quick Start
 
-Install from source in a Python `3.10+` environment:
+Install from PyPI in a Python `3.10+` environment:
 
 ```bash
-git clone https://github.com/happykhan/speccheck.git
-cd speccheck
 python -m venv .venv
 source .venv/bin/activate
-pip install -e '.[dev]'
+python -m pip install speccheck-qc
 ```
 
 Collect QC metrics:
@@ -84,7 +85,7 @@ speccheck check --criteria-file speccheck/config/criteria.csv --update
 - Compact qualifyr-style summary tables
 - Optional Excel workbook export from merged reports
 - Packaged default criteria and templates for pip/conda style installs
-- QualiBact threshold import workflow for manuscript validation and regression testing
+- QualiBact threshold import workflow for compatibility checks and regression testing
 
 ## Development
 
@@ -100,10 +101,9 @@ Build docs:
 mkdocs build
 ```
 
-Regenerate manuscript figures and example summary tables:
+Regenerate example figures and summary tables:
 
 ```bash
-python scripts/create_manuscript_assets.py
 python scripts/create_real_run_100_assets.py
 ```
 
@@ -115,4 +115,4 @@ python -m build
 
 ## Citation
 
-If you use `speccheck` in a manuscript, cite the software and include the repository URL. Structured citation metadata is provided in [`CITATION.cff`](CITATION.cff). Zenodo archive metadata is provided in `.zenodo.json`; after a GitHub Release is archived by Zenodo, cite the release DOI for the exact version used.
+If you use `speccheck` in a paper, report, or public workflow, cite the software and include the repository URL. Structured citation metadata is provided in [`CITATION.cff`](CITATION.cff). Zenodo archive metadata is provided in `.zenodo.json`; after a GitHub Release is archived by Zenodo, cite the release DOI for the exact version used.

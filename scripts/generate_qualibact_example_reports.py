@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate manuscript-friendly example reports from pinned QualiBact fixtures."""
+"""Generate worked-example reports from pinned QualiBact fixtures."""
 
 from pathlib import Path
 

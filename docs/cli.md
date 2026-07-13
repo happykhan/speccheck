@@ -26,7 +26,7 @@ If `--organism` is omitted, `speccheck` attempts to infer the species from parse
 
 `--assembly-type` controls which criteria rows are evaluated. The default is `short`, which applies `all` and `short` criteria rows. `long` applies `all` and `long` rows, `hybrid` applies `all`, `short`, and `long` rows, and `all` applies only rows explicitly marked `all`. The selected mode is recorded in collected CSV outputs as `speccheck_assembly_type`.
 
-If an expected metric is missing from a detected parser output, the relevant `*.check` column is reported as `NOT_EVALUATED`. By default this is visible review metadata but does not change the parser/sample pass flag. Add `--fail-on-not-evaluated` for strict manuscript or CI runs where incomplete evidence should fail the sample.
+If an expected metric is missing from a detected parser output, the relevant `*.check` column is reported as `NOT_EVALUATED`. By default this is visible review metadata but does not change the parser/sample pass flag. Add `--fail-on-not-evaluated` for strict release or CI runs where incomplete evidence should fail the sample.
 
 Example:
 

@@ -66,18 +66,20 @@ compatibility columns such as:
 - `qualibact_compat_warn_policy`.
 
 These columns are an explicit compatibility overlay for the *E. coli* threshold
-version used in the manuscript case study. They should not be described as
+version used in the 100-sample case study. They should not be described as
 general multi-species QualiBact parity.
 
 ## HTML report
 
 The HTML report includes:
 
-- overall QC status table;
-- top failure and warning reasons;
+- cohort-level PASS/WARN/FAIL counts;
+- a concise sample review table;
+- top warning and failure reasons;
 - compact category summary tables;
-- optional qualifyr-style sample review table;
+- overall QC status matrix;
 - software-specific charts and tables where plot modules exist.
+- a collapsible full-detail table for wide parser/provenance columns.
 
 Generate an HTML report with:
 
@@ -89,9 +91,18 @@ speccheck summary qc_collect \
   --xlsx-output qc_report/report.xlsx
 ```
 
-Interactive tables can be sorted by clicking headers and filtered with the
-search box. The HTML is self-contained, so it can be attached as a supplement or
-stored with a release artifact.
+Interactive tables can be sorted by clicking headers, filtered with the search
+box, and paged so large cohorts are easier to review. The HTML is
+self-contained, so it can be stored with a release artifact or shared for review
+without a server.
+
+For large runs, start with:
+
+1. the KPI cards at the top;
+2. the sample review table;
+3. the warning/failure reason panels;
+4. the compact metric summary tables;
+5. the full-detail table only when you need every raw parser column.
 
 ## Example report generation
 
@@ -110,7 +121,7 @@ pixi run python scripts/build_ghru_ecoli_panel_report.py \
   --work-dir .demo_work/ghru_ecoli_panel/triplet/work
 ```
 
-100-sample manuscript assets:
+100-sample case-study assets:
 
 ```bash
 pixi run python scripts/create_real_run_100_assets.py

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create manuscript-ready static assets from committed example reports."""
+"""Create worked-example static assets from committed example reports."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "examples/qualibact_ecoli/real_panel/report"
 REPORT_CSV = REPORT_DIR / "report.full.csv"
-ASSET_DIR = ROOT / "examples/qualibact_ecoli/manuscript_assets"
+ASSET_DIR = ROOT / "examples/qualibact_ecoli/worked_example_assets"
 DOC_FIGURE_DIR = ROOT / "docs/assets/figures"
 
 
@@ -95,7 +95,7 @@ def workflow_svg(path: Path):
     body.extend(
         [
             rounded_rect(190, 385, 1120, 120, "#edf5fb", "#b8d3e5"),
-            svg_text(230, 435, "Manuscript example", size=26, weight=700),
+            svg_text(230, 435, "Worked example", size=26, weight=700),
             svg_text(
                 230,
                 473,
@@ -326,7 +326,7 @@ def main():
     write_summary_table(rows)
     convert_svgs_to_png(svg_paths)
     mirror_to_docs(svg_paths)
-    print(f"Wrote manuscript assets to {ASSET_DIR}")
+    print(f"Wrote worked-example assets to {ASSET_DIR}")
     print(f"Mirrored figures to {DOC_FIGURE_DIR}")
 
 

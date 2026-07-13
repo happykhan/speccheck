@@ -19,10 +19,11 @@ def test_real_run_100_assets_are_internally_consistent():
         "FAIL": 10,
     }
     assert report["qualibact_compat_tier"].value_counts().to_dict() == {
-        "PASS": 90,
-        "WARN": 6,
+        "PASS": 85,
+        "NOT_AVAILABLE": 7,
         "FAIL": 4,
+        "WARN": 4,
     }
     assert int(concordance.to_numpy().sum()) == 100
-    assert summary["exact_tier_agreement_count"] == 73
-    assert summary["discordant_count"] == 27
+    assert summary["exact_tier_agreement_count"] == 69
+    assert summary["discordant_count"] == 31

@@ -98,7 +98,7 @@ The exact directory names can differ, but the principle should not: files used
 for final QC should be deliberately published, versioned by the workflow, and
 documented.
 
-## What to record for a manuscript or release
+## What to record for a publication-quality or release run
 
 For a publication-quality run, record:
 

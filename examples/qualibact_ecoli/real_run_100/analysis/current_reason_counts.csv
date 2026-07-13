@@ -1,10 +1,12 @@
 reason,sample_count
-GC_Content <50.25,5
-N50 <20000.0,4
-Speciator.genusName,4
-Speciator.speciesName,4
-GC_Content >50.88,3
-Genome_Size <4400000.0,3
+No pinned QualiBact scheme for species,7
+GC_Content <50.25,3
+GC_Content <50.09,2
 Genome_Size >5700000.0,2
+Contamination >2.0,2
+GC_Content >51.13,1
+Total_Coding_Sequences <4200.0,1
+N50 <20000.0,1
 no_of_contigs >670.0,1
+Completeness_Specific <100.0,1
 Total_Coding_Sequences >5800.0,1

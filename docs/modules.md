@@ -1,133 +1,95 @@
-# Supported Modules and Extensions
+# Supported Modules
 
-`speccheck` recognises upstream QC files through small parser classes. The
-current built-in modules are:
+Speccheck recognises upstream outputs through parser modules. A parser does not
+run the upstream tool; it reads the files the tool already produced and returns a
+stable set of metric names.
 
-| Module | Input | Main purpose |
-| --- | --- | --- |
-| `Ariba` | ARIBA TSV summaries | MLST/contamination checks |
-| `Busco` | `short_summary*.txt` | Orthologue completeness and missingness |
-| `Checkm` | CheckM2 quality-report TSV | Completeness, contamination, and assembly metrics |
-| `Depth` | GHRU depth TSV | Short-, long-, or hybrid-read depth |
-| `Fastp` | fastp JSON report | Short-read Q30 and filtering metrics |
-| `Quast` | transposed QUAST `report.tsv` | Assembly size, contigs, N50, GC, and Ns |
-| `Speciator` | Speciator TSV | Species assignment and confidence |
-| `Sylph` | Sylph profile TSV | Species abundance and ANI profile |
+The criteria CSV then decides which metrics are checked and what threshold is
+used. This separation is deliberate:
 
-You can inspect a local installation without reading source code:
+- parser support means Speccheck can read the file;
+- criteria support means a metric is actively evaluated;
+- plotting support means the HTML report can show a richer diagnostic section.
+
+## Built-in parsers
+
+| Parser | Upstream software | Input recognised | Typical checks |
+| --- | --- | --- | --- |
+| `Ariba` | [ARIBA](https://github.com/sanger-pathogens/ariba) | ARIBA TSV summaries | MLST or contamination summary values |
+| `Busco` | [BUSCO](https://busco.ezlab.org/) | `short_summary*.txt` | Complete and missing orthologues |
+| `Checkm` | [CheckM2](https://github.com/chklovski/CheckM2) / CheckM-style TSVs | quality-report TSV | Completeness, contamination, genome size, N50, contigs |
+| `Depth` | Workflow depth table | GHRU-style depth TSV | Short-, long-, or hybrid-read depth |
+| `Fastp` | [fastp](https://github.com/OpenGene/fastp) | fastp JSON report | Q30 and filtering metrics |
+| `Quast` | [QUAST](http://quast.sourceforge.net/) | transposed `report.tsv` | Assembly length, contigs, N50, GC, Ns |
+| `Speciator` | [Speciator](https://github.com/cgps-discovery/speciator) | Speciator TSV | Species assignment and confidence |
+| `Sylph` | [Sylph](https://github.com/bluenote-1577/sylph) | Sylph profile TSV | Top species, abundance, ANI, number of genomes |
+
+Inspect your installed parser surface:
 
 ```bash
 speccheck modules
-speccheck inspect sample_qc_directory/
 ```
 
-`modules` lists the parser surface that is installed. `inspect` tests files
-without writing outputs, which is useful when wiring a new pipeline into
-`speccheck`.
+Preview what will be recognised in a directory:
 
-## Adding a built-in module
-
-A parser should do only three things:
-
-- decide whether a filename could belong to it;
-- decide whether the file content really matches it;
-- return a dictionary of normalized metric names and values.
-
-For simple single-row TSV outputs, subclass `SingleRowTsvParser` instead of
-reimplementing delimiter handling:
-
-```python
-from speccheck.modules.base import SingleRowTsvParser
-
-
-class MyTool(SingleRowTsvParser):
-    software_name = "MyTool"
-    description = "Short description shown by speccheck modules"
-    supported_filenames = "TSV with sample, score, and status columns"
-    required_headers = ("sample", "score", "status")
-    exact_headers = False
+```bash
+speccheck inspect path/to/qc_outputs/
 ```
 
-For JSON, text summaries, or multi-row formats, subclass `Parser` directly and
-make the content check real. `has_valid_filename` is a quick filter;
-`has_valid_fileformat` should reject files that happen to have a similar name.
+!!! tip "Use inspect before collect"
 
-```python
-import json
+    `inspect` is read-only. It is the fastest way to debug “why did this file
+    not appear in my report?” without creating output files.
 
-from speccheck.modules.base import Parser
+## How parser output becomes QC status
 
+For a sample with QUAST, CheckM2, Speciator, Sylph, and depth files:
 
-class MyTool(Parser):
-    software_name = "MyTool"
-    description = "Short description shown by speccheck modules"
-    supported_filenames = "mytool*.json"
-
-    @property
-    def has_valid_filename(self):
-        return self.file_path.name.endswith(".mytool.json")
-
-    @property
-    def has_valid_fileformat(self):
-        try:
-            with open(self.file_path, encoding="utf-8") as handle:
-                data = json.load(handle)
-        except (OSError, json.JSONDecodeError):
-            return False
-        return {"sample", "score"}.issubset(data)
-
-    def fetch_values(self):
-        with open(self.file_path, encoding="utf-8") as handle:
-            data = json.load(handle)
-        return {"score": float(data["score"])}
+```bash
+speccheck collect sample_qc/ \
+  --sample SAMPLE_001 \
+  --organism "Escherichia coli" \
+  --output-file qc_collect/SAMPLE_001.csv
 ```
 
-Then add the class to `PARSER_CLASSES` in `speccheck/registry.py` and add focused
-tests covering detection, rejection of similar non-matching files, and parsed
-metric values.
+Speccheck does this:
 
-If the module needs plots in the HTML report, add a matching plotting function
-under `speccheck/plot_modules/`. Plot modules are optional; parsing and criteria
-evaluation should work without them.
+1. Detects which parser can read each file.
+2. Prefixes emitted metrics with the parser name, for example `Quast.N50`.
+3. Selects criteria rows matching the species and assembly type.
+4. Adds status/check columns and provenance columns.
+5. Writes one compact CSV for the sample.
 
-## Third-party Parser Plugins
+The summary step then merges those compact CSVs:
 
-External packages can register parser classes through the
-`speccheck.parsers` entry-point group. The entry point must load a subclass of
-`speccheck.modules.base.Parser` and its `software_name` must not duplicate an
-installed parser:
-
-```toml
-[project.entry-points."speccheck.parsers"]
-MyTool = "my_package.speccheck_parsers:MyTool"
+```bash
+speccheck summary qc_collect --output qc_report --plot
 ```
 
-This keeps local pipeline-specific parsers out of the core repository while
-still making them visible to `speccheck modules`, `speccheck inspect`, criteria
-validation, and collection.
+## Criteria rows connect parsers to thresholds
 
-## Criteria for New Modules
-
-Criteria rows use the parser `software_name` and the metric keys returned by
-`fetch_values`:
+Criteria rows use the parser name and metric name:
 
 ```csv
 species,assembly_type,software,field,operator,value,severity,source,special_field
-all,all,MyTool,metric,>=,0.95,fail,my-project,
+all,short,Fastp,after_filtering_q30_rate,>=,0.70,fail,bactscout-global,
+all,all,Busco,Complete,>=,95,fail,speccheck-default,
+Escherichia coli,short,Checkm,Contamination,<=,5,fail,qualibact-v1.0,
 ```
 
-Use `severity=fail` for thresholds that fail a sample and `severity=warn` for
-review thresholds. Keep parser output names stable once published because those
-names become part of reports, criteria files, and manuscript provenance.
+This means a parser can exist before a species-specific public threshold exists.
+For example, Fastp and BUSCO have global Speccheck policy rows; they are not
+QualiBact species-specific assembly thresholds.
 
-## Avoiding duplication
+## Plotting modules
 
-Before adding a new parser, check whether the upstream file can be normalized by
-an existing base class. Most duplication should live in a shared base parser or
-small helper, not in every module. A clean module usually has:
+HTML plots are optional. If a parser has no plotting module, Speccheck can still:
 
-- one filename rule;
-- one content/header validation rule;
-- one `fetch_values()` method;
-- tests for positive and negative detection;
-- criteria rows only for metrics that the parser actually emits.
+- detect the file;
+- parse metrics;
+- apply criteria;
+- write CSV/XLSX outputs.
+
+Plot modules currently exist for ARIBA, CheckM, QUAST, Speciator, and Sylph.
+
+To add support for new software, see [Adding a Module](extending.md).

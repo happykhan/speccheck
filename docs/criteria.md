@@ -1,100 +1,155 @@
-# Criteria Format
+# Criteria and Thresholds
 
-The runtime criteria format is a CSV with these headers:
+Speccheck uses a CSV criteria file to turn parsed metrics into status columns.
+The default criteria file is packaged with the Python package, but you can supply
+your own with `--criteria-file`.
+
+```bash
+speccheck collect sample_qc/ \
+  --sample SAMPLE_001 \
+  --criteria-file project_criteria.csv \
+  --output-file qc_collect/SAMPLE_001.csv
+```
+
+## CSV format
 
 ```csv
 species,assembly_type,software,field,operator,value,severity,source,special_field
 ```
 
-## Column meanings
+| Column | Meaning |
+| --- | --- |
+| `species` | species name, `all`, or a fallback label such as `Unknown` |
+| `assembly_type` | `all`, `short`, `long`, or `hybrid` |
+| `software` | parser name, for example `Checkm`, `Quast`, `Fastp` |
+| `field` | metric emitted by that parser |
+| `operator` | `>`, `<`, `>=`, `<=`, `=`, or `regex` |
+| `value` | threshold value or regex pattern |
+| `severity` | `fail` or `warn`; blank legacy rows are treated as `fail` |
+| `source` | provenance label, for example `qualibact-v1.0`, `bactscout-global`, `custom` |
+| `special_field` | optional marker such as `species_field` |
 
-- `species`: species name or `all`
-- `assembly_type`: `all`, `short`, `long`, or `hybrid`
-- `software`: module name such as `Checkm`, `Quast`, `Speciator`, `Sylph`
-- `field`: metric field to evaluate
-- `operator`: `>`, `<`, `>=`, `<=`, `=`, or `regex`
-- `value`: threshold value or regex pattern
-- `severity`: `fail` or `warn`; omitted legacy rows are treated as `fail`
-- `source`: provenance label such as `qualibact-v1.0`, `speccheck-default`, or `custom`
-- `special_field`: currently used for `species_field`
+## How rows are selected
 
-## Threshold model
+Speccheck evaluates criteria in layers:
 
-`speccheck` evaluates criteria in layers:
+1. Select rows matching the requested assembly type.
+2. Prefer species-specific rows for the resolved organism.
+3. Use `species=all` generic rows when no species-specific row exists for that
+   same parser metric.
+4. Record whether species-specific thresholds were available and whether a
+   fallback threshold was used.
 
-1. Species-specific rows are used when they exist for the resolved organism,
-   software, and field.
-2. Generic `species=all` rows are used when no species-specific row exists for
-   that metric.
-3. Project criteria files can add rows for tools or metrics that are outside
-   QualiBact.
+This lets one criteria file contain all of these at once:
 
-This is why the criteria table contains both QualiBact-derived assembly metrics
-and global Speccheck policies such as Fastp Q30 and BUSCO completeness.
+- species-specific QualiBact-derived assembly thresholds;
+- generic fallback thresholds;
+- global non-QualiBact policies such as Fastp Q30;
+- BUSCO policies where no QualiBact species-specific metric exists.
 
-## Notes
+## Worked example: species-specific threshold
 
-- Regex-based rows are used for species-identification checks.
-- Numeric rows are used for threshold comparisons.
-- Default packaged criteria live at `speccheck/config/criteria.csv`.
-- Species-specific criteria override generic `species=all` rows for the same
-  `software` and `field`.
-- Generic rows still apply when no species-specific row exists for that metric.
-- Tool support and threshold support are separate. A parser can exist before a
-  public species-specific threshold exists for that parser.
+```csv
+species,assembly_type,software,field,operator,value,severity,source,special_field
+Escherichia coli,short,Checkm,Contamination,<=,5,fail,qualibact-v1.0,
+```
 
-## Species resolution
+If the organism is resolved as *Escherichia coli*, this row checks
+`Checkm.Contamination`.
 
-If `--organism` is not supplied, `speccheck` attempts to infer the species from rows marked with `special_field=species_field`.
+## Worked example: global Fastp threshold
 
-Collection now fails if no single organism can be resolved. This avoids applying broad fallback thresholds by accident. For legacy or exploratory runs, pass `--allow-unknown-organism` to use the packaged `Unknown` fallback criteria explicitly.
+```csv
+species,assembly_type,software,field,operator,value,severity,source,special_field
+all,short,Fastp,after_filtering_q30_rate,>=,0.70,fail,bactscout-global,
+all,short,Fastp,after_filtering_q30_rate,>=,0.80,warn,bactscout-global,
+```
+
+These rows are global. They are not assembly-specific QualiBact thresholds and
+not species-specific. They apply to short-read Fastp input wherever Fastp output
+is supplied, unless a project criteria file adds a more specific row for the
+same parser and field.
+
+## Worked example: BUSCO policy
+
+```csv
+species,assembly_type,software,field,operator,value,severity,source,special_field
+all,all,Busco,Complete,>=,95,fail,speccheck-default,
+all,all,Busco,Missing,<=,5,warn,speccheck-default,
+```
+
+BUSCO is supported as a parser and can be evaluated by Speccheck criteria, but
+these packaged rows are Speccheck default policy rows. They should not be
+described as official species-specific QualiBact thresholds.
 
 ## Assembly type filtering
 
-Collection applies criteria rows according to `speccheck collect --assembly-type`:
+`speccheck collect --assembly-type` controls which criteria rows are active:
 
-- `short`: evaluates `all` and `short` rows
-- `long`: evaluates `all` and `long` rows
-- `hybrid`: evaluates `all`, `short`, and `long` rows
-- `all`: evaluates only rows marked `all`
+| Mode | Active rows |
+| --- | --- |
+| `short` | `all` and `short` |
+| `long` | `all` and `long` |
+| `hybrid` | `all`, `short`, and `long` |
+| `all` | only rows marked `all` |
 
-The default is `short` to preserve the historical packaged-criteria behavior. The selected mode is written to collected CSV outputs as `speccheck_assembly_type`.
+The selected mode is written to collected CSV outputs as
+`speccheck_assembly_type`.
 
-Depth criteria use `DepthParser.short` and `DepthParser.long` in the criteria table. These rows are applied to parsed `Depth` outputs according to the row `Read_type`, so a short-read depth file is not evaluated against long-read depth thresholds.
+Depth criteria also use the parsed `Depth.Read_type`, so a short-read depth file
+is not checked against long-read depth thresholds.
+
+## Species resolution
+
+If `--organism` is not supplied, Speccheck attempts to infer the species from
+parser outputs marked with `special_field=species_field`.
+
+Collection stops if no single species can be resolved. This prevents accidental
+use of broad fallback thresholds. Use `--allow-unknown-organism` only when you
+intentionally want fallback criteria.
 
 ## Missing metrics
 
-If a parser is detected but an applicable criteria row references a field that is not present in that parser output, the collected CSV reports the corresponding `*.check` column as `NOT_EVALUATED`. The row also includes `speccheck_not_evaluated_count` so missing expected metrics are visible during review.
+If a parser is detected but an active criteria row references a missing field,
+Speccheck writes the corresponding check as `NOT_EVALUATED`.
 
-`NOT_EVALUATED` means the metric was expected by the selected criteria but could not be checked from the available upstream output. It is not the same as a threshold failure. By default it is reported without changing `all_checks_passed`; use `speccheck collect --fail-on-not-evaluated` when incomplete evidence should fail the parser-level and sample-level checks.
+By default, `NOT_EVALUATED` is review metadata and does not fail the whole
+sample. For strict runs:
+
+```bash
+speccheck collect sample_qc/ \
+  --sample SAMPLE_001 \
+  --fail-on-not-evaluated \
+  --output-file qc_collect/SAMPLE_001.csv
+```
 
 ## Provenance columns
 
-Collected CSV outputs include basic speccheck provenance:
+Collected CSV outputs include:
 
-- `speccheck_version`
-- `speccheck_assembly_type`
-- `speccheck_fail_on_not_evaluated`
-- `speccheck_criteria_file`
-- `speccheck_criteria_sha256`
-- `speccheck_input_file_count`
-- `speccheck_not_evaluated_count`
+- `speccheck_version`;
+- `speccheck_assembly_type`;
+- `speccheck_fail_on_not_evaluated`;
+- `speccheck_criteria_file`;
+- `speccheck_criteria_sha256`;
+- `speccheck_input_file_count`;
+- `speccheck_not_evaluated_count`;
+- `speccheck_threshold_source`;
+- `speccheck_threshold_fallback_used`.
 
-## QualiBact import
+These columns are important when comparing runs across tool versions, criteria
+versions, or workflow commits.
 
-QualiBact thresholds are not consumed directly at runtime. They are converted into this internal CSV format so the rest of the validation engine remains stable.
+## Refreshing QualiBact-derived rows
 
-QualiBact assembly-quality thresholds used here are calibrated around CheckM2-style metrics. The `Checkm` parser name is retained for backward compatibility in column names, but the supported QualiBact criteria use CheckM2 fields such as `Completeness`, `Contamination`, `Genome_Size`, `GC_Content`, `Contig_N50`, `Total_Contigs`, and `Total_Coding_Sequences`. Legacy CheckM1 marker-lineage criteria are not generated or packaged for QualiBact-derived thresholds.
+QualiBact thresholds are converted into the internal criteria CSV format:
 
-## Non-QualiBact global thresholds
+```bash
+speccheck check \
+  --criteria-file speccheck/config/criteria.csv \
+  --update \
+  --update-url https://static.qualibact.org/api/v2/external/thresholds.csv
+```
 
-Some supported tools do not have species-specific QualiBact metrics. These use
-explicit global criteria rows:
-
-- `Fastp.after_filtering_q30_rate`: BactScout-derived global short-read Q30
-  policy, `FAIL` below 70% and `WARN` below 80%.
-- `Busco.Complete` and `Busco.Missing`: Speccheck default orthologue
-  completeness policy, not an official universal BUSCO species threshold.
-
-These rows have `species=all` and remain active for every organism unless a
-project-supplied species row overrides the same software and field.
+Existing unmanaged rows are preserved. This is how Speccheck can keep global
+Fastp/BUSCO policy rows alongside imported QualiBact-derived rows.

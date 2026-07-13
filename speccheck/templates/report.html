@@ -32,19 +32,28 @@
             <p class="hero-summary">{{ sample_count }}</p>
         </header>
 
+        <nav class="report-nav" aria-label="Report sections">
+            <a href="#sample-review">Sample review</a>
+            <a href="#exceptions">Warnings and failures</a>
+            <a href="#metric-summary">Metric summaries</a>
+            <a href="#status-matrix">Status matrix</a>
+            <a href="#software-diagnostics">Software diagnostics</a>
+            <a href="#full-detail">Full detail</a>
+        </nav>
+
         <main class="report-main">
-            <section class="overview-grid">
+            <section id="exceptions" class="overview-grid">
                 <article class="panel prose">
                     <h2>Warnings and failures</h2>
-                    {% if run_alerts %}
+{% if run_alerts %}
                     <ul class="alert-list">
-                        {% for alert in run_alerts %}
+{% for alert in run_alerts %}
                         <li><strong>{{ alert.count }}</strong> {{ alert.reason }}</li>
-                        {% endfor %}
+{% endfor %}
                     </ul>
-                    {% else %}
+{% else %}
                     <p>No recurring warning or failure reasons were detected.</p>
-                    {% endif %}
+{% endif %}
                 </article>
                 <article class="panel prose">
                     <h2>Software in report</h2>
@@ -52,7 +61,7 @@
                 </article>
             </section>
 
-            <section class="panel prose">
+            <section id="sample-review" class="panel prose">
                 <div class="section-heading">
                     <div>
                         <div class="eyebrow">Review</div>
@@ -73,28 +82,7 @@
                 {{ failure_reasons }}
             </section>
 
-            <section class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Full detail</div>
-                        <h2>Full merged table</h2>
-                    </div>
-                </div>
-                <p>Full parser, metadata, and provenance columns are preserved below the fold.</p>
-                {{ full_detail_table }}
-            </section>
-
-            <section class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Status</div>
-                        <h2>QC status matrix</h2>
-                    </div>
-                </div>
-                {{ summary_table }}
-            </section>
-
-            <section class="panel prose">
+            <section id="metric-summary" class="panel prose">
                 <div class="section-heading">
                     <div>
                         <div class="eyebrow">Metrics</div>
@@ -102,6 +90,16 @@
                     </div>
                 </div>
                 {{ metric_summary_tables }}
+            </section>
+
+            <section id="status-matrix" class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Status</div>
+                        <h2>QC status matrix</h2>
+                    </div>
+                </div>
+                {{ summary_table }}
             </section>
 
 {% if qualifyr_style_table %}
@@ -116,7 +114,7 @@
             </section>
 {% endif %}
 
-            <section class="panel prose report-charts">
+            <section id="software-diagnostics" class="panel prose report-charts">
                 <div class="section-heading">
                     <div>
                         <div class="eyebrow">Diagnostics</div>
@@ -125,6 +123,20 @@
                 </div>
                 {{ software_charts }}
             </section>
+
+            <section id="full-detail" class="panel prose">
+                <details class="heavy-section">
+                    <summary>
+                        <span>
+                            <span class="eyebrow">Full detail</span>
+                            <strong>Full merged table</strong>
+                        </span>
+                        <span class="summary-hint">Open only when you need every parser, metadata, and provenance column.</span>
+                    </summary>
+                    <p>Full parser, metadata, and provenance columns are preserved here. For large runs, use the filter box and pagination controls rather than scrolling the whole table at once.</p>
+                    {{ full_detail_table }}
+                </details>
+            </section>
         </main>
     </div>
 
@@ -132,7 +144,7 @@
         {{ footer }}
     </footer>
 
-    {% if interactive_tables %}
+{% if interactive_tables %}
     <script>
         (() => {
             const parseValue = (value, type) => {
@@ -147,6 +159,39 @@
                     if (raw === "FAILED" || raw === "FAIL") return 0;
                 }
                 return raw.toLowerCase();
+            };
+
+            const visibleRows = (table) => Array.from(table.querySelectorAll("tbody tr"))
+                .filter((row) => row.dataset.filterHidden !== "true");
+
+            const applyPagination = (table) => {
+                const pageSize = Number(table.dataset.pageSize || 0);
+                if (!pageSize) return;
+                const rows = visibleRows(table);
+                const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+                let currentPage = Number(table.dataset.currentPage || 1);
+                currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+                table.dataset.currentPage = String(currentPage);
+                const start = (currentPage - 1) * pageSize;
+                const end = start + pageSize;
+                table.querySelectorAll("tbody tr").forEach((row) => {
+                    row.hidden = true;
+                });
+                rows.forEach((row, index) => {
+                    row.hidden = !(index >= start && index < end);
+                });
+                const controls = document.querySelector(`.table-pagination[data-target="${table.id}"]`);
+                if (!controls) return;
+                const status = controls.querySelector(".table-page-status");
+                const previous = controls.querySelector(".table-page-prev");
+                const next = controls.querySelector(".table-page-next");
+                if (status) {
+                    const first = rows.length === 0 ? 0 : start + 1;
+                    const last = Math.min(end, rows.length);
+                    status.textContent = `${first}-${last} of ${rows.length}`;
+                }
+                if (previous) previous.disabled = currentPage <= 1;
+                if (next) next.disabled = currentPage >= totalPages;
             };
 
             document.querySelectorAll("table.js-sort-filter thead th").forEach((header, index) => {
@@ -166,6 +211,8 @@
                         return 0;
                     });
                     rows.forEach((row) => tbody.appendChild(row));
+                    table.dataset.currentPage = "1";
+                    applyPagination(table);
                 });
             });
 
@@ -176,12 +223,28 @@
                     if (!table) return;
                     table.querySelectorAll("tbody tr").forEach((row) => {
                         const text = row.innerText.toLowerCase();
-                        row.style.display = text.includes(term) ? "" : "none";
+                        row.dataset.filterHidden = text.includes(term) ? "false" : "true";
                     });
+                    table.dataset.currentPage = "1";
+                    applyPagination(table);
                 });
+            });
+
+            document.querySelectorAll(".table-pagination").forEach((controls) => {
+                const table = document.getElementById(controls.dataset.target);
+                if (!table) return;
+                controls.querySelector(".table-page-prev")?.addEventListener("click", () => {
+                    table.dataset.currentPage = String(Number(table.dataset.currentPage || 1) - 1);
+                    applyPagination(table);
+                });
+                controls.querySelector(".table-page-next")?.addEventListener("click", () => {
+                    table.dataset.currentPage = String(Number(table.dataset.currentPage || 1) + 1);
+                    applyPagination(table);
+                });
+                applyPagination(table);
             });
         })();
     </script>
-    {% endif %}
+{% endif %}
 </body>
 </html>

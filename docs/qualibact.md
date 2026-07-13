@@ -33,7 +33,7 @@ QualiBact-derived criteria.
 
 ## QualiBact tier compatibility
 
-Generic criteria checks remain binary. For manuscript comparison, `summary` can add a pinned QualiBact E. coli v1 compatibility tier:
+Generic criteria checks remain binary. For the E. coli case study and comparable audits, `summary` can add a pinned QualiBact E. coli v1 compatibility tier:
 
 ```bash
 speccheck summary qc_results \
@@ -64,10 +64,12 @@ metadata. They do not define `overall_qc` and do not replace freshly computed
 compatibility reasons. This separation prevents older assemblies or exports from
 silently overriding the current QC verdict.
 
-The completed 100-sample case study found 73% exact tier agreement (68/70
+The completed 100-sample case study found 69% exact tier agreement: 64/70
 historical PASS, 1/20 historical WARN, and 4/10 historical FAIL remained in the
-same tier). These are concordance results, not sensitivity or specificity,
-because historical tiers are not treated as ground truth.
+same tier. Seven samples were `NOT_AVAILABLE` under the pinned E. coli
+compatibility policy because current species assignment fell outside that policy
+or could not be identified. These are concordance results, not sensitivity or
+specificity, because historical tiers are not treated as ground truth.
 
 ## Regression fixtures
 

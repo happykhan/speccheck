@@ -70,7 +70,7 @@ Release sequence:
 2. Confirm GitHub Actions are green and GitHub Pages has deployed.
 3. Run the manual GitHub Actions **Release** workflow with the prepared version.
 4. Confirm Zenodo archived the GitHub Release and minted a DOI.
-5. Update the manuscript to cite that exact version DOI.
+5. Cite that exact version DOI in any downstream paper, report, or release note.
 
 ## Pipeline layout collectors
 
