@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import urllib.error
@@ -49,7 +50,11 @@ def read_pixi_version() -> str:
 
 
 def fetch_json(url: str):
-    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    headers = {"Accept": "application/json"}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token and url.startswith("https://api.github.com/"):
+        headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(request, timeout=20) as response:
         return json.load(response)
 
@@ -114,8 +119,25 @@ def metadata_consistent(version: str) -> list[CheckResult]:
 
 def github_release_state(version: str) -> list[CheckResult]:
     tag = f"v{version}"
-    tags = fetch_json(f"{GITHUB_API}/tags?per_page=100")
-    releases = fetch_json(f"{GITHUB_API}/releases?per_page=100")
+    try:
+        tags = fetch_json(f"{GITHUB_API}/tags?per_page=100")
+        releases = fetch_json(f"{GITHUB_API}/releases?per_page=100")
+    except urllib.error.HTTPError as exc:
+        return [
+            CheckResult(
+                "GitHub release API",
+                False,
+                f"HTTP {exc.code} while checking tags/releases: {exc.reason}",
+            )
+        ]
+    except urllib.error.URLError as exc:
+        return [
+            CheckResult(
+                "GitHub release API",
+                False,
+                f"unable to check tags/releases: {exc.reason}",
+            )
+        ]
     tag_names = {item["name"] for item in tags}
     release_tags = {item["tag_name"] for item in releases}
     return [
@@ -133,7 +155,20 @@ def github_release_state(version: str) -> list[CheckResult]:
 
 
 def pypi_state(version: str) -> CheckResult:
-    data = fetch_json(PYPI_API)
+    try:
+        data = fetch_json(PYPI_API)
+    except urllib.error.HTTPError as exc:
+        return CheckResult(
+            "PyPI version availability",
+            False,
+            f"HTTP {exc.code} while checking PyPI: {exc.reason}",
+        )
+    except urllib.error.URLError as exc:
+        return CheckResult(
+            "PyPI version availability",
+            False,
+            f"unable to check PyPI: {exc.reason}",
+        )
     releases = set(data.get("releases", {}))
     current = data.get("info", {}).get("version", "unknown")
     return CheckResult(
@@ -144,7 +179,20 @@ def pypi_state(version: str) -> CheckResult:
 
 
 def docker_state(version: str) -> CheckResult:
-    data = fetch_json(DOCKER_API)
+    try:
+        data = fetch_json(DOCKER_API)
+    except urllib.error.HTTPError as exc:
+        return CheckResult(
+            "Docker tag state",
+            False,
+            f"HTTP {exc.code} while checking Docker Hub: {exc.reason}",
+        )
+    except urllib.error.URLError as exc:
+        return CheckResult(
+            "Docker tag state",
+            False,
+            f"unable to check Docker Hub: {exc.reason}",
+        )
     tags = {item["name"]: item.get("last_updated", "unknown") for item in data.get("results", [])}
     if version in tags:
         return CheckResult(
