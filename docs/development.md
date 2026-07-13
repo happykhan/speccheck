@@ -31,8 +31,8 @@ python -m build
 Lint and format:
 
 ```bash
-ruff format --check speccheck tests
-ruff check speccheck tests
+ruff format --check speccheck tests scripts docker/build_docker.py
+ruff check speccheck tests scripts docker/build_docker.py
 ```
 
 ## Packaging direction
