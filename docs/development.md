@@ -74,9 +74,16 @@ Release sequence:
 
 1. Merge the release-prepared branch to `main`.
 2. Confirm GitHub Actions are green and GitHub Pages has deployed.
-3. Run the manual GitHub Actions **Release** workflow with the prepared version.
-4. Confirm Zenodo archived the GitHub Release and minted a DOI.
-5. Cite that exact version DOI in any downstream paper, report, or release note.
+3. Run the read-only release preflight:
+
+   ```bash
+   pixi run release-preflight 1.3.0
+   ```
+
+4. Run the manual GitHub Actions **Release** workflow with the prepared version.
+5. Confirm PyPI, Docker Hub, and the GitHub Release show the same version.
+6. Confirm Zenodo archived the GitHub Release and minted a DOI.
+7. Cite that exact version DOI in any downstream paper, report, or release note.
 
 ## Pipeline layout collectors
 

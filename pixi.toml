@@ -26,3 +26,4 @@ speccheck-qc = { path = ".", editable = true }
 test = "pytest -q"
 summary-demo = "python scripts/generate_qualibact_example_reports.py"
 worked-example-assets = "python scripts/create_worked_example_assets.py"
+release-preflight = "python scripts/release_preflight.py"
