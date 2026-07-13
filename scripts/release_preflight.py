@@ -26,6 +26,7 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback.
 
 ROOT = Path(__file__).resolve().parents[1]
 GITHUB_API = "https://api.github.com/repos/happykhan/speccheck"
+GITHUB_RELEASE_URL = "https://github.com/happykhan/speccheck/releases/tag"
 PYPI_API = "https://pypi.org/pypi/speccheck-qc/json"
 DOCKER_API = "https://hub.docker.com/v2/repositories/happykhan/speccheck/tags?page_size=100"
 PAGES_URL = "https://happykhan.github.io/speccheck/"
@@ -126,10 +127,11 @@ def github_release_state(version: str) -> list[CheckResult]:
         return [
             CheckResult(
                 "GitHub release API",
-                False,
-                f"HTTP {exc.code} while checking tags/releases: {exc.reason}",
+                True,
+                f"HTTP {exc.code} from API; using git/public release URL fallback",
+                warning=True,
             )
-        ]
+        ] + github_release_state_fallback(tag)
     except urllib.error.URLError as exc:
         return [
             CheckResult(
@@ -150,6 +152,76 @@ def github_release_state(version: str) -> list[CheckResult]:
             "GitHub release availability",
             tag not in release_tags,
             f"release {tag} {'already exists' if tag in release_tags else 'is available'}",
+        ),
+    ]
+
+
+def github_release_state_fallback(tag: str) -> list[CheckResult]:
+    """Check tag/release availability without the GitHub API.
+
+    Anonymous GitHub API rate limits can be exhausted during active CI/debug work.
+    The preflight still needs a read-only way to prove whether the release tag
+    exists. Git's smart HTTP/SSH endpoint gives reliable tag availability, while
+    the public release URL distinguishes an existing GitHub Release from a 404.
+    """
+    tag_result = subprocess.run(
+        ["git", "ls-remote", "--tags", "origin", tag],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    tag_exists = bool(tag_result.stdout.strip())
+    release_url = f"{GITHUB_RELEASE_URL}/{tag}"
+    try:
+        status = url_status(release_url)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            release_exists = False
+            release_detail = f"release {tag} is available"
+        else:
+            return [
+                CheckResult(
+                    "GitHub tag availability",
+                    not tag_exists,
+                    f"{tag} {'already exists' if tag_exists else 'is available'}",
+                ),
+                CheckResult(
+                    "GitHub release availability",
+                    False,
+                    f"HTTP {exc.code} while checking {release_url}: {exc.reason}",
+                ),
+            ]
+    except urllib.error.URLError as exc:
+        return [
+            CheckResult(
+                "GitHub tag availability",
+                not tag_exists,
+                f"{tag} {'already exists' if tag_exists else 'is available'}",
+            ),
+            CheckResult(
+                "GitHub release availability",
+                False,
+                f"unable to check {release_url}: {exc.reason}",
+            ),
+        ]
+    else:
+        release_exists = status == 200
+        release_detail = (
+            f"release {tag} already exists"
+            if release_exists
+            else f"{release_url} returned HTTP {status}"
+        )
+    return [
+        CheckResult(
+            "GitHub tag availability",
+            not tag_exists,
+            f"{tag} {'already exists' if tag_exists else 'is available'}",
+        ),
+        CheckResult(
+            "GitHub release availability",
+            not release_exists,
+            release_detail,
         ),
     ]
 
