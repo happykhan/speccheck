@@ -114,7 +114,8 @@ Source files:
 
 ## Suggested manuscript table
 
-Use `examples/qualibact_ecoli/real_panel/report/report.csv` to summarize the real-panel benchmark. Useful columns include:
+Use `examples/qualibact_ecoli/real_run_100/report/report.csv` and the generated
+analysis tables to summarize the primary case study. Useful columns include:
 
 - `sample_id`
 - `qualibact_tier`
@@ -128,7 +129,8 @@ Use `examples/qualibact_ecoli/real_panel/report/report.csv` to summarize the rea
 - `Checkm.Contamination`
 - `qualibact_reasons`
 
-A paper-ready subset is generated here:
+A small real-panel subset is also generated here for examples and documentation
+screenshots:
 
 - `examples/qualibact_ecoli/manuscript_assets/real_panel_summary_table.csv`
 - `examples/qualibact_ecoli/manuscript_assets/real_panel_summary_table.md`

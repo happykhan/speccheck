@@ -25,7 +25,7 @@ speccheck inspect sample_qc_directory/
 without writing outputs, which is useful when wiring a new pipeline into
 `speccheck`.
 
-## Adding a Built-in Module
+## Adding a built-in module
 
 A parser should do only three things:
 
@@ -48,9 +48,13 @@ class MyTool(SingleRowTsvParser):
     exact_headers = False
 ```
 
-For JSON, text summaries, or multi-row formats, subclass `Parser` directly:
+For JSON, text summaries, or multi-row formats, subclass `Parser` directly and
+make the content check real. `has_valid_filename` is a quick filter;
+`has_valid_fileformat` should reject files that happen to have a similar name.
 
 ```python
+import json
+
 from speccheck.modules.base import Parser
 
 
@@ -61,19 +65,30 @@ class MyTool(Parser):
 
     @property
     def has_valid_filename(self):
-        return self.file_path.endswith(".json")
+        return self.file_path.name.endswith(".mytool.json")
 
     @property
     def has_valid_fileformat(self):
-        return True
+        try:
+            with open(self.file_path, encoding="utf-8") as handle:
+                data = json.load(handle)
+        except (OSError, json.JSONDecodeError):
+            return False
+        return {"sample", "score"}.issubset(data)
 
     def fetch_values(self):
-        return {"metric": 1.0}
+        with open(self.file_path, encoding="utf-8") as handle:
+            data = json.load(handle)
+        return {"score": float(data["score"])}
 ```
 
 Then add the class to `PARSER_CLASSES` in `speccheck/registry.py` and add focused
 tests covering detection, rejection of similar non-matching files, and parsed
 metric values.
+
+If the module needs plots in the HTML report, add a matching plotting function
+under `speccheck/plot_modules/`. Plot modules are optional; parsing and criteria
+evaluation should work without them.
 
 ## Third-party Parser Plugins
 
@@ -103,4 +118,16 @@ all,all,MyTool,metric,>=,0.95,fail,my-project,
 
 Use `severity=fail` for thresholds that fail a sample and `severity=warn` for
 review thresholds. Keep parser output names stable once published because those
-names become part of reports and manuscript provenance.
+names become part of reports, criteria files, and manuscript provenance.
+
+## Avoiding duplication
+
+Before adding a new parser, check whether the upstream file can be normalized by
+an existing base class. Most duplication should live in a shared base parser or
+small helper, not in every module. A clean module usually has:
+
+- one filename rule;
+- one content/header validation rule;
+- one `fetch_values()` method;
+- tests for positive and negative detection;
+- criteria rows only for metrics that the parser actually emits.

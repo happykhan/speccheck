@@ -23,6 +23,8 @@ pip install -e '.[dev]'
 
 ## Docker
 
+If a release image has been published for the version you need:
+
 ```bash
 docker pull happykhan/speccheck
 ```

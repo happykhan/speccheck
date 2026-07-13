@@ -10,6 +10,7 @@ The workflow is organized around three commands:
 
 - `speccheck collect`: parse per-sample QC outputs and apply species-specific criteria
 - `speccheck summary`: merge collected sample CSVs and generate report artifacts
+- `speccheck collect-pipeline`: collect a recognised published workflow output layout
 - `speccheck check`: validate or refresh the criteria table
 
 ## Input data
@@ -22,8 +23,17 @@ The runtime input is a set of upstream QC output files. Supported parsers curren
 - Sylph species-abundance output
 - ARIBA summary tables
 - depth tables
+- Fastp JSON reports
+- BUSCO short summaries
 
 The parser layer detects recognized file formats from filenames and headers. Parsed values are written to per-sample CSV files, with pass/fail check columns derived from the active criteria file.
+
+For workflow integration, `speccheck` can be run after a pipeline has completed.
+The included `ghru` layout collector consumes the published outputs from GHRU
+Assembly, a Nextflow workflow that produces QUAST, CheckM2, Speciator, Sylph,
+ARIBA, and depth outputs. This demonstrates the intended pattern for other
+pipelines: publish stable QC files, collect them into per-sample Speccheck CSVs,
+and render a final cohort report.
 
 ## Criteria
 
@@ -36,6 +46,8 @@ Criteria are represented as CSV rows with the following core fields:
 - `operator`
 - `value`
 - `special_field`
+- `severity`
+- `source`
 
 This design keeps runtime checks transparent and reviewable. Criteria can be shipped with the package, supplied by the user, or refreshed from a QualiBact threshold export.
 
@@ -43,6 +55,10 @@ QualiBact-derived criteria are interpreted as CheckM2-calibrated thresholds. The
 column prefix `Checkm.*` is retained for compatibility with earlier `speccheck`
 outputs, but CheckM1 marker-lineage fields are not part of the supported
 QualiBact criteria model.
+
+Metrics outside QualiBact can still be checked through explicit global
+Speccheck rows. In the packaged criteria, this includes BactScout-derived Fastp
+Q30 policy and Speccheck default BUSCO completeness/missingness policy.
 
 ## Demonstration datasets
 

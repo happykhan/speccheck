@@ -9,7 +9,7 @@ species,assembly_type,software,field,operator,value,severity,source,special_fiel
 ## Column meanings
 
 - `species`: species name or `all`
-- `assembly_type`: `all`, `short`, or `long`
+- `assembly_type`: `all`, `short`, `long`, or `hybrid`
 - `software`: module name such as `Checkm`, `Quast`, `Speciator`, `Sylph`
 - `field`: metric field to evaluate
 - `operator`: `>`, `<`, `>=`, `<=`, `=`, or `regex`
@@ -17,6 +17,20 @@ species,assembly_type,software,field,operator,value,severity,source,special_fiel
 - `severity`: `fail` or `warn`; omitted legacy rows are treated as `fail`
 - `source`: provenance label such as `qualibact-v1.0`, `speccheck-default`, or `custom`
 - `special_field`: currently used for `species_field`
+
+## Threshold model
+
+`speccheck` evaluates criteria in layers:
+
+1. Species-specific rows are used when they exist for the resolved organism,
+   software, and field.
+2. Generic `species=all` rows are used when no species-specific row exists for
+   that metric.
+3. Project criteria files can add rows for tools or metrics that are outside
+   QualiBact.
+
+This is why the criteria table contains both QualiBact-derived assembly metrics
+and global Speccheck policies such as Fastp Q30 and BUSCO completeness.
 
 ## Notes
 
@@ -26,6 +40,8 @@ species,assembly_type,software,field,operator,value,severity,source,special_fiel
 - Species-specific criteria override generic `species=all` rows for the same
   `software` and `field`.
 - Generic rows still apply when no species-specific row exists for that metric.
+- Tool support and threshold support are separate. A parser can exist before a
+  public species-specific threshold exists for that parser.
 
 ## Species resolution
 

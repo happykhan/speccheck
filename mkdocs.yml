@@ -22,13 +22,17 @@ markdown_extensions:
       alternate_style: true
 nav:
   - Home: index.md
-  - Installation: installation.md
-  - CLI Usage: cli.md
-  - Modules and Extensions: modules.md
-  - Criteria: criteria.md
-  - Reports: reports.md
-  - QualiBact: qualibact.md
-  - GHRU Integration: ghru.md
-  - Manuscript Assets: manuscript.md
-  - Manuscript Methods: methods.md
+  - Getting Started:
+      - Installation: installation.md
+      - Quick Start: quickstart.md
+      - CLI Usage: cli.md
+  - Inputs and Pipelines:
+      - Supported Inputs and Extensions: modules.md
+      - Pipeline Integration: ghru.md
+      - Criteria and Thresholds: criteria.md
+      - QualiBact Compatibility: qualibact.md
+  - Reports and Manuscript:
+      - Reports: reports.md
+      - Manuscript Assets: manuscript.md
+      - Manuscript Methods: methods.md
   - Development: development.md

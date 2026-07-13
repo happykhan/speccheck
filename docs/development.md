@@ -73,12 +73,17 @@ Release sequence:
 4. Confirm Zenodo archived the GitHub Release and minted a DOI.
 5. Update the manuscript to cite that exact version DOI.
 
-## Upstream QC on Slurm
+## Pipeline layout collectors
 
-If you want to rerun upstream QC tools before collecting with `speccheck`, use the Slurm template:
+Use [Pipeline Integration](ghru.md) as the contract for workflow-facing work.
+New collectors should be added only after the upstream workflow has a stable
+published output layout. Prefer a generic command name and a layout selector,
+for example:
 
 ```bash
-scripts/upstream_qc_slurm_template.sh
+speccheck collect-pipeline results/ qc_collect --layout ghru
 ```
 
-It is intentionally a template rather than a rigid workflow engine, because site-specific tool paths and databases usually differ across clusters.
+Avoid requiring users to search a full Nextflow work directory for routine use.
+Work-directory recovery is acceptable for backward compatibility or provenance
+when a workflow has not yet published all needed compact files.

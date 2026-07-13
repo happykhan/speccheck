@@ -1,40 +1,107 @@
 # Reports
 
-## CSV outputs
+`speccheck` reports are designed to be both human-reviewable and easy to archive.
+The important rule is that collected per-sample CSVs are small and reproducible;
+large upstream files stay in the workflow output area.
 
-`collect` writes:
+## Files written by `collect`
 
-- a concise sample CSV
-- a `detailed.*.csv` companion when the output looks like a full QC report
+For each sample, `collect` writes a concise CSV containing:
+
+- parsed metrics from recognised tools;
+- status/check columns generated from the active criteria;
+- provenance columns such as `speccheck_version`,
+  `speccheck_criteria_sha256`, and `speccheck_input_file_count`;
+- metadata columns when `--metadata` is supplied.
+
+For some wide upstream outputs, a `detailed.*.csv` companion may also be written.
+`summary` ignores these detailed companions by default so the merged cohort
+report remains stable.
+
+## Files written by `summary`
 
 `summary` writes:
 
-- `report.csv`
-- `report.html` when `--plot` is enabled
-- `report.html` is self-contained, with embedded report styles
-- `report.xlsx` when `--xlsx-output` is supplied
+- `report.csv`: merged concise cohort table;
+- `report.full.csv`: full wide table where available;
+- `report.html`: self-contained HTML review report when `--plot` is enabled;
+- `report.xlsx`: optional workbook when `--xlsx-output` is supplied.
 
-When merging inputs, `summary` uses concise collected CSVs, ignores `detailed.*.csv` companions, and rejects duplicate or missing sample IDs.
+When merging inputs, `summary` rejects duplicate or missing sample IDs instead
+of silently overwriting samples.
+
+## Key report columns
+
+Start review with these columns:
+
+| Column | Meaning |
+| --- | --- |
+| `overall_qc` | Four-state sample status: `PASS`, `WARN`, `FAIL`, or `NOT_EVALUATED`. |
+| `all_checks_passed` | Boolean convenience column for strict pass/fail handling. |
+| `baseline_qc` | Core Speccheck QC state before optional compatibility overlays. |
+| `reason_summary` | Compact explanation of failures, warnings, and missing checks. |
+| `speccheck_warning_count` | Number of warning-level criteria triggered. |
+| `speccheck_failure_count` | Number of failure-level criteria triggered. |
+| `speccheck_not_evaluated_count` | Number of expected metrics missing from detected parser outputs. |
+| `species` / `species_confidence` | Resolved species information where parser outputs provide it. |
+
+Tool-specific `*.status` columns use the same vocabulary:
+
+- `PASS`: evaluated and passed;
+- `WARN`: evaluated and triggered at least one warning criterion;
+- `FAIL`: evaluated and triggered at least one failure criterion;
+- `NOT_EVALUATED`: expected evidence was missing.
+
+Legacy `*.check` columns may contain booleans or status values depending on the
+parser and criteria generation path. Prefer `*.status`, `overall_qc`, and
+`reason_summary` for new analyses.
+
+## QualiBact compatibility columns
+
+When `--qualibact-compat` is used, `summary` adds pinned *E. coli* QualiBact v1
+compatibility columns such as:
+
+- `qualibact_compat_tier`;
+- `qualibact_compat_reasons`;
+- `qualibact_compat_warn_policy`.
+
+These columns are an explicit compatibility overlay for the *E. coli* threshold
+version used in the manuscript case study. They should not be described as
+general multi-species QualiBact parity.
 
 ## HTML report
 
 The HTML report includes:
 
-- overall QC status table
-- top failure reasons
-- compact category summary tables
-- optional qualifyr-style sample review table
-- software-specific charts and tables
+- overall QC status table;
+- top failure and warning reasons;
+- compact category summary tables;
+- optional qualifyr-style sample review table;
+- software-specific charts and tables where plot modules exist.
 
-Example report generation from the pinned QualiBact E. coli pass/fail fixtures:
+Generate an HTML report with:
+
+```bash
+speccheck summary qc_collect \
+  --output qc_report \
+  --plot \
+  --qualifyr-style \
+  --xlsx-output qc_report/report.xlsx
+```
+
+Interactive tables can be sorted by clicking headers and filtered with the
+search box. The HTML is self-contained, so it can be attached as a supplement or
+stored with a release artifact.
+
+## Example report generation
+
+Minimal fixture-based examples:
 
 ```bash
 pixi run python scripts/generate_qualibact_example_reports.py
 ```
 
-This creates manuscript-oriented example outputs under `examples/qualibact_ecoli/`.
-
-Real QualiBact ATB E. coli panel generation:
+Real GHRU-derived panel:
 
 ```bash
 pixi run python scripts/build_ghru_ecoli_panel_report.py \
@@ -43,21 +110,11 @@ pixi run python scripts/build_ghru_ecoli_panel_report.py \
   --work-dir .demo_work/ghru_ecoli_panel/triplet/work
 ```
 
-This writes `examples/qualibact_ecoli/real_panel/report/` from real upstream
-`GHRU-assembly` outputs.
+100-sample manuscript assets:
 
-Interactive table behavior:
-
-- click headers to sort
-- use the filter box to narrow rows
-
-## Excel workbook
-
-The workbook currently includes:
-
-- merged `report` sheet
-- `qc_status` sheet
-- one sheet per compact metric summary category when available
+```bash
+pixi run python scripts/create_real_run_100_assets.py
+```
 
 ## Docker usage
 

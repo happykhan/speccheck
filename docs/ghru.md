@@ -1,31 +1,41 @@
-# GHRU Assembly Integration
+# Pipeline Integration
 
-`speccheck` can be used after `GHRU-assembly` in two ways:
+`speccheck` is most useful when it is the final reporting step of a workflow.
+The upstream pipeline should run QC tools, publish stable per-sample outputs,
+and then hand those outputs to `speccheck` for threshold evaluation and cohort
+reporting.
 
-- as a downstream command that collects canonical GHRU outputs with
-  `speccheck collect-ghru`;
-- as an optional GHRU pipeline module when the workflow is configured to run
-  `speccheck` itself.
+The current built-in pipeline layout is `ghru`, based on GHRU Assembly. That is
+a worked Nextflow example, not a special rule that limits `speccheck` to GHRU.
 
-The publication case study uses the first route so the manuscript can cite the
-exact local `speccheck` version, criteria checksum, and downstream commands.
+## Recommended pattern
 
-## Downstream Collection
+For a Nextflow or similar workflow, keep these responsibilities separate:
 
-After a GHRU run has completed, collect per-sample CSVs directly from the output
-tree:
+1. The workflow runs upstream tools such as QUAST, CheckM2, Speciator, Sylph,
+   ARIBA, Fastp, BUSCO, or depth calculation.
+2. The workflow publishes stable output files with predictable names.
+3. `speccheck` collects those files into one CSV per sample.
+4. `speccheck summary` builds the final report for the cohort.
+
+This gives a cleaner audit trail than burying all QC logic inside a workflow:
+the workflow commit, `speccheck` commit, criteria checksum, and exact commands
+can be recorded independently.
+
+## Generic pipeline command
+
+Use `collect-pipeline` for published workflow layouts:
 
 ```bash
-speccheck collect-ghru \
-  path/to/ghru/output \
-  qc_collect \
+speccheck collect-pipeline path/to/pipeline/output qc_collect \
+  --layout ghru \
   --organism "Escherichia coli" \
   --metadata metadata.csv \
   --work-dir path/to/nextflow/work \
   --fail-on-not-evaluated
 ```
 
-Then merge and render the report:
+Then render the final report:
 
 ```bash
 speccheck summary qc_collect \
@@ -36,51 +46,86 @@ speccheck summary qc_collect \
   --xlsx-output qc_report/report.xlsx
 ```
 
-`collect-ghru` searches for the GHRU outputs that `speccheck` currently knows
-how to parse: QUAST, CheckM2, Speciator, Sylph, ARIBA, and depth summaries. The
-`--work-dir` option lets it recover depth files that were produced by Nextflow
-but not published into the final output tree.
+`collect-ghru` is retained as a compatibility alias for the same layout:
 
-## Recommended Output Layout
+```bash
+speccheck collect-ghru path/to/pipeline/output qc_collect \
+  --organism "Escherichia coli"
+```
 
-For publication or routine review, keep the raw pipeline outputs separate from
-the compact downstream report:
+Prefer `collect-pipeline --layout ghru` in new documentation and scripts because
+it describes the role clearly: `speccheck` is collecting a known workflow output
+layout.
+
+## GHRU Assembly as the worked Nextflow example
+
+GHRU Assembly routes short-read, long-read, and hybrid inputs through separate
+Nextflow workflows. The short-read workflow runs upstream QC and assembly
+modules including trimming/FastQC, Shovill, QUAST, Speciator, CheckM2, assembly
+depth, and Sylph. Its published TSV outputs provide the metrics that
+`speccheck` needs.
+
+The `ghru` layout collector currently searches for:
+
+| Published directory | Example file | Parser |
+| --- | --- | --- |
+| `quast_summary/` | `ori_SAMPLE.short.report.tsv` | `Quast` |
+| `checkm_summary/` | `SAMPLE.short.tsv` | `Checkm` |
+| `speciation_summary/` | `SAMPLE.short.tsv` | `Speciator` |
+| `sylph_summary/` | `SAMPLE_slyph_report.tsv` | `Sylph` |
+| `ariba_summary/` | `SAMPLE_mlst_report.details.tsv` | `Ariba` |
+| Nextflow `work/` when supplied | `SAMPLE.shortshort_reads.depth.tsv` | `Depth` |
+
+The `--work-dir` option exists because some depth summaries may be produced in
+Nextflow work directories without being published into the final results tree.
+Use it only for recovery and provenance; do not commit a Nextflow work directory.
+
+## Suggested output contract for new pipelines
+
+If you are adding `speccheck` to a new workflow, publish a small, stable QC
+contract rather than asking users to search the whole work directory:
 
 ```text
-ghru_run/
-  output/                 # GHRU-published outputs
-  work/                   # Nextflow work directory, not committed
-speccheck_case_study/
-  collect/                # per-sample speccheck CSVs
+results/
+  quast_summary/ori_SAMPLE.short.report.tsv
+  checkm_summary/SAMPLE.short.tsv
+  speciation_summary/SAMPLE.short.tsv
+  sylph_summary/SAMPLE_slyph_report.tsv
+  ariba_summary/SAMPLE_mlst_report.details.tsv
+  fastp_summary/SAMPLE.fastp.json
+  busco_summary/short_summary.SAMPLE.txt
+speccheck/
+  collect/
   report/
     report.csv
-    report.full.csv
     report.html
     report.xlsx
 ```
 
-Raw reads, assemblies, databases, and Nextflow work files should not be committed
-to the `speccheck` repository. Commit the compact report, accession table,
-analysis tables, figures, and provenance.
+The exact directory names can differ, but the principle should not: files used
+for final QC should be deliberately published, versioned by the workflow, and
+documented.
 
-## Provenance to Record
+## What to record for a manuscript or release
 
-For a manuscript or release validation run, record:
+For a publication-quality run, record:
 
 - sample accessions and selection rules;
-- GHRU commit and any local workflow patch;
-- upstream container, tool, and database versions;
+- upstream workflow repository, commit, and local patches;
+- upstream tool, container, and database versions;
 - `speccheck` version and Git commit;
-- criteria snapshot source and SHA256 checksum;
-- exact `collect-ghru` and `summary` commands;
-- runtime and resource use where available.
+- criteria CSV source and SHA256 checksum;
+- exact `collect-pipeline` and `summary` commands;
+- runtime and resource use;
+- which files were intentionally excluded from version control.
 
-The 100-sample case study stores this material in
-`examples/qualibact_ecoli/real_run_100/analysis/summary.json`.
+The 100-sample *E. coli* case study follows this pattern in
+`examples/qualibact_ecoli/real_run_100/`: compact reports, accessions,
+analysis tables, figures, and provenance are committed; raw reads, assemblies,
+databases, and workflow work files are not.
 
-## Current Limitation
+## Current limitation
 
-The upstream GHRU workflow is a separate repository. Changes to how it publishes
-or labels `speccheck` outputs should be made and reviewed in that repository.
-This repository keeps the downstream collector and the publication assets needed
-to show that the integration works.
+Only the `ghru` published layout has a built-in pipeline collector today. Other
+workflows can still use `speccheck collect` directly, or add a new layout
+collector once their published output contract is stable.

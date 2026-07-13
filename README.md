@@ -28,7 +28,7 @@ Primary docs pages:
 - [Criteria Format](docs/criteria.md)
 - [Reports](docs/reports.md)
 - [QualiBact Integration](docs/qualibact.md)
-- [GHRU Integration](docs/ghru.md)
+- [Pipeline Integration](docs/ghru.md)
 - [Manuscript Assets](docs/manuscript.md)
 - [Development](docs/development.md)
 
@@ -59,6 +59,18 @@ speccheck summary qc_results --plot --qualifyr-style --xlsx-output qc_report/rep
 ```
 
 `summary` merges concise collected CSV files, ignores `detailed.*.csv` companions, and rejects duplicate sample IDs.
+
+Collect a recognised workflow output layout, such as GHRU Assembly, after a
+Nextflow run:
+
+```bash
+speccheck collect-pipeline path/to/pipeline/output qc_collect \
+  --layout ghru \
+  --organism "Escherichia coli" \
+  --work-dir path/to/nextflow/work
+```
+
+`collect-ghru` remains available as a compatibility alias for this layout.
 
 Refresh criteria from QualiBact:
 

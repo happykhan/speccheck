@@ -71,6 +71,53 @@ tier columns to `report.csv`, `report.html`, and optional XLSX output. WARN rema
 warning tier by default; add `--qualibact-warn-as-fail` if WARN should also fail the
 binary `all_checks_passed` summary.
 
+## `collect-pipeline`
+
+Collect per-sample CSVs from a recognised published pipeline output layout.
+
+```bash
+speccheck collect-pipeline OUTPUT_TREE qc_collect --layout ghru
+```
+
+This is the preferred command when `speccheck` is used as the final reporting
+layer for a workflow such as a Nextflow pipeline. The first supported layout is
+`ghru`, which recognises the published TSV outputs from GHRU Assembly.
+
+Common options:
+
+- `--layout ghru`
+- `--sample SAMPLE_ID` to restrict collection; may be supplied more than once
+- `--organism`
+- `--criteria-file`
+- `--metadata`
+- `--work-dir` to search a Nextflow work directory for unpublished depth files
+- `--allow-unknown-organism`
+- `--fail-on-not-evaluated / --no-fail-on-not-evaluated`
+
+Example:
+
+```bash
+speccheck collect-pipeline .demo_work/ghru_validation/output qc_collect \
+  --layout ghru \
+  --organism "Escherichia coli" \
+  --work-dir .demo_work/ghru_validation/work \
+  --fail-on-not-evaluated
+```
+
+Then generate the cohort report with `speccheck summary qc_collect`.
+
+## `collect-ghru`
+
+Compatibility alias for:
+
+```bash
+speccheck collect-pipeline OUTPUT_TREE qc_collect --layout ghru
+```
+
+Existing scripts can keep using `collect-ghru`. New documentation and pipeline
+examples should use `collect-pipeline --layout ghru` because it makes the role
+generic: collect a known workflow output layout into `speccheck` reports.
+
 ## `check`
 
 Validate or refresh a criteria CSV.
