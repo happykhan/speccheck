@@ -8,7 +8,7 @@ from speccheck.main import collect_ghru
 
 def _write_depth_report(path, sample_id="test_sample1", read_type="short", depth="42.0"):
     path.write_text(
-        "Sample_id\tRead_type\tDepth\n" f"{sample_id}\t{read_type}\t{depth}\n",
+        f"Sample_id\tRead_type\tDepth\n{sample_id}\t{read_type}\t{depth}\n",
         encoding="utf-8",
     )
 

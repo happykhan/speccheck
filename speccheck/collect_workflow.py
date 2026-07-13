@@ -294,7 +294,9 @@ def _evaluate_sample(
     qc_report["speccheck_overall_status"] = (
         "FAIL"
         if failure_reasons or (fail_on_not_evaluated and not_evaluated_count)
-        else "WARN" if warning_reasons else "PASS"
+        else "WARN"
+        if warning_reasons
+        else "PASS"
     )
     qc_report["_not_evaluated_count"] = not_evaluated_count
     return qc_report
@@ -384,8 +386,8 @@ def _evaluate_criteria_group(
     for field in criteria:
         if not criteria_applies_to_software(field["software"], software):
             continue
-        column = f'{field["software"]}.{field["field"]}.check'
-        status_column = f'{field["software"]}.{field["field"]}.status'
+        column = f"{field['software']}.{field['field']}.check"
+        status_column = f"{field['software']}.{field['field']}.status"
         already_seen = column in qc_report
         qc_report.setdefault(column, True)
         qc_report.setdefault(status_column, "PASS")
@@ -395,8 +397,8 @@ def _evaluate_criteria_group(
                 continue
             severity = field.get("severity", "fail").upper()
             reason = (
-                f'{field["software"]}.{field["field"]} '
-                f'{field["operator"]}{field["value"]} ({field.get("source", "custom")})'
+                f"{field['software']}.{field['field']} "
+                f"{field['operator']}{field['value']} ({field.get('source', 'custom')})"
             )
             if severity == "WARN":
                 warning_reasons.append(reason)

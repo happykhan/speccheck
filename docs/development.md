@@ -31,9 +31,8 @@ python -m build
 Lint and format:
 
 ```bash
+ruff format --check speccheck tests
 ruff check speccheck tests
-black --check speccheck tests
-isort --check-only --profile black speccheck tests
 ```
 
 ## Packaging direction

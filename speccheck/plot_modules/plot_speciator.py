@@ -32,7 +32,7 @@ class Plot_Speciator:
         else:
             html_fragment += (
                 '<div class="status-note pass"><p><strong>Single-species assignment:</strong> '
-                f'{self.df["speciesName"].unique()[0]} across all samples.</p></div>'
+                f"{self.df['speciesName'].unique()[0]} across all samples.</p></div>"
             )
 
         interactive_tables = self.df.attrs.get("interactive_tables", True)
