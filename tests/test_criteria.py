@@ -4,7 +4,6 @@ import pytest
 
 from speccheck.criteria import get_criteria_layers, validate_criteria
 
-
 HEADERS = [
     "species",
     "assembly_type",

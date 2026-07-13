@@ -7,7 +7,7 @@ def test_plot_ariba_renders_empty_table_without_summary_counts():
     html = Plot_Ariba(pd.DataFrame()).plot()
 
     assert '<section class="software-block">' in html
-    assert "<h2 id=\"ariba\">ARIBA</h2>" in html
+    assert '<h2 id="ariba">ARIBA</h2>' in html
     assert "<th>Sample</th>" in html
     assert "<strong>Summary:</strong>" not in html
 
