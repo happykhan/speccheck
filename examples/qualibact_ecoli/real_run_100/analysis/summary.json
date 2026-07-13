@@ -26,8 +26,8 @@
     "PASS": 70,
     "WARN": 20
   },
-  "pixi_lock_sha256": "633b4ed157bf1fd0b0b07f5bfea6a8a26a34ab1e132df225fb6fd786f2fd7d84",
-  "qualibact_snapshot_sha256": "fd732a8631184cbff5884604acfc2b6bc1ac6e587f1a616646bf6461e0f10b53",
+  "pixi_lock_sha256": "7c43ea7513dc8dcb12ce1f0663deca906d7f8842d5443c29a1c27381b7dec200",
+  "qualibact_snapshot_sha256": "39d2f97dbb8320fce0dd3ff811d7285b7d7801d78885d263fafeffddbfe9ce61",
   "sample_count": 100,
   "selection_rule": "First 70 PASS, 20 WARN, and 10 FAIL rows in the pinned E. coli v1 lists that resolved to paired E. coli ENA reads.",
   "unidentified_species_count": 3,

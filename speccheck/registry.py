@@ -65,4 +65,3 @@ def add_frame_metric_aliases(frame: pd.DataFrame, software: str) -> pd.DataFrame
             if alias not in result.columns:
                 result[alias] = result[source]
     return result
-

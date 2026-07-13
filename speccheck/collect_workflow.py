@@ -6,7 +6,8 @@ import hashlib
 import logging
 import os
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 
 import pandas as pd
 
@@ -34,8 +35,8 @@ class CollectionContext:
     criteria_sha256: str
     metadata: dict
     species_fields: list[dict]
-    criteria_layers: dict[str, dict] = field(default_factory=dict)
-    threshold_sources: dict[str, dict] = field(default_factory=dict)
+    criteria_layers: dict[str, dict] = dataclass_field(default_factory=dict)
+    threshold_sources: dict[str, dict] = dataclass_field(default_factory=dict)
 
 
 def collect(
@@ -54,7 +55,9 @@ def collect(
     _validate_sample_request(sample_id, assembly_type)
     context = _context or _prepare_collection_context(criteria_file, metadata_file)
     if os.path.abspath(criteria_file) != context.criteria_file:
-        raise ValueError("Collection context criteria file does not match the requested criteria file")
+        raise ValueError(
+            "Collection context criteria file does not match the requested criteria file"
+        )
     all_files = get_all_files(input_filepaths)
     recovered_values = collect_files(all_files, load_modules_with_checks())
     if not recovered_values:
@@ -75,9 +78,7 @@ def collect(
     baseline_criteria = _filter_criteria_for_assembly_type(
         criteria_layers["baseline"], assembly_type
     )
-    species_criteria = _filter_criteria_for_assembly_type(
-        criteria_layers["species"], assembly_type
-    )
+    species_criteria = _filter_criteria_for_assembly_type(criteria_layers["species"], assembly_type)
     qc_report = _evaluate_sample(
         recovered_values,
         baseline_criteria,

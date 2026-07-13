@@ -26,4 +26,3 @@ def test_real_run_100_assets_are_internally_consistent():
     assert int(concordance.to_numpy().sum()) == 100
     assert summary["exact_tier_agreement_count"] == 73
     assert summary["discordant_count"] == 27
-

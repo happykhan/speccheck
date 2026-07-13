@@ -169,7 +169,9 @@ def get_criteria(criteria_file, species=None):
     if not species:
         return criteria
     if not merge_criteria:
-        logging.warning("No species-specific criteria found for %s. Using baseline criteria only.", species)
+        logging.warning(
+            "No species-specific criteria found for %s. Using baseline criteria only.", species
+        )
         return criteria
     return criteria + merge_criteria
 

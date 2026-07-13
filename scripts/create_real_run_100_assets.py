@@ -10,6 +10,7 @@ import json
 import shutil
 import subprocess
 from collections import Counter
+from functools import partial
 from pathlib import Path
 
 import pandas as pd
@@ -35,6 +36,11 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def scale_metric(value: float, *, panel_x: float, low: float, span: float) -> float:
+    """Map a metric value onto the horizontal axis of an SVG panel."""
+    return panel_x + 145 + ((float(value) - low) / span) * 360
 
 
 def esc(value) -> str:
@@ -113,7 +119,13 @@ def write_concordance_figure(path: Path, matrix: pd.DataFrame):
     total = int(matrix.to_numpy().sum())
     body.extend(
         [
-            svg_text(60, 690, f"Exact tier agreement: {agreement}/{total} ({agreement / total:.1%})", size=21, weight=700),
+            svg_text(
+                60,
+                690,
+                f"Exact tier agreement: {agreement}/{total} ({agreement / total:.1%})",
+                size=21,
+                weight=700,
+            ),
             svg_text(
                 60,
                 730,
@@ -152,7 +164,9 @@ def metric_statistics(report: pd.DataFrame) -> pd.DataFrame:
 def write_metric_figure(path: Path, statistics: pd.DataFrame):
     body = [
         svg_text(55, 58, "Observed metrics by historical QualiBact tier", size=30, weight=700),
-        svg_text(55, 92, "Box plots summarize fresh GHRU-derived measurements", size=17, fill="#52616f"),
+        svg_text(
+            55, 92, "Box plots summarize fresh GHRU-derived measurements", size=17, fill="#52616f"
+        ),
     ]
     panel_width, panel_height = 560, 330
     for panel_index, (metric, label) in enumerate(METRICS.items()):
@@ -161,18 +175,34 @@ def write_metric_figure(path: Path, statistics: pd.DataFrame):
         rows = statistics[statistics["metric"] == metric].set_index("qualibact_tier")
         low, high = float(rows["min"].min()), float(rows["max"].max())
         span = high - low or 1.0
-        body.append(f'<rect x="{panel_x}" y="{panel_y}" width="{panel_width}" height="{panel_height}" rx="14" fill="#ffffff" stroke="#d7dee7"/>')
+        body.append(
+            f'<rect x="{panel_x}" y="{panel_y}" width="{panel_width}" height="{panel_height}" rx="14" fill="#ffffff" stroke="#d7dee7"/>'
+        )
         body.append(svg_text(panel_x + 24, panel_y + 38, label, size=21, weight=700))
         for tier_index, tier in enumerate(TIERS):
             row = rows.loc[tier]
             center_y = panel_y + 100 + tier_index * 72
-            scale = lambda value: panel_x + 145 + ((float(value) - low) / span) * 360
-            body.append(svg_text(panel_x + 105, center_y + 6, tier, weight=700, fill=COLORS[tier], anchor="end"))
-            body.append(f'<line x1="{scale(row["min"]):.1f}" y1="{center_y}" x2="{scale(row["max"]):.1f}" y2="{center_y}" stroke="#64748b" stroke-width="2"/>')
-            body.append(f'<rect x="{scale(row["q1"]):.1f}" y="{center_y - 17}" width="{max(2, scale(row["q3"]) - scale(row["q1"])):.1f}" height="34" fill="{COLORS[tier]}" fill-opacity="0.32" stroke="{COLORS[tier]}"/>')
-            body.append(f'<line x1="{scale(row["median"]):.1f}" y1="{center_y - 20}" x2="{scale(row["median"]):.1f}" y2="{center_y + 20}" stroke="{COLORS[tier]}" stroke-width="4"/>')
+            scale = partial(scale_metric, panel_x=panel_x, low=low, span=span)
+            body.append(
+                svg_text(
+                    panel_x + 105, center_y + 6, tier, weight=700, fill=COLORS[tier], anchor="end"
+                )
+            )
+            body.append(
+                f'<line x1="{scale(row["min"]):.1f}" y1="{center_y}" x2="{scale(row["max"]):.1f}" y2="{center_y}" stroke="#64748b" stroke-width="2"/>'
+            )
+            body.append(
+                f'<rect x="{scale(row["q1"]):.1f}" y="{center_y - 17}" width="{max(2, scale(row["q3"]) - scale(row["q1"])):.1f}" height="34" fill="{COLORS[tier]}" fill-opacity="0.32" stroke="{COLORS[tier]}"/>'
+            )
+            body.append(
+                f'<line x1="{scale(row["median"]):.1f}" y1="{center_y - 20}" x2="{scale(row["median"]):.1f}" y2="{center_y + 20}" stroke="{COLORS[tier]}" stroke-width="4"/>'
+            )
         body.append(svg_text(panel_x + 145, panel_y + 307, f"{low:,.2f}", size=13, fill="#64748b"))
-        body.append(svg_text(panel_x + 505, panel_y + 307, f"{high:,.2f}", size=13, fill="#64748b", anchor="end"))
+        body.append(
+            svg_text(
+                panel_x + 505, panel_y + 307, f"{high:,.2f}", size=13, fill="#64748b", anchor="end"
+            )
+        )
     write_svg(path, 1250, 900, body)
 
 
@@ -181,7 +211,13 @@ def write_report_snapshot(path: Path, report: pd.DataFrame):
     review = review.sort_values(["qualibact_compat_tier", "sample_id"]).head(10)
     body = [
         svg_text(50, 58, "speccheck 100-sample review snapshot", size=30, weight=700),
-        svg_text(50, 92, "Samples requiring review under the current pinned compatibility policy", size=17, fill="#52616f"),
+        svg_text(
+            50,
+            92,
+            "Samples requiring review under the current pinned compatibility policy",
+            size=17,
+            fill="#52616f",
+        ),
     ]
     headers = ("Sample", "Historical", "Current", "N50", "Contigs", "Reason")
     positions = (55, 260, 400, 535, 660, 790)
@@ -202,7 +238,11 @@ def write_report_snapshot(path: Path, report: pd.DataFrame):
             if len(display) > 58:
                 display = display[:55] + "..."
             fill = COLORS.get(display, "#1f2933")
-            body.append(svg_text(x, y, display, size=14, weight=700 if display in COLORS else 400, fill=fill))
+            body.append(
+                svg_text(
+                    x, y, display, size=14, weight=700 if display in COLORS else 400, fill=fill
+                )
+            )
         body.append(f'<line x1="50" y1="{y + 14}" x2="1195" y2="{y + 14}" stroke="#e2e8f0"/>')
         y += 49
     write_svg(path, 1250, 730, body)
@@ -265,9 +305,7 @@ def build_assets(run_root: Path, report_root: Path, output: Path):
         "discordant_count": int(len(discordant)),
         "unidentified_species_count": int((report["species"] == "Unidentified").sum()),
         "criteria_sha256": sha256(ROOT / "speccheck/config/criteria.csv"),
-        "qualibact_snapshot_sha256": sha256(
-            ROOT / "speccheck/config/qualibact_snapshot.csv"
-        ),
+        "qualibact_snapshot_sha256": sha256(ROOT / "speccheck/config/qualibact_snapshot.csv"),
         "pixi_lock_sha256": sha256(ROOT / "pixi.lock"),
         "ghru_assembly_commit": "271e0d9e5593a4e4a59409f12f83e816794ad6a3",
         "ghru_local_patch": {

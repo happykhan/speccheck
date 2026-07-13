@@ -75,7 +75,9 @@ def summary(
         summary_frames = build_metric_summary_frames(report_df)
 
     if xlsx_output:
-        export_summary_workbook(normalized_concise_df, normalized_full_df, xlsx_output, summary_frames)
+        export_summary_workbook(
+            normalized_concise_df, normalized_full_df, xlsx_output, summary_frames
+        )
         logging.info("Wrote XLSX summary to %s", xlsx_output)
 
 
@@ -89,9 +91,7 @@ def _build_report_frame(merged_data):
         {"sample_id": current_sample, **merged_data[current_sample]}
         for current_sample in sorted(merged_data)
     ]
-    return pd.DataFrame(rows).reindex(
-        columns=[field for field in fieldnames if field in rows[0]]
-    )
+    return pd.DataFrame(rows).reindex(columns=[field for field in fieldnames if field in rows[0]])
 
 
 def _apply_qualibact_policy(report_df, warn_as_fail=False):
@@ -156,7 +156,9 @@ def merge_summary_csvs(csv_files, sample_id):
         duplicated = frame[frame[sample_id].duplicated(keep=False)][sample_id].astype(str).tolist()
         if duplicated:
             duplicate_names = ", ".join(sorted(set(duplicated)))
-            raise ValueError(f"Summary input {path} contains duplicate sample IDs: {duplicate_names}")
+            raise ValueError(
+                f"Summary input {path} contains duplicate sample IDs: {duplicate_names}"
+            )
         for row in frame.to_dict(orient="records"):
             current_sample = str(row.pop(sample_id))
             if current_sample in seen_samples:

@@ -174,12 +174,22 @@ def report_snapshot_svg(path: Path, rows: list[dict[str, str]]):
     sample_count = len(rows)
     tier_counts = Counter(row["qualibact_tier"] for row in rows)
     compat_counts = Counter(row["qualibact_compat_tier"] for row in rows)
-    compat_summary = ", ".join(
-        f"{compat_counts[label]} {label}" for label in ["PASS", "WARN", "FAIL"] if compat_counts[label]
-    ) or "0 PASS"
-    tier_summary = ", ".join(
-        f"{tier_counts[label]} {label}" for label in ["PASS", "WARN", "FAIL"] if tier_counts[label]
-    ) or "0 PASS"
+    compat_summary = (
+        ", ".join(
+            f"{compat_counts[label]} {label}"
+            for label in ["PASS", "WARN", "FAIL"]
+            if compat_counts[label]
+        )
+        or "0 PASS"
+    )
+    tier_summary = (
+        ", ".join(
+            f"{tier_counts[label]} {label}"
+            for label in ["PASS", "WARN", "FAIL"]
+            if tier_counts[label]
+        )
+        or "0 PASS"
+    )
     body = [
         svg_text(60, 70, "speccheck report snapshot", size=34, weight=700),
         svg_text(

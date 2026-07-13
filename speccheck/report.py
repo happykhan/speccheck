@@ -216,7 +216,9 @@ def _build_dataset_kpis(report_df):
     total = len(report_df)
     if total == 0:
         return []
-    overall = report_df.get("overall_qc", report_df.get("all_checks_passed", pd.Series(dtype=object)))
+    overall = report_df.get(
+        "overall_qc", report_df.get("all_checks_passed", pd.Series(dtype=object))
+    )
     labels = overall.map(status_label).replace({"PASSED": "PASS", "FAILED": "FAIL"})
     pass_count = int((labels == "PASS").sum())
     warn_count = int((labels == "WARN").sum())
@@ -231,7 +233,9 @@ def _build_dataset_kpis(report_df):
         if len(counts) == 1:
             species_summary = counts.index[0]
         else:
-            species_summary = f"{len(counts)} species; dominant {counts.index[0]} ({counts.iloc[0]})"
+            species_summary = (
+                f"{len(counts)} species; dominant {counts.index[0]} ({counts.iloc[0]})"
+            )
     return [
         {"label": "Samples", "value": total, "tone": "neutral"},
         {"label": "PASS", "value": pass_count, "tone": "pass"},

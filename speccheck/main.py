@@ -8,9 +8,11 @@ import csv
 import logging
 import os
 
+from speccheck.collect_workflow import _add_parser_aliases as _add_parser_aliases
 from speccheck.collect_workflow import (
-    _add_parser_aliases,
-    _filter_criteria_for_assembly_type,
+    _filter_criteria_for_assembly_type as _filter_criteria_for_assembly_type,
+)
+from speccheck.collect_workflow import (
     collect,
     collect_ghru,
 )

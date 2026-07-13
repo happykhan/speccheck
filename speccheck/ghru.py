@@ -3,7 +3,6 @@ import os
 import re
 from dataclasses import dataclass, field
 
-
 _ASSEMBLY_RE = re.compile(r"^(?P<sample>.+)\.(?P<assembly>short|long|hybrid)\.tsv$")
 _QUAST_RE = re.compile(r"^ori_(?P<sample>.+)\.(?P<assembly>short|long|hybrid)\.report\.tsv$")
 _SYLPH_RE = re.compile(r"^(?P<sample>.+)_slyph_report\.tsv$")
@@ -31,7 +30,9 @@ class GhruSampleFiles:
             self.assembly_type = assembly_type
 
 
-def discover_ghru_sample_files(output_dir: str, work_dir: str | None = None) -> dict[str, GhruSampleFiles]:
+def discover_ghru_sample_files(
+    output_dir: str, work_dir: str | None = None
+) -> dict[str, GhruSampleFiles]:
     """Discover parsable upstream GHRU outputs grouped by sample."""
     output_dir = os.path.abspath(output_dir)
     work_dir = os.path.abspath(work_dir) if work_dir else None

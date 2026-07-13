@@ -121,7 +121,7 @@ jobs:
       - name: Exercise CLI
         run: |
           speccheck check
-          speccheck summary tests/summary_test_baddict --output integration_report --xlsx-output integration_report/report.xlsx
+          speccheck summary tests/summary_test_baddict --sample Sample --output integration_report --xlsx-output integration_report/report.xlsx
 
   security:
     name: Security

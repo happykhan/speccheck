@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.0 - 2026-07-13
 
 - added direct collection from canonical `GHRU-assembly` output trees
 - added a completed, reproducible 100-sample read-backed E. coli case study

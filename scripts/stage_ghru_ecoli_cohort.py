@@ -150,7 +150,9 @@ def select_explicit(rows: list[dict[str, str]], samples: list[str]) -> list[dict
     return [sample_map[sample] for sample in samples]
 
 
-def select_counts(run_root: Path, pass_count: int, warn_count: int, fail_count: int) -> list[dict[str, str]]:
+def select_counts(
+    run_root: Path, pass_count: int, warn_count: int, fail_count: int
+) -> list[dict[str, str]]:
     quotas = OrderedDict([("PASS", pass_count), ("WARN", warn_count), ("FAIL", fail_count)])
     selected: list[dict[str, str]] = []
     ena_cache: dict[str, dict[str, str] | None] = {}
@@ -177,7 +179,9 @@ def select_counts(run_root: Path, pass_count: int, warn_count: int, fail_count: 
             if chosen == count:
                 break
         if chosen != count:
-            raise SystemExit(f"Could not resolve {count} read-backed {tier} E. coli samples from QualiBact")
+            raise SystemExit(
+                f"Could not resolve {count} read-backed {tier} E. coli samples from QualiBact"
+            )
     return selected
 
 
@@ -198,10 +202,14 @@ def choose_rows(args: argparse.Namespace) -> list[dict[str, str]]:
             return select_explicit(rows, args.samples)
         return rows
     if args.preset == "triplet":
-        rows = load_selection_rows(Path("examples/qualibact_ecoli/real_panel/input/selected_qualibact_ecoli.csv"))
+        rows = load_selection_rows(
+            Path("examples/qualibact_ecoli/real_panel/input/selected_qualibact_ecoli.csv")
+        )
         return select_triplet(rows)
     if args.samples:
-        rows = load_selection_rows(Path("examples/qualibact_ecoli/real_panel/input/selected_qualibact_ecoli.csv"))
+        rows = load_selection_rows(
+            Path("examples/qualibact_ecoli/real_panel/input/selected_qualibact_ecoli.csv")
+        )
         return select_explicit(rows, args.samples)
     return select_counts(args.run_root, args.pass_count, args.warn_count, args.fail_count)
 
@@ -216,15 +224,22 @@ def stage_reads(selected: list[dict[str, str]], run_root: Path, download_reads: 
     selection_dir.mkdir(parents=True, exist_ok=True)
 
     write_csv(selection_dir / "selected_qualibact_ecoli.csv", selected, list(selected[0].keys()))
-    write_csv(selection_dir / "speccheck_metadata.csv", [metadata_row(row) for row in selected], METADATA_COLUMNS)
+    write_csv(
+        selection_dir / "speccheck_metadata.csv",
+        [metadata_row(row) for row in selected],
+        METADATA_COLUMNS,
+    )
 
     ena_rows: list[dict[str, str]] = []
-    with samplesheet.open("w", encoding="utf-8", newline="") as sheet_handle, metadata_csv.open(
-        "w", encoding="utf-8", newline=""
-    ) as meta_handle:
+    with (
+        samplesheet.open("w", encoding="utf-8", newline="") as sheet_handle,
+        metadata_csv.open("w", encoding="utf-8", newline="") as meta_handle,
+    ):
         sheet_writer = csv.writer(sheet_handle)
         meta_writer = csv.DictWriter(meta_handle, fieldnames=METADATA_COLUMNS)
-        sheet_writer.writerow(["sample_id", "short_reads1", "short_reads2", "long_reads", "genome_size"])
+        sheet_writer.writerow(
+            ["sample_id", "short_reads1", "short_reads2", "long_reads", "genome_size"]
+        )
         meta_writer.writeheader()
 
         for row in selected:
@@ -258,8 +273,11 @@ def stage_reads(selected: list[dict[str, str]], run_root: Path, download_reads: 
 
 def main() -> int:
     args = parse_args()
-    if not args.selection_csv and not args.preset and not args.samples and not any(
-        [args.pass_count, args.warn_count, args.fail_count]
+    if (
+        not args.selection_csv
+        and not args.preset
+        and not args.samples
+        and not any([args.pass_count, args.warn_count, args.fail_count])
     ):
         raise SystemExit("Provide --selection-csv, --preset, --samples, or pass/warn/fail counts")
 
