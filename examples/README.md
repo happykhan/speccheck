@@ -55,7 +55,8 @@ That route:
 - downloads reads on a login node
 - writes a GHRU `samplesheet.csv` plus metadata
 - runs `external/GHRU-assembly`
-- leaves the output ready for `speccheck collect-ghru` and `summary`
+- leaves the output ready for `speccheck collect-pipeline --layout ghru` and
+  `summary`
 
 The generic staging logic lives in `scripts/stage_ghru_ecoli_cohort.py`.
 

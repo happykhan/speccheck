@@ -54,15 +54,7 @@ speccheck collect-pipeline results/ qc_collect \
   --work-dir work/
 ```
 
-This currently supports the GHRU Assembly output layout. The older command name
-is still valid:
-
-```bash
-speccheck collect-ghru results/ qc_collect --organism "Escherichia coli"
-```
-
-Use `collect-pipeline` in new documentation and scripts because it describes the
-role more clearly.
+This currently supports the GHRU Assembly output layout.
 
 ## 5. Interpret status columns
 

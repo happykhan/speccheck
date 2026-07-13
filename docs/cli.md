@@ -106,18 +106,6 @@ speccheck collect-pipeline .demo_work/ghru_validation/output qc_collect \
 
 Then generate the cohort report with `speccheck summary qc_collect`.
 
-## `collect-ghru`
-
-Compatibility alias for:
-
-```bash
-speccheck collect-pipeline OUTPUT_TREE qc_collect --layout ghru
-```
-
-Existing scripts can keep using `collect-ghru`. New documentation and pipeline
-examples should use `collect-pipeline --layout ghru` because it makes the role
-generic: collect a known workflow output layout into `speccheck` reports.
-
 ## `check`
 
 Validate or refresh a criteria CSV.

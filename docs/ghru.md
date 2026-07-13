@@ -46,16 +46,8 @@ speccheck summary qc_collect \
   --xlsx-output qc_report/report.xlsx
 ```
 
-`collect-ghru` is retained as a compatibility alias for the same layout:
-
-```bash
-speccheck collect-ghru path/to/pipeline/output qc_collect \
-  --organism "Escherichia coli"
-```
-
-Prefer `collect-pipeline --layout ghru` in new documentation and scripts because
-it describes the role clearly: `speccheck` is collecting a known workflow output
-layout.
+`collect-pipeline --layout ghru` describes the role directly: `speccheck` is
+collecting a known workflow output layout.
 
 ## GHRU Assembly as the worked Nextflow example
 

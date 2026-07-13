@@ -38,9 +38,10 @@ After staging and completing the upstream run:
 scripts/stage_ghru_ecoli_run_100.sh
 scripts/submit_ghru_ecoli_run_100.sh
 
-pixi run python -m speccheck.cli collect-ghru \
+pixi run python -m speccheck.cli collect-pipeline \
   .demo_work/ghru_ecoli_cohort/run_100/output \
   .demo_work/publication_100_final/collect \
+  --layout ghru \
   --organism "Escherichia coli" \
   --metadata .demo_work/ghru_ecoli_cohort/run_100/metadata.csv \
   --work-dir .demo_work/ghru_ecoli_cohort/run_100/work

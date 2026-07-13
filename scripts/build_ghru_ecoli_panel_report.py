@@ -42,7 +42,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--organism",
         default="Escherichia coli",
-        help="Organism override applied during collect-ghru",
+        help="Organism override applied during collect-pipeline --layout ghru",
     )
     args = parser.parse_args(argv)
 

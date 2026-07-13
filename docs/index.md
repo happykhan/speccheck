@@ -45,10 +45,9 @@ speccheck collect-pipeline path/to/pipeline/output qc_collect \
   --work-dir path/to/nextflow/work
 ```
 
-`collect-ghru` is kept as a compatibility alias for the same layout. The
-preferred documentation name is now `collect-pipeline` because the concept is
-generic: a pipeline publishes recognised QC files, then `speccheck` creates the
-final sample-level and cohort-level report.
+The command is generic because the concept is generic: a pipeline publishes
+recognised QC files, then `speccheck` creates the final sample-level and
+cohort-level report.
 
 ### Manuscript case study
 

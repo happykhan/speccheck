@@ -261,13 +261,11 @@ def test_collect_pipeline_accepts_ghru_layout(monkeypatch, tmp_path):
     assert calls["sample"] == ["SAMPLE_001"]
 
 
-def test_collect_ghru_remains_available_as_compatibility_alias():
+def test_collect_ghru_command_is_not_public():
     result = CliRunner().invoke(app, ["collect-ghru", "--help"])
 
-    assert result.exit_code == 0
-    assert "Compatibility alias" in result.output
-    assert "GHRU" in result.output
-    assert "Assembly layout" in result.output
+    assert result.exit_code != 0
+    assert "No such command" in unstyle(result.output)
 
 
 def test_collect_pipeline_rejects_unknown_layout(tmp_path):

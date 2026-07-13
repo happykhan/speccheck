@@ -70,8 +70,6 @@ speccheck collect-pipeline path/to/pipeline/output qc_collect \
   --work-dir path/to/nextflow/work
 ```
 
-`collect-ghru` remains available as a compatibility alias for this layout.
-
 Refresh criteria from QualiBact:
 
 ```bash
