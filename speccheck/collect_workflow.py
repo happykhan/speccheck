@@ -25,7 +25,7 @@ from speccheck.update_criteria import get_threshold_source_for_species
 from speccheck.util import get_all_files, load_modules_with_checks
 
 ASSEMBLY_TYPES = frozenset({"all", "short", "long", "hybrid"})
-STATUS_RANK = {"PASS": 0, "WARN": 1, "FAIL": 2, "NOT_EVALUATED": 3}
+STATUS_RANK = {"PASS": 0, "WARN": 1, "FAIL": 2, "NOT_EVALUATED": 3}  # nosec B105
 
 
 @dataclass
