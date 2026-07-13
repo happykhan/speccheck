@@ -1,9 +1,17 @@
-name: Deploy Docs
+name: Docs
 
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      deploy_pages:
+        description: Deploy to GitHub Pages. Requires Pages enabled with source set to GitHub Actions.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -28,12 +36,23 @@ jobs:
           pip install -e . mkdocs-material
       - name: Build site
         run: mkdocs build --strict
+      - name: Configure Pages
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_pages }}
+        uses: actions/configure-pages@v5
       - name: Upload Pages artifact
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_pages }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
+      - name: Deployment skipped
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.deploy_pages }}
+        run: |
+          echo "Docs built successfully."
+          echo "Pages deployment is skipped unless this workflow is run manually with deploy_pages=true."
+          echo "Before deploying, enable Pages in repository settings and select GitHub Actions as the source."
 
   deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_pages }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
