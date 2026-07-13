@@ -8,8 +8,8 @@
 - added concise/full CSV, self-contained HTML, and multi-sheet XLSX reports
 - added visible `NOT_EVALUATED` statuses, strict missing-metric mode, criteria
   precedence, assembly-type filtering, and collection provenance
-- added deterministic manuscript concordance, metric-distribution, and report
-  snapshot figures
+- added deterministic concordance, metric-distribution, and report snapshot
+  figures for the worked E. coli case study
 - replaced dynamic parser/plot discovery with explicit registries and centralized
   CheckM2 metric aliases
 - split collection and summary orchestration into focused workflow modules
