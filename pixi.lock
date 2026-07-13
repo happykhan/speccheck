@@ -1622,7 +1622,7 @@ packages:
 - pypi: ./
   name: speccheck-qc
   version: 1.3.0
-  sha256: fa68663357f4f86ded6cfd6167434f93257205a64f45bbed897929a99994e9b8
+  sha256: 0b605f6604396df7436307f8380e2124db72cecadbcf6de3b87fe74d4a22813c
   requires_dist:
   - rich>=13.0.0
   - jinja2>=3.0.0
