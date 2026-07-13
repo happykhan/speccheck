@@ -92,7 +92,12 @@ def test_update_criteria_file_preserves_unmanaged_rows(tmp_path, monkeypatch):
         lambda *_args, **_kwargs: MockResponse(fixture_text),
     )
 
-    update_criteria_file(criteria_file, "https://example.invalid/thresholds.csv")
+    snapshot_dir = tmp_path / "snapshot"
+    update_criteria_file(
+        criteria_file,
+        "https://example.invalid/thresholds.csv",
+        snapshot_dir=snapshot_dir,
+    )
 
     written_rows = list(csv.DictReader(criteria_file.open(encoding="utf-8")))
     assert any(
@@ -109,3 +114,5 @@ def test_update_criteria_file_preserves_unmanaged_rows(tmp_path, monkeypatch):
     assert not any(
         row["software"] == "Checkm" and row["field"] == "Marker lineage" for row in written_rows
     )
+    assert (snapshot_dir / "qualibact_snapshot.csv").exists()
+    assert (snapshot_dir / "qualibact_snapshot_metadata.csv").exists()

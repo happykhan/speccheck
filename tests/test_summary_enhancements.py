@@ -208,6 +208,35 @@ def test_summary_adds_qualibact_compatibility_columns(tmp_path):
     assert "Total_Coding_Sequences &gt;5800.0" in html
 
 
+def test_historical_qualibact_label_does_not_override_current_qc(tmp_path):
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+    pd.DataFrame(
+        [
+            {
+                "sample_id": "HISTORICAL_FAIL",
+                "all_checks_passed": True,
+                "qualibact_tier": "FAIL",
+                "qualibact_reasons": "historical assembly failed",
+            }
+        ]
+    ).to_csv(input_dir / "sample.csv", index=False)
+
+    summary(
+        str(input_dir),
+        str(output_dir),
+        "Speciator.speciesName",
+        "sample_id",
+        get_default_template_path(),
+    )
+
+    report = pd.read_csv(output_dir / "report.csv")
+    assert report.loc[0, "overall_qc"] == "PASSED"
+    assert report.loc[0, "qualibact_tier"] == "FAIL"
+    assert report.loc[0, "reason_summary"] == "none"
+
+
 def test_summary_rejects_duplicate_sample_ids(tmp_path):
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"

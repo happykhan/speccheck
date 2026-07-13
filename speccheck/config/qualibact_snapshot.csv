@@ -1,4 +1,6 @@
 species,metric,scheme,source_url,retrieved_at,fallback_used,FINAL_lower,FINAL_upper,WARN_lower,WARN_upper
-Escherichia coli,Genome_Size,qualibact-v1.0,https://example.invalid/thresholds.csv,2026-07-13T11:15:12.364236+00:00,True,3700000,6400000,,
-Escherichia coli,N50,qualibact-v1.0,https://example.invalid/thresholds.csv,2026-07-13T11:15:12.364236+00:00,True,13000,,,
-Escherichia coli,no_of_contigs,qualibact-v1.1,https://example.invalid/thresholds.csv,2026-07-13T11:15:12.364236+00:00,False,,1000,,
+Escherichia coli,GC_Content,qualibact-v1.0,https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0,2026-07-13T00:00:00+00:00,False,,,50.25,50.88
+Escherichia coli,Genome_Size,qualibact-v1.0,https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0,2026-07-13T00:00:00+00:00,False,,,4400000,5700000
+Escherichia coli,N50,qualibact-v1.0,https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0,2026-07-13T00:00:00+00:00,False,20000,,,
+Escherichia coli,Total_Coding_Sequences,qualibact-v1.0,https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0,2026-07-13T00:00:00+00:00,False,,,,5800
+Escherichia coli,no_of_contigs,qualibact-v1.0,https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0,2026-07-13T00:00:00+00:00,False,,670,,600

@@ -23,7 +23,11 @@ __description__ = "A bioinformatics software focused on quality control based on
 __module_name__ = "speccheck"
 __url__ = "https://github.com/happykhan/speccheck"
 
-from speccheck.cli import main
+def main():
+    """Invoke the CLI without importing CLI dependencies at package import time."""
+    from speccheck.cli import main as cli_main
+
+    return cli_main()
 
 __all__ = [
     "main",

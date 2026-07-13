@@ -1,12 +1,11 @@
-import importlib.util
 import logging
-import os
 from pathlib import Path
 
 import pandas as pd
 from jinja2 import Template
 
 from speccheck import __version__ as VERSION
+from speccheck.registry import PLOT_CLASSES, add_frame_metric_aliases
 from speccheck.report_tables import (
     build_concise_report_frame,
     build_full_detail_table,
@@ -53,29 +52,9 @@ def make_footer():
 
 
 def load_modules_with_checks():
-    module_dict = {}
-    modules_file_path = PACKAGE_DIR / "plot_modules"
-
-    for filename in os.listdir(modules_file_path):
-        if not filename.endswith(".py"):
-            continue
-
-        curr_module_path = modules_file_path / filename
-        if not os.path.isfile(curr_module_path):
-            continue
-
-        module_name = os.path.splitext(filename)[0]
-        spec = importlib.util.spec_from_file_location(module_name, curr_module_path)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-
-        class_name = module_name.title()
-        if hasattr(module, class_name):
-            cla = getattr(module, class_name)
-            if hasattr(cla, "plot"):
-                module_dict[class_name.split("_")[1]] = cla
-
-    loaded_classes = ", ".join([cls.__name__ for cls in module_dict.values()])
+    """Return the explicitly supported plotting classes."""
+    module_dict = dict(PLOT_CLASSES)
+    loaded_classes = ", ".join(cls.__name__ for cls in module_dict.values())
     logging.debug("Loaded modules: %s", loaded_classes)
     return module_dict
 
@@ -133,16 +112,7 @@ def build_report_context(
         group_df.columns = group_df.columns.str.replace(f"{software}.", "", regex=False)
         group_df.index = group_df["sample_id"]
         group_df.attrs["interactive_tables"] = interactive_tables
-        if software == "Checkm":
-            alias_map = {
-                "GC": "GC_Content",
-                "Genome size (bp)": "Genome_Size",
-                "N50 (scaffolds)": "Contig_N50",
-                "# contigs": "Total_Contigs",
-            }
-            for source, target in alias_map.items():
-                if source in group_df.columns and target not in group_df.columns:
-                    group_df[target] = group_df[source]
+        group_df = add_frame_metric_aliases(group_df, software)
         software_obj = software_modules[software](group_df)
         software_dict[software] = software_obj.summary()
         plotly_jinja_data["software_charts"] += software_obj.plot()

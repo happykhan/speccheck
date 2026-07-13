@@ -218,8 +218,11 @@ def _preserve_existing_rows(criteria_file):
     return preserved
 
 
-def _write_snapshot_artifacts(rows, update_url):
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+def _write_snapshot_artifacts(rows, update_url, snapshot_dir=CONFIG_DIR):
+    snapshot_dir = Path(snapshot_dir)
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+    snapshot_path = snapshot_dir / QUALIBACT_SNAPSHOT_PATH.name
+    metadata_path = snapshot_dir / QUALIBACT_SNAPSHOT_METADATA_PATH.name
     chosen_rows = _choose_threshold_rows(rows)
     retrieved_at = datetime.now(timezone.utc).isoformat()
     snapshot_rows = []
@@ -251,12 +254,12 @@ def _write_snapshot_artifacts(rows, update_url):
             "fallback_used": str(fallback_used),
         }
 
-    with open(QUALIBACT_SNAPSHOT_PATH, "w", encoding="utf-8", newline="") as handle:
+    with open(snapshot_path, "w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=SNAPSHOT_HEADERS)
         writer.writeheader()
         writer.writerows(sorted(snapshot_rows, key=lambda row: (row["species"], row["metric"])))
 
-    with open(QUALIBACT_SNAPSHOT_METADATA_PATH, "w", encoding="utf-8", newline="") as handle:
+    with open(metadata_path, "w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(
             handle,
             fieldnames=[
@@ -299,13 +302,18 @@ def get_threshold_source_for_species(species):
     }
 
 
-def update_criteria_file(criteria_file, update_url=QUALIBACT_DEFAULT_URL):
+def update_criteria_file(
+    criteria_file,
+    update_url=QUALIBACT_DEFAULT_URL,
+    *,
+    snapshot_dir=CONFIG_DIR,
+):
     logging.info("Updating criteria file from %s", update_url)
     try:
         qualibact_rows = _fetch_qualibact_rows(update_url)
     except (requests.RequestException, ValueError) as exc:
         logging.error("Failed to download QualiBact thresholds: %s", exc)
-        return
+        return False
 
     if not _choose_threshold_rows(qualibact_rows):
         logging.warning(
@@ -313,7 +321,7 @@ def update_criteria_file(criteria_file, update_url=QUALIBACT_DEFAULT_URL):
             "Keeping existing species-specific thresholds.",
             update_url,
         )
-        return
+        return False
 
     generated_rows = qualibact_rows_to_criteria_rows(qualibact_rows)
     preserved_rows = _preserve_existing_rows(criteria_file)
@@ -343,8 +351,9 @@ def update_criteria_file(criteria_file, update_url=QUALIBACT_DEFAULT_URL):
         writer.writeheader()
         writer.writerows(merged)
 
-    _write_snapshot_artifacts(qualibact_rows, update_url)
+    _write_snapshot_artifacts(qualibact_rows, update_url, snapshot_dir=snapshot_dir)
     logging.info("Criteria file updated successfully: %s", criteria_file)
+    return True
 
 
 if __name__ == "__main__":
