@@ -1,4 +1,5 @@
 import os
+
 import pytest
 
 from speccheck.modules.speciator import Speciator

@@ -1,9 +1,11 @@
 import csv
 import logging
-import requests
 from collections import defaultdict
+from datetime import datetime, timezone
 from io import StringIO
 from pathlib import Path
+
+import requests
 
 QUALIBACT_DEFAULT_URL = "https://static.qualibact.org/api/v2/external/thresholds.csv"
 CRITERIA_HEADERS = [
@@ -15,15 +17,31 @@ CRITERIA_HEADERS = [
     "value",
     "special_field",
 ]
-PREFERRED_SCHEMES = ["qualibact-v1.0", "enterobase-v2.3"]
+SNAPSHOT_HEADERS = [
+    "species",
+    "metric",
+    "scheme",
+    "source_url",
+    "retrieved_at",
+    "fallback_used",
+    "FINAL_lower",
+    "FINAL_upper",
+    "WARN_lower",
+    "WARN_upper",
+]
+PREFERRED_SCHEMES = ["qualibact-v1.1", "qualibact-v1.0"]
+PACKAGE_DIR = Path(__file__).resolve().parent
+CONFIG_DIR = PACKAGE_DIR / "config"
+QUALIBACT_SNAPSHOT_PATH = CONFIG_DIR / "qualibact_snapshot.csv"
+QUALIBACT_SNAPSHOT_METADATA_PATH = CONFIG_DIR / "qualibact_snapshot_metadata.csv"
 CONTROLLED_FIELD_KEYS = {
     ("Checkm", "Completeness"),
     ("Checkm", "Contamination"),
     ("Checkm", "GC"),
     ("Checkm", "Genome size (bp)"),
-    ("Checkm", "Marker lineage"),
     ("Checkm", "# contigs"),
     ("Checkm", "N50 (scaffolds)"),
+    ("Checkm", "Total_Coding_Sequences"),
     ("Quast", "GC (%)"),
     ("Quast", "Total length (>= 0 bp)"),
     ("Quast", "# contigs (>= 0 bp)"),
@@ -33,7 +51,20 @@ CONTROLLED_FIELD_KEYS = {
     ("Speciator", "speciesName"),
     ("Sylph", "number_of_genomes"),
     ("Sylph", "species_name"),
+    ("Sylph", "sequence_abundances"),
 }
+BASELINE_ROWS = (
+    ("all", "all", "Sylph", "sequence_abundances", ">=", 99),
+    ("all", "all", "Quast", "Total length (>= 0 bp)", ">=", 100000),
+    ("all", "all", "Quast", "Total length (>= 0 bp)", "<=", 15000000),
+    ("all", "all", "Checkm", "Genome size (bp)", ">=", 100000),
+    ("all", "all", "Checkm", "Genome size (bp)", "<=", 15000000),
+    ("all", "all", "Quast", "N50", ">=", 2000),
+    ("all", "all", "Checkm", "N50 (scaffolds)", ">=", 2000),
+    ("all", "short", "Quast", "# contigs (>= 0 bp)", "<=", 2000),
+    ("all", "short", "Checkm", "# contigs", "<=", 2000),
+    ("all", "all", "Checkm", "Contamination", "<=", 100),
+)
 
 
 def _normalize_number(value):
@@ -63,9 +94,13 @@ def _scheme_priority(scheme):
     return len(PREFERRED_SCHEMES)
 
 
+def _filter_supported_rows(rows):
+    return [row for row in rows if row.get("scheme") in PREFERRED_SCHEMES]
+
+
 def _choose_threshold_rows(rows):
     grouped = defaultdict(list)
-    for row in rows:
+    for row in _filter_supported_rows(rows):
         grouped[(row["species"], row["metric"])].append(row)
 
     chosen = []
@@ -95,9 +130,6 @@ def _make_row(species, assembly_type, software, field, operator, value, special_
 def _helper_rows_for_species(species):
     genus = species.split()[0]
     return [
-        _make_row(
-            species, "all", "Checkm", "Marker lineage", "regex", f"^{species}", "species_field"
-        ),
         _make_row(species, "all", "Speciator", "confidence", "regex", "^good$"),
         _make_row(species, "all", "Speciator", "genusName", "regex", f"^{genus}"),
         _make_row(
@@ -134,16 +166,21 @@ def _rows_from_threshold(species, metric, lower, upper):
     elif metric == "Contamination":
         add_bounds("all", "Checkm", "Contamination")
     elif metric == "Total_Coding_Sequences":
-        logging.warning(
-            "Skipping unsupported QualiBact metric Total_Coding_Sequences for %s", species
-        )
+        add_bounds("all", "Checkm", "Total_Coding_Sequences")
     else:
         logging.warning("Skipping unsupported QualiBact metric %s for %s", metric, species)
     return rows
 
 
+def _baseline_criteria_rows():
+    return [
+        _make_row(species, assembly_type, software, field, operator, value)
+        for species, assembly_type, software, field, operator, value in BASELINE_ROWS
+    ]
+
+
 def qualibact_rows_to_criteria_rows(rows):
-    criteria_rows = []
+    criteria_rows = _baseline_criteria_rows()
     seen_species = set()
     for row in _choose_threshold_rows(rows):
         species = row["species"].replace("_", " ")
@@ -166,7 +203,7 @@ def _preserve_existing_rows(criteria_file):
     preserved = []
     for row in existing_rows:
         key = (row.get("software"), row.get("field"))
-        if key not in CONTROLLED_FIELD_KEYS:
+        if key not in CONTROLLED_FIELD_KEYS and row.get("species") != "all":
             preserved.append(
                 {
                     "species": row.get("species", ""),
@@ -181,6 +218,87 @@ def _preserve_existing_rows(criteria_file):
     return preserved
 
 
+def _write_snapshot_artifacts(rows, update_url):
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    chosen_rows = _choose_threshold_rows(rows)
+    retrieved_at = datetime.now(timezone.utc).isoformat()
+    snapshot_rows = []
+    metadata_rows = {}
+    for row in chosen_rows:
+        species = row["species"].replace("_", " ")
+        scheme = row.get("scheme", "")
+        fallback_used = scheme != PREFERRED_SCHEMES[0]
+        snapshot_rows.append(
+            {
+                "species": species,
+                "metric": row.get("metric", ""),
+                "scheme": scheme,
+                "source_url": update_url,
+                "retrieved_at": retrieved_at,
+                "fallback_used": str(fallback_used),
+                "FINAL_lower": row.get("FINAL_lower", ""),
+                "FINAL_upper": row.get("FINAL_upper", ""),
+                "WARN_lower": row.get("WARN_lower", ""),
+                "WARN_upper": row.get("WARN_upper", ""),
+            }
+        )
+        metadata_rows[species] = {
+            "species": species,
+            "scheme": scheme,
+            "threshold_source": f"QualiBact {species} {scheme}",
+            "source_url": update_url,
+            "retrieved_at": retrieved_at,
+            "fallback_used": str(fallback_used),
+        }
+
+    with open(QUALIBACT_SNAPSHOT_PATH, "w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=SNAPSHOT_HEADERS)
+        writer.writeheader()
+        writer.writerows(sorted(snapshot_rows, key=lambda row: (row["species"], row["metric"])))
+
+    with open(QUALIBACT_SNAPSHOT_METADATA_PATH, "w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "species",
+                "scheme",
+                "threshold_source",
+                "source_url",
+                "retrieved_at",
+                "fallback_used",
+            ],
+        )
+        writer.writeheader()
+        writer.writerows(sorted(metadata_rows.values(), key=lambda row: row["species"]))
+
+
+def get_threshold_source_for_species(species):
+    if QUALIBACT_SNAPSHOT_METADATA_PATH.exists():
+        with open(QUALIBACT_SNAPSHOT_METADATA_PATH, encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                if row.get("species") == species:
+                    return {
+                        "threshold_source": row.get("threshold_source", ""),
+                        "scheme": row.get("scheme", ""),
+                        "fallback_used": row.get("fallback_used", "False"),
+                    }
+    criteria_path = CONFIG_DIR / "criteria.csv"
+    if criteria_path.exists():
+        with open(criteria_path, encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                if row.get("species") == species:
+                    return {
+                        "threshold_source": "Packaged QualiBact species thresholds",
+                        "scheme": "packaged",
+                        "fallback_used": "False",
+                    }
+    return {
+        "threshold_source": "Global baseline only",
+        "scheme": "",
+        "fallback_used": "False",
+    }
+
+
 def update_criteria_file(criteria_file, update_url=QUALIBACT_DEFAULT_URL):
     logging.info("Updating criteria file from %s", update_url)
     try:
@@ -189,12 +307,20 @@ def update_criteria_file(criteria_file, update_url=QUALIBACT_DEFAULT_URL):
         logging.error("Failed to download QualiBact thresholds: %s", exc)
         return
 
+    if not _choose_threshold_rows(qualibact_rows):
+        logging.warning(
+            "No supported QualiBact rows found at %s after excluding non-QualiBact schemes. "
+            "Keeping existing species-specific thresholds.",
+            update_url,
+        )
+        return
+
     generated_rows = qualibact_rows_to_criteria_rows(qualibact_rows)
     preserved_rows = _preserve_existing_rows(criteria_file)
 
     merged = []
     seen = set()
-    for row in preserved_rows + generated_rows:
+    for row in generated_rows + preserved_rows:
         normalized = {header: row.get(header, "") for header in CRITERIA_HEADERS}
         row_key = tuple(normalized[header] for header in CRITERIA_HEADERS)
         if row_key in seen:
@@ -217,6 +343,7 @@ def update_criteria_file(criteria_file, update_url=QUALIBACT_DEFAULT_URL):
         writer.writeheader()
         writer.writerows(merged)
 
+    _write_snapshot_artifacts(qualibact_rows, update_url)
     logging.info("Criteria file updated successfully: %s", criteria_file)
 
 

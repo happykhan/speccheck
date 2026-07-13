@@ -1,3 +1,4 @@
+import csv
 import logging
 import operator as op_from_module
 import os
@@ -8,17 +9,33 @@ from collections.abc import Iterable
 def collect_files(all_files, module_list):
     # Execute checks for each file using discovered modules
     recovered_values = {}
+    recovered_sources = {}
     for filepath in all_files:
         logging.debug("Checking %s", filepath)
         for module in module_list:
             current_module = module(filepath)
             if current_module.has_valid_filename and current_module.has_valid_fileformat:
                 logging.debug("File %s passed checks from %s", filepath, module.__name__)
+                module_name = getattr(current_module, "software_name", module.__name__)
+                if module_name in recovered_values:
+                    previous = recovered_sources[module_name]
+                    raise ValueError(
+                        f"Multiple files matched parser {module_name}: {previous} and {filepath}. "
+                        "Provide one output per parser for each sample, or split samples before collect."
+                    )
                 # Fetch values and criteria
-                recovered_values[module.__name__] = current_module.fetch_values()
+                recovered_values[module_name] = current_module.fetch_values()
+                recovered_sources[module_name] = filepath
     if not recovered_values:
         logging.warning("No files passed the checks.")
     return recovered_values
+
+
+def criteria_applies_to_software(criteria_software, recovered_software):
+    """Return True when a criteria row applies to a recovered parser output."""
+    if criteria_software == recovered_software:
+        return True
+    return criteria_software.startswith("DepthParser") and recovered_software == "Depth"
 
 
 def check_criteria(field, result):
@@ -26,7 +43,7 @@ def check_criteria(field, result):
     software = field["software"]
 
     # --- Handle DepthParser hybrid output (short + long) ---
-    # result["DepthParser"] can be a dict (short or long) or list (hybrid)
+    # Depth.fetch_values returns a dict (single read type) or list (hybrid).
     if software.startswith("DepthParser"):
         # Determine which type of read (short or long) to check
         read_type = None
@@ -35,12 +52,10 @@ def check_criteria(field, result):
         elif software.endswith(".long"):
             read_type = "long"
 
-        depth_entries = result.get("DepthParser")
-
         # If it's hybrid (list), pick the matching read type
-        if isinstance(depth_entries, list):
+        if isinstance(result, list):
             matched = next(
-                (entry for entry in depth_entries if entry.get("Read_type") == read_type), None
+                (entry for entry in result if entry.get("Read_type", "").lower() == read_type), None
             )
             if not matched:
                 logging.warning("No matching read type (%s) found for DepthParser", read_type)
@@ -48,12 +63,15 @@ def check_criteria(field, result):
             field_value = matched[field["field"]]
         else:
             # Single short or long file
-            field_value = depth_entries[field["field"]]
+            if read_type and result.get("Read_type", "").lower() != read_type:
+                logging.warning("Depth row read type does not match criteria type (%s)", read_type)
+                return False
+            field_value = result[field["field"]]
     else:
         field_value = result[field["field"]]
 
     if field["operator"] == "regex":
-        if not re.match(field["value"], result[field["field"]]):
+        if not re.match(field["value"], str(field_value)):
             logging.warning(
                 "Failed check for %s: %s does not match regex %s",
                 field["software"],
@@ -62,9 +80,26 @@ def check_criteria(field, result):
             )
             test_result = False
     else:
-        field_value = result[field["field"]]
         operator = field["operator"]
         criteria_value = field["value"]
+        comparable_field_value = field_value
+
+        if isinstance(criteria_value, (int, float)) and isinstance(field_value, str):
+            stripped = field_value.strip()
+            try:
+                if "." in stripped or "e" in stripped.lower():
+                    comparable_field_value = float(stripped)
+                else:
+                    comparable_field_value = int(stripped)
+            except ValueError:
+                logging.warning(
+                    "Failed check for %s: %s value %r is not a numeric scalar for operator %s",
+                    field["software"],
+                    field["field"],
+                    field_value,
+                    field["operator"],
+                )
+                return False
 
         if operator == "=":
             operator = "=="
@@ -76,7 +111,7 @@ def check_criteria(field, result):
             ">": op_from_module.gt,
             ">=": op_from_module.ge,
         }
-        if not ops[operator](field_value, criteria_value):
+        if not ops[operator](comparable_field_value, criteria_value):
             logging.warning(
                 "Failed check for %s: %s %s %s",
                 field["software"],
@@ -166,18 +201,25 @@ def write_to_file(output_file, qc_report):
         "all_checks_passed",
         "Speciator.all_checks_passed",
         "Speciator.speciesName",
+        "Speciator.confidence",
         "Depth.all_checks_passed",
         "Depth.Depth",
         "Depth.Read_type",
         "Sylph.all_checks_passed",
         "Sylph.top_species",
         "Sylph.top_taxonomic_abundance",
+        "Sylph.top_adjusted_ani",
+        "Sylph.number_of_genomes",
+        "Sylph.species_name",
+        "Sylph.taxonomic_abundances",
         "Quast.all_checks_passed",
         "Quast.# contigs (>= 0 bp).check",
+        "Quast.# contigs (>= 0 bp)",
         "Quast.# contigs",
         "Quast.N50.check",
         "Quast.N50",
         "Quast.Total length (>= 0 bp).check",
+        "Quast.Total length (>= 0 bp)",
         "Quast.Total length",
         "Quast.GC (%).check",
         "Quast.GC (%)",
@@ -187,6 +229,15 @@ def write_to_file(output_file, qc_report):
         "Checkm.Completeness",
         "Checkm.Contamination.check",
         "Checkm.Contamination",
+        "Checkm.GC_Content",
+        "Checkm.Genome_Size",
+        "Checkm.Contig_N50",
+        "Checkm.Total_Contigs",
+        "Checkm.Total_Coding_Sequences",
+        "Checkm.GC",
+        "Checkm.Genome size (bp)",
+        "Checkm.N50 (scaffolds)",
+        "Checkm.# contigs",
         "Sylph.genomes",
     ]
 
@@ -225,18 +276,36 @@ def write_to_file(output_file, qc_report):
         )
         detailed_keys = sample_id_cols + all_checks_passed_cols + check_cols + other_cols
 
-        with open(detailed_path, "w", encoding="utf-8") as f_det:
-            f_det.write(",".join(detailed_keys) + "\n")
-            f_det.write(
-                ",".join(_format_cell(key, qc_report.get(key, "")) for key in detailed_keys) + "\n"
+        with open(detailed_path, "w", encoding="utf-8", newline="") as f_det:
+            writer = csv.DictWriter(f_det, fieldnames=detailed_keys)
+            writer.writeheader()
+            writer.writerow(
+                {key: _format_cell(key, qc_report.get(key, "")) for key in detailed_keys}
             )
         logging.info("Detailed results written to %s", detailed_path)
 
-        # 2) Write concise CSV with only the requested columns, in that exact order
-        with open(output_file, "w", encoding="utf-8") as f_out:
-            f_out.write(",".join(concise_columns) + "\n")
-            row = [_format_cell(col, qc_report.get(col, "")) for col in concise_columns]
-            f_out.write(",".join(row) + "\n")
+        extra_check_columns = sorted(
+            [key for key in qc_report if key.endswith(".check") and key not in concise_columns]
+        )
+        metadata_columns = sorted(
+            [
+                key
+                for key in qc_report
+                if key not in concise_columns
+                and key not in extra_check_columns
+                and key not in {"Sample", "sample_id", "all_checks_passed"}
+                and "." not in key
+            ]
+        )
+        concise_fieldnames = concise_columns + extra_check_columns + metadata_columns
+
+        # 2) Write concise CSV with stable QC columns plus sample metadata.
+        with open(output_file, "w", encoding="utf-8", newline="") as f_out:
+            writer = csv.DictWriter(f_out, fieldnames=concise_fieldnames)
+            writer.writeheader()
+            writer.writerow(
+                {col: _format_cell(col, qc_report.get(col, "")) for col in concise_fieldnames}
+            )
         logging.info("Concise results written to %s", output_file)
         return
 
@@ -256,7 +325,8 @@ def write_to_file(output_file, qc_report):
         ]
     )
     ordered_keys = sample_id_cols + all_checks_passed_cols + check_cols + other_cols
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(",".join(ordered_keys) + "\n")
-        f.write(",".join(_format_cell(key, qc_report.get(key, "")) for key in ordered_keys) + "\n")
+    with open(output_file, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=ordered_keys)
+        writer.writeheader()
+        writer.writerow({key: _format_cell(key, qc_report.get(key, "")) for key in ordered_keys})
         logging.info("Results written to %s", output_file)

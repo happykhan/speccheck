@@ -1,12 +1,16 @@
 import importlib.util
 import logging
 import os
+from pathlib import Path
+
 import pandas as pd
 from jinja2 import Template
-from pathlib import Path
 
 from speccheck import __version__ as VERSION
 from speccheck.report_tables import (
+    build_concise_report_frame,
+    build_full_detail_table,
+    build_large_run_summary_table,
     build_metric_summary_frames,
     build_qualifyr_style_table,
     get_failure_reasons,
@@ -14,6 +18,7 @@ from speccheck.report_tables import (
     normalize_status,
     render_metric_summary_tables,
     safe_anchor,
+    status_label,
     summary_table,
 )
 
@@ -157,10 +162,21 @@ def build_report_context(
     report_df = report_df.reset_index(drop=True)
 
     summary_frames = build_metric_summary_frames(report_df)
+    concise_report_df = build_concise_report_frame(report_df)
     plotly_jinja_data["sample_count"] = make_sample_counts(report_df.set_index("sample_id"))
     plotly_jinja_data["footer"] = make_footer()
     plotly_jinja_data["summary_table"] = summary_table(
         report_df.set_index("sample_id"),
+        interactive_tables=interactive_tables,
+    )
+    plotly_jinja_data["dataset_kpis"] = _build_dataset_kpis(report_df)
+    plotly_jinja_data["run_alerts"] = _build_run_alerts(concise_report_df)
+    plotly_jinja_data["sample_review_table"] = build_large_run_summary_table(
+        report_df,
+        interactive_tables=interactive_tables,
+    )
+    plotly_jinja_data["full_detail_table"] = build_full_detail_table(
+        report_df,
         interactive_tables=interactive_tables,
     )
     plotly_jinja_data["software_summary"] = get_software_summary(software_dict)
@@ -201,6 +217,10 @@ def plot_charts(
     required_keys = [
         "software_charts",
         "summary_table",
+        "dataset_kpis",
+        "run_alerts",
+        "sample_review_table",
+        "full_detail_table",
         "footer",
         "sample_count",
         "software_summary",
@@ -220,3 +240,52 @@ def plot_charts(
             j2_template = Template(template_file.read())
             output_file.write(j2_template.render(plotly_jinja_data))
     return report_df, summary_frames
+
+
+def _build_dataset_kpis(report_df):
+    total = len(report_df)
+    if total == 0:
+        return []
+    overall = report_df.get("overall_qc", report_df.get("all_checks_passed", pd.Series(dtype=object)))
+    labels = overall.map(status_label).replace({"PASSED": "PASS", "FAILED": "FAIL"})
+    pass_count = int((labels == "PASS").sum())
+    warn_count = int((labels == "WARN").sum())
+    fail_count = int((labels == "FAIL").sum())
+    pass_rate = (pass_count / total) * 100
+    threshold_source = "Unavailable"
+    if "threshold_source" in report_df.columns and report_df["threshold_source"].notna().any():
+        threshold_source = str(report_df["threshold_source"].dropna().iloc[0])
+    species_summary = "Species unavailable"
+    if "species" in report_df.columns and report_df["species"].notna().any():
+        counts = report_df["species"].fillna("Unknown").value_counts()
+        if len(counts) == 1:
+            species_summary = counts.index[0]
+        else:
+            species_summary = f"{len(counts)} species; dominant {counts.index[0]} ({counts.iloc[0]})"
+    return [
+        {"label": "Samples", "value": total, "tone": "neutral"},
+        {"label": "PASS", "value": pass_count, "tone": "pass"},
+        {"label": "WARN", "value": warn_count, "tone": "warn"},
+        {"label": "FAIL", "value": fail_count, "tone": "fail"},
+        {"label": "Pass rate", "value": f"{pass_rate:.1f}%", "tone": "neutral"},
+        {"label": "Threshold source", "value": threshold_source, "tone": "neutral"},
+        {"label": "Species mix", "value": species_summary, "tone": "neutral"},
+    ]
+
+
+def _build_run_alerts(concise_report_df):
+    if concise_report_df.empty or "reason_summary" not in concise_report_df.columns:
+        return []
+    alerts = (
+        concise_report_df[concise_report_df["overall_qc"].isin(["WARN", "FAIL"])]["reason_summary"]
+        .fillna("none")
+        .astype(str)
+    )
+    counts = {}
+    for value in alerts:
+        if not value or value.lower() == "none":
+            continue
+        for part in [item.strip() for item in value.split(";") if item.strip()]:
+            counts[part] = counts.get(part, 0) + 1
+    ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    return [{"reason": reason, "count": count} for reason, count in ranked[:8]]

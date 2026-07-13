@@ -24,26 +24,16 @@ This refreshes the minimal pass/fail reports from pinned fixtures under `tests/q
 
 ## Regenerate the real QualiBact panel
 
-```bash
-python scripts/build_qualibact_ecoli_demo.py
-```
-
-On a Slurm cluster:
+Rebuild the committed `real_panel` report directly from a finished local GHRU run:
 
 ```bash
-sbatch scripts/slurm_qualibact_ecoli_demo.sh
+pixi run python scripts/build_ghru_ecoli_panel_report.py \
+  .demo_work/ghru_ecoli_panel/triplet/output \
+  --metadata .demo_work/ghru_ecoli_panel/triplet/metadata.csv \
+  --work-dir .demo_work/ghru_ecoli_panel/triplet/work
 ```
 
-The real-panel workflow:
-
-1. Downloads QualiBact E. coli PASS/WARN/FAIL ATB lists.
-2. Selects a small balanced panel.
-3. Fetches assemblies with `atbfetcher`.
-4. Runs QUAST on the assemblies.
-5. Converts QualiBact/ATB CheckM2 and species metrics into `speccheck` parser inputs.
-6. Generates CSV, HTML, and XLSX reports.
-
-Raw FASTA and intermediate files stay under `.demo_work/qualibact_ecoli_real/` and should not be committed.
+This route preserves the real upstream `GHRU-assembly` metrics that `speccheck` should consume in production.
 
 ## Export report screenshots
 
@@ -102,6 +92,9 @@ Use `examples/qualibact_ecoli/real_panel/report/report.csv` to summarize the rea
 
 - `sample_id`
 - `qualibact_tier`
+- `qualibact_compat_tier`
+- `qualibact_compat_reasons`
+- `qualibact_compat_warn_policy`
 - `all_checks_passed`
 - `Quast.N50`
 - `Quast.# contigs (>= 0 bp)`
@@ -120,4 +113,7 @@ Preview:
 
 ## Current limitation
 
-The real-panel demonstration currently uses locally generated QUAST metrics and QualiBact/ATB-exported CheckM2/species metrics. For a stricter manuscript validation run, wire a local CheckM2 database into the Slurm workflow and regenerate the panel with CheckM2 executed directly on the downloaded assemblies.
+The current committed real-panel report is based on a small validated GHRU-backed triplet, not yet on a larger read-backed cohort. The remaining scale-up work should stay on the same GHRU path rather than reintroducing assembly-only fixtures.
+
+CheckM1 marker-lineage output is not used for the QualiBact comparison, because
+the imported thresholds are calibrated around CheckM2 metrics.

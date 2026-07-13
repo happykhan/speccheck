@@ -30,4 +30,5 @@ nav:
   - Manuscript Assets: manuscript.md
   - Manuscript Methods: methods.md
   - Code Quality Audit: code-quality.md
+  - Deep Audit: deep-audit.md
   - Development: development.md

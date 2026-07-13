@@ -38,6 +38,19 @@ No source file is near the 1000-line threshold, but `main.py` and `collect.py` s
 - Fixed duplicated failure-reason list rendering and added a regression test.
 - Kept Python 3.10 compatibility explicit with a `tomli` fallback for `tomllib`.
 - Kept report CSS embedded in generated HTML so example reports are single-file artifacts.
+- Made parser collection fail on duplicate parser matches instead of silently overwriting outputs.
+- Made summary input loading reject duplicate sample IDs and missing sample columns while ignoring generated `detailed.*.csv` files.
+- Replaced manual CSV string joining with `csv.DictWriter` so metadata values with commas, quotes, or newlines remain valid CSV.
+- Made unresolved organism handling strict by default, with `--allow-unknown-organism` as an explicit fallback.
+- Made QUAST parsing key-based so optional row ordering changes do not break valid reports.
+- Fixed DepthParser criteria application against parsed `Depth` outputs.
+- Added pinned QualiBact E. coli v1 compatibility output with PASS/WARN/FAIL tiers.
+- Added CheckM2 metric aliases before criteria evaluation.
+- Removed legacy CheckM1 marker-lineage criteria from QualiBact-derived packaged criteria because QualiBact thresholds are CheckM2-calibrated.
+- Added `Total_Coding_Sequences` to criteria import and concise report outputs.
+- Added explicit `--assembly-type` criteria filtering with provenance in collected CSV outputs.
+- Added visible `NOT_EVALUATED` check statuses for expected metrics missing from detected parser outputs, with opt-in strict failure via `--fail-on-not-evaluated`.
+- Added basic collection provenance fields: speccheck version, assembly type, criteria path/hash, input file count, and `NOT_EVALUATED` count.
 
 ## Remaining high-value refactors
 
@@ -45,25 +58,25 @@ No source file is near the 1000-line threshold, but `main.py` and `collect.py` s
 
    `collect`, `summary`, and `check` currently share one file. The clean split is `collect_workflow.py`, `summary_workflow.py`, and `criteria_workflow.py`, with `main.py` kept as a thin compatibility layer.
 
-2. Replace dynamic parser overwrite behavior with an explicit parser registry.
+2. Replace dynamic parser discovery with an explicit parser registry.
 
-   `collect_files` currently stores one result per parser class name. That is simple, but it silently overwrites when multiple files match the same parser. A registry that records parser ownership, expected cardinality, and merge behavior would be safer.
+   `collect_files` now rejects duplicate parser matches, but parser discovery is still convention-based. A registry that records parser ownership, expected cardinality, display labels, and merge behavior would be safer.
 
-3. Make summary input validation explicit.
-
-   `summary` should fail fast on duplicate sample IDs, missing sample columns, and mixed concise/detailed CSV inputs instead of relying on dictionary overwrite semantics.
-
-4. Introduce typed report models.
+3. Introduce typed report models.
 
    The report layer still passes loosely-shaped dictionaries and dataframes between stages. A small `ReportContext` dataclass would make required fields explicit and reduce accidental key drift.
 
-5. Normalize CheckM/CheckM2 naming.
+4. Centralize metric alias metadata.
 
-   Runtime parsers and report labels use `Checkm`, while manuscript language often uses CheckM/CheckM2. The code should preserve parser identity but expose consistent display names.
+   CheckM2 aliases are now applied before criteria evaluation, but the alias table should move out of workflow code into a parser/metric registry.
 
-6. Add a generated-artifact hygiene check.
+5. Add a generated-artifact hygiene check.
 
    CI should fail if `.demo_work/`, `htmlcov/`, `site/`, `dist/`, or local virtual environments are accidentally staged.
+
+6. Extend strict-mode policy for `NOT_EVALUATED`.
+
+   Missing expected metrics are now visible in collected outputs and reports, and `collect --fail-on-not-evaluated` can make them fail parser/sample checks. The next step is deciding whether example manuscript workflows should always enable that strict mode.
 
 ## Manuscript readiness status
 
@@ -72,8 +85,9 @@ The project now has the core OSS/manuscript baseline:
 - MkDocs Material documentation
 - README quick start
 - reproducible QualiBact E. coli examples
+- pinned QualiBact E. coli v1 compatibility tiers for PASS/WARN/FAIL manuscript examples
 - HTML, CSV, and XLSX report artifacts
 - Slurm-ready real-panel workflow
 - test coverage for report generation and QualiBact conversion
 
-The main remaining manuscript risk is upstream-tool reproducibility for the real panel: QUAST is run locally, while CheckM2/species metrics are currently converted from QualiBact/ATB exports unless a site-local CheckM2 database is installed and wired into the workflow.
+The main remaining manuscript risk is upstream-tool reproducibility for the real panel: QUAST is run locally, while CheckM2/species metrics are currently converted from QualiBact/ATB exports unless a site-local CheckM2 database is installed and wired into the workflow. CheckM1 marker-lineage output is intentionally outside the QualiBact-derived criteria path.

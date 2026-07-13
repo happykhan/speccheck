@@ -1,10 +1,4 @@
-sample_id,qualibact_tier,all_checks_passed,Quast.N50,Quast.# contigs (>= 0 bp),Checkm.Completeness,Checkm.Contamination,qualibact_reasons
-SAMD00006077,FAIL,FAILED,19510,522,100.0,0.25,Genome_Size <4400000.0; GC_Content >50.88; N50 <20000.0
-SAMN42764698,WARN,PASSED,90639,532,100.0,0.35,Total_Coding_Sequences >5800.0; GC_Content <50.25
-SAMN42764704,FAIL,PASSED,114681,675,100.0,0.33,no_of_contigs >670.0; Total_Coding_Sequences >5800.0; Genome_Size >5700000.0
-SAMN42764706,WARN,PASSED,114262,665,100.0,0.31,no_of_contigs >600.0; Total_Coding_Sequences >5800.0
-SAMN42764709,WARN,PASSED,118350,660,100.0,0.34,no_of_contigs >600.0; Total_Coding_Sequences >5800.0
-SAMN42765982,FAIL,PASSED,126621,679,100.0,0.4,no_of_contigs >670.0; Total_Coding_Sequences >5800.0; Genome_Size >5700000.0
-SAMN42766885,PASS,PASSED,125326,184,100.0,0.21,none
-SAMN42766886,PASS,PASSED,172285,159,100.0,0.5,none
-SAMN42766887,PASS,PASSED,123055,154,100.0,1.06,none
+sample_id,qualibact_tier,qualibact_compat_tier,qualibact_compat_reasons,all_checks_passed,Quast.N50,Quast.# contigs (>= 0 bp),Checkm.Completeness,Checkm.Contamination,qualibact_reasons
+SAMN42764706,WARN,PASS,none,PASSED,112461,304,100.0,0.33,no_of_contigs >600.0; Total_Coding_Sequences >5800.0
+SAMN42765982,FAIL,PASS,none,PASSED,126621,302,100.0,0.38,no_of_contigs >670.0; Total_Coding_Sequences >5800.0; Genome_Size >5700000.0
+SAMN42766885,PASS,PASS,none,PASSED,119508,121,100.0,0.21,none

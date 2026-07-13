@@ -1,15 +1,23 @@
 name: Release
 
-# Runs on every push to main (i.e. merged PR).
-# 1. Determines bump type from the most recent PR title.
+# Runs manually when maintainers are ready to cut a release.
+# 1. Uses the requested semantic-version bump type.
 # 2. Bumps the version in pyproject.toml.
 # 3. Commits the bump and creates an annotated git tag.
 # 4. Creates a GitHub release.
 # 5. Builds and pushes the Docker image to Docker Hub.
 
 on:
-  push:
-    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: Semantic version bump to apply
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 permissions:
   contents: write   # needed to push the version-bump commit and create a release
@@ -28,30 +36,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # ------------------------------------------------------------------ #
-      # 1. Work out bump type from the merge-commit subject                 #
-      # ------------------------------------------------------------------ #
-      - name: Determine bump type
-        id: bump
-        run: |
-          # The merge commit message typically starts with "Merge pull request"
-          # followed by the PR title on the next line, OR for squash-merges the
-          # commit subject IS the PR title.  We inspect the full commit message.
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "Commit message:"
-          echo "$COMMIT_MSG"
-
-          if echo "$COMMIT_MSG" | grep -qiE '^breaking:|breaking:'; then
-            BUMP=major
-          elif echo "$COMMIT_MSG" | grep -qiE '^feat:|feat:'; then
-            BUMP=minor
-          else
-            BUMP=patch
-          fi
-
-          echo "bump_type=$BUMP" >> "$GITHUB_OUTPUT"
-          echo "Bump type: $BUMP"
-
-      # ------------------------------------------------------------------ #
       # 2. Bump version files                                               #
       # ------------------------------------------------------------------ #
       - name: Set up Python
@@ -62,7 +46,7 @@ jobs:
       - name: Bump version
         id: version
         run: |
-          BUMP_TYPE="${{ steps.bump.outputs.bump_type }}"
+          BUMP_TYPE="${{ inputs.bump_type }}"
 
           # Read current version from pyproject.toml [project] section only
           CURRENT=$(python - <<'EOF'

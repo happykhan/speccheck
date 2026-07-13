@@ -43,11 +43,15 @@ Collect QC metrics:
 speccheck collect tests/practice_data/Sample_178db692semb --sample Sample_178db692semb
 ```
 
+If `--organism` is not provided, `speccheck` infers it from species parser outputs and stops if no single species can be resolved. Use `--allow-unknown-organism` only for explicit fallback runs.
+
 Generate a merged report:
 
 ```bash
 speccheck summary qc_results --plot --qualifyr-style --xlsx-output qc_report/report.xlsx
 ```
+
+`summary` merges concise collected CSV files, ignores `detailed.*.csv` companions, and rejects duplicate sample IDs.
 
 Refresh criteria from QualiBact:
 
@@ -57,7 +61,7 @@ speccheck check --criteria-file speccheck/config/criteria.csv --update
 
 ## Features
 
-- Automatic module detection for CheckM, QUAST, Speciator, ARIBA, Sylph, and DepthParser outputs
+- Automatic module detection for CheckM2-style QC tables, QUAST, Speciator, ARIBA, Sylph, and DepthParser outputs
 - Criteria-driven pass/fail validation
 - HTML reporting with Plotly charts and interactive sortable/filterable tables
 - Compact qualifyr-style summary tables

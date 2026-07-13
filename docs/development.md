@@ -33,7 +33,7 @@ Lint and format:
 ```bash
 ruff check speccheck tests
 black --check speccheck tests
-isort --check-only speccheck tests
+isort --check-only --profile black speccheck tests
 ```
 
 ## Packaging direction
@@ -45,6 +45,8 @@ The project uses `pyproject.toml` as the packaging source of truth and aims for 
 - Conda/Bioconda style package installs
 
 Runtime defaults such as templates and criteria should always resolve from packaged resources rather than assuming a source checkout.
+
+Releases are cut manually from the GitHub Actions **Release** workflow. The workflow asks for a `patch`, `minor`, or `major` bump, updates `pyproject.toml`, creates the tag/release, and publishes the Docker image. It intentionally does not run on every push to `main`, so documentation and CI-only commits do not create release churn.
 
 ## Upstream QC on Slurm
 

@@ -1,0 +1,2 @@
+species,scheme,threshold_source,source_url,retrieved_at,fallback_used
+Escherichia coli,qualibact-v1.1,QualiBact Escherichia coli qualibact-v1.1,https://example.invalid/thresholds.csv,2026-07-13T11:15:12.364236+00:00,False

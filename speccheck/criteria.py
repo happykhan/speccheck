@@ -166,24 +166,36 @@ def get_criteria(criteria_file, species=None):
                 criteria.append(new_criteria)
             if species and row["species"] == species:
                 merge_criteria.append(new_criteria)
-    for crit in criteria:
-        found = False
-        for merge in merge_criteria:
-            # check if crit is missing from merge_criteria
-            if (
-                crit["assembly_type"] == merge["assembly_type"]
-                and crit["software"] == merge["software"]
-                and crit["field"] == merge["field"]
-            ):
-                found = True
-        if not found:
-            logging.warning(
-                "Criteria for %s %s %s not found for species %s. Using default criteria.",
-                crit["assembly_type"],
-                crit["software"],
-                crit["field"],
-                species,
-            )
-            merge_criteria.append(crit)
-    # return a list of dictionaries
-    return merge_criteria
+    if not species:
+        return criteria
+    if not merge_criteria:
+        logging.warning("No species-specific criteria found for %s. Using baseline criteria only.", species)
+        return criteria
+    return criteria + merge_criteria
+
+
+def get_criteria_layers(criteria_file, species=None):
+    """Return criteria split into baseline and species-specific layers."""
+    baseline = []
+    species_specific = []
+    with open(criteria_file, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            new_criteria = {
+                "assembly_type": row["assembly_type"],
+                "software": row["software"],
+                "field": row["field"],
+                "operator": row["operator"],
+                "value": row["value"],
+                "special_field": row["special_field"],
+            }
+            if "." in new_criteria["value"] and new_criteria["value"].replace(".", "").isdigit():
+                new_criteria["value"] = float(new_criteria["value"])
+            elif new_criteria["value"].isdigit():
+                new_criteria["value"] = int(new_criteria["value"])
+
+            if row["species"] == "all":
+                baseline.append(new_criteria)
+            elif species and row["species"] == species:
+                species_specific.append(new_criteria)
+    return {"baseline": baseline, "species": species_specific}

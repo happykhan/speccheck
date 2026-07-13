@@ -1,9 +1,11 @@
-import pandas as pd
 from collections import OrderedDict
 from html import escape
 
+import pandas as pd
+
 PASS_VALUES = {"passed", "true", "1", "yes"}
 FAIL_VALUES = {"failed", "false", "0", "no"}
+NOT_EVALUATED_VALUES = {"not_evaluated", "not evaluated", "not-evaluated"}
 
 
 def normalize_status(value):
@@ -20,12 +22,38 @@ def normalize_status(value):
 
 
 def status_label(value):
+    if is_not_evaluated(value):
+        return "NOT_EVALUATED"
+    normalized_text = str(value).strip().upper() if not pd.isna(value) else ""
+    if normalized_text in {"PASS", "WARN", "FAIL"}:
+        return normalized_text
     normalized = normalize_status(value)
     if normalized is True:
         return "PASSED"
     if normalized is False:
         return "FAILED"
     return ""
+
+
+def is_not_evaluated(value):
+    if pd.isna(value):
+        return False
+    return str(value).strip().lower() in NOT_EVALUATED_VALUES
+
+
+def is_status_like(value):
+    return normalize_status(value) is not None or is_not_evaluated(value)
+
+
+def status_rank(value):
+    label = status_label(value)
+    if label in {"FAILED", "FAIL"}:
+        return 0
+    if label in {"NOT_EVALUATED", "WARN"}:
+        return 1
+    if label in {"PASSED", "PASS"}:
+        return 2
+    return -1
 
 
 def safe_anchor(value):
@@ -50,7 +78,7 @@ def infer_value_type(series):
         return "status"
     if pd.api.types.is_numeric_dtype(non_null):
         return "numeric"
-    if non_null.map(lambda value: normalize_status(value) is not None).all():
+    if non_null.map(is_status_like).all():
         return "status"
     return "string"
 
@@ -81,6 +109,8 @@ def dataframe_to_interactive_table(df, table_id, searchable=True, interactive=Tr
                 css_class = "qc-pass"
             elif raw_value == "FAILED":
                 css_class = "qc-fail"
+            elif raw_value == "NOT_EVALUATED":
+                css_class = "qc-warn"
             cells.append(f'<td class="{css_class}">{escape(str(raw_value))}</td>')
         rows.append(f"<tr>{''.join(cells)}</tr>")
 
@@ -150,6 +180,107 @@ def summary_table(df, interactive_tables=True):
     return explanation + table_html
 
 
+def build_concise_report_frame(df):
+    preferred_columns = [
+        ("sample_id", "sample_id"),
+        ("overall_qc", "overall_qc"),
+        ("all_checks_passed", "all_checks_passed"),
+        ("baseline_qc", "baseline_qc"),
+        ("qualibact_tier", "qualibact_tier"),
+        ("qualibact_compat_tier", "qualibact_compat_tier"),
+        ("species", "species"),
+        ("Speciator.speciesName", "species"),
+        ("species_confidence", "species_confidence"),
+        ("Speciator.confidence", "species_confidence"),
+        ("Quast.N50", "n50"),
+        ("Checkm.N50 (scaffolds)", "n50"),
+        ("Checkm.Contig_N50", "n50"),
+        ("Quast.# contigs (>= 0 bp)", "contigs"),
+        ("Checkm.# contigs", "contigs"),
+        ("Checkm.Total_Contigs", "contigs"),
+        ("Quast.Total length (>= 0 bp)", "genome_size"),
+        ("Quast.Total length", "genome_size"),
+        ("Checkm.Genome size (bp)", "genome_size"),
+        ("Checkm.Genome_Size", "genome_size"),
+        ("Quast.GC (%)", "gc_percent"),
+        ("Checkm.GC", "gc_percent"),
+        ("Checkm.GC_Content", "gc_percent"),
+        ("Checkm.Completeness", "completeness"),
+        ("Checkm.Contamination", "contamination"),
+        ("Depth.Depth", "depth"),
+        ("Sylph.top_species", "top_species"),
+        ("Sylph.top_taxonomic_abundance", "top_abundance"),
+        ("reason_summary", "reason_summary"),
+        ("threshold_source", "threshold_source"),
+        ("speccheck_threshold_source", "threshold_source"),
+    ]
+    data = {}
+    for source, target in preferred_columns:
+        if source not in df.columns or target in data:
+            continue
+        data[target] = df[source]
+    concise = pd.DataFrame(data)
+    ordered = [
+        "sample_id",
+        "overall_qc",
+        "all_checks_passed",
+        "baseline_qc",
+        "qualibact_tier",
+        "qualibact_compat_tier",
+        "species",
+        "species_confidence",
+        "n50",
+        "contigs",
+        "genome_size",
+        "gc_percent",
+        "completeness",
+        "contamination",
+        "depth",
+        "top_species",
+        "top_abundance",
+        "reason_summary",
+        "threshold_source",
+    ]
+    return concise[[column for column in ordered if column in concise.columns]]
+
+
+def build_large_run_summary_table(df, interactive_tables=True):
+    summary_df = build_concise_report_frame(df).copy()
+    label_map = {
+        "overall_qc": "Overall QC",
+        "baseline_qc": "Baseline QC",
+        "qualibact_tier": "QualiBact tier",
+        "qualibact_compat_tier": "QualiBact compat tier",
+        "species": "Species",
+        "species_confidence": "Species confidence",
+        "n50": "N50",
+        "contigs": "Contigs",
+        "genome_size": "Genome size",
+        "gc_percent": "GC %",
+        "completeness": "Completeness",
+        "contamination": "Contamination",
+        "depth": "Depth",
+        "top_species": "Top species",
+        "top_abundance": "Top abundance",
+        "reason_summary": "Reason summary",
+        "threshold_source": "Threshold source",
+    }
+    summary_df = summary_df.rename(columns=label_map)
+    return dataframe_to_interactive_table(
+        summary_df,
+        table_id="sample-review-table",
+        interactive=interactive_tables,
+    )
+
+
+def build_full_detail_table(df, interactive_tables=True):
+    return dataframe_to_interactive_table(
+        df,
+        table_id="full-detail-table",
+        interactive=interactive_tables,
+    )
+
+
 def get_failure_reasons(df, software_dict):
     sum_table = get_sum_table(df)
     failure_columns = [
@@ -187,6 +318,8 @@ def build_metric_summary_frames(df):
                 [
                     "Speciator.speciesName",
                     "Speciator.confidence",
+                    "qualibact_compat_tier",
+                    "qualibact_tier",
                     "Sylph.top_species",
                     "Sylph.top_taxonomic_abundance",
                 ],
@@ -278,10 +411,12 @@ def render_metric_summary_tables(summary_frames, qualifyr_style=False, interacti
     return intro + "".join(sections)
 
 
-def export_summary_workbook(report_df, output_path, summary_frames):
+def export_summary_workbook(summary_df, full_df, output_path, summary_frames):
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
-        report_df.to_excel(writer, sheet_name="report", index=False)
-        get_sum_table(report_df.set_index("sample_id")).reset_index().rename(
+        summary_df.to_excel(writer, sheet_name="summary", index=False)
+        summary_df.to_excel(writer, sheet_name="report", index=False)
+        full_df.to_excel(writer, sheet_name="full", index=False)
+        get_sum_table(full_df.set_index("sample_id")).reset_index().rename(
             columns={"index": "sample_id"}
         ).to_excel(writer, sheet_name="qc_status", index=False)
         for sheet_index, (category, frame) in enumerate(summary_frames.items(), start=1):
@@ -292,6 +427,9 @@ def export_summary_workbook(report_df, output_path, summary_frames):
 def build_qualifyr_style_table(df, interactive_tables=True):
     preferred_columns = [
         "sample_id",
+        "qualibact_compat_tier",
+        "qualibact_compat_passed",
+        "qualibact_tier",
         "Speciator.speciesName",
         "Speciator.confidence",
         "Quast.N50",
@@ -300,6 +438,8 @@ def build_qualifyr_style_table(df, interactive_tables=True):
         "Checkm.Completeness",
         "Checkm.Contamination",
         "all_checks_passed",
+        "qualibact_compat_reasons",
+        "qualibact_reasons",
     ]
     available_columns = [column for column in preferred_columns if column in df.columns]
     if not available_columns:

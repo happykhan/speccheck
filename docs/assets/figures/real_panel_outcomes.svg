@@ -1,29 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1520" height="620" viewBox="0 0 1520 620">
 <rect width="100%" height="100%" fill="#f6f8fa" />
 <text x="60" y="70" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#1f2933">Real E. coli demonstration panel</text>
-<text x="60" y="108" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#52616f">QualiBact tier labels and speccheck boolean QC outcomes</text>
+<text x="60" y="108" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#52616f">QualiBact tier labels and computed compatibility-tier outcomes</text>
 <rect x="70" y="165" width="250" height="160" rx="18" fill="#ffffff" stroke="#cbd5df" />
 <text x="98" y="215" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#2f6f5e">PASS</text>
-<text x="98" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#2f6f5e">3</text>
+<text x="98" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#2f6f5e">1</text>
 <text x="165" y="285" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#52616f">genomes</text>
 <rect x="360" y="165" width="250" height="160" rx="18" fill="#ffffff" stroke="#cbd5df" />
 <text x="388" y="215" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#b7791f">WARN</text>
-<text x="388" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#b7791f">3</text>
+<text x="388" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#b7791f">1</text>
 <text x="455" y="285" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#52616f">genomes</text>
 <rect x="650" y="165" width="250" height="160" rx="18" fill="#ffffff" stroke="#cbd5df" />
 <text x="678" y="215" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#b42318">FAIL</text>
-<text x="678" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#b42318">3</text>
+<text x="678" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#b42318">1</text>
 <text x="745" y="285" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#52616f">genomes</text>
 <rect x="955" y="165" width="250" height="160" rx="18" fill="#ffffff" stroke="#cbd5df" />
-<text x="983" y="215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#2f6f5e">speccheck PASSED</text>
-<text x="983" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#2f6f5e">8</text>
+<text x="983" y="215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#2f6f5e">compat PASS</text>
+<text x="983" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#2f6f5e">3</text>
 <text x="1050" y="285" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#52616f">genomes</text>
 <rect x="1245" y="165" width="250" height="160" rx="18" fill="#ffffff" stroke="#cbd5df" />
-<text x="1273" y="215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#b42318">speccheck FAILED</text>
-<text x="1273" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#b42318">1</text>
+<text x="1273" y="215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#b7791f">compat WARN</text>
+<text x="1273" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#b7791f">0</text>
 <text x="1340" y="285" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#52616f">genomes</text>
+<rect x="1535" y="165" width="250" height="160" rx="18" fill="#ffffff" stroke="#cbd5df" />
+<text x="1563" y="215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#b42318">compat FAIL</text>
+<text x="1563" y="285" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#b42318">0</text>
+<text x="1630" y="285" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#52616f">genomes</text>
 <rect x="70" y="380" width="1365" height="165" rx="18" fill="#ffffff" stroke="#cbd5df" />
 <text x="105" y="425" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#1f2933">Interpretation</text>
-<text x="105" y="465" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#52616f">WARN labels are preserved as QualiBact metadata. speccheck currently applies pass/fail criteria, so WARN samples may pass final QC.</text>
-<text x="105" y="505" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#52616f">One FAIL genome fails speccheck due to assembly metrics crossing final thresholds; other FAIL labels are visible via QualiBact reasons.</text>
+<text x="105" y="465" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#52616f">This panel currently contains 3 real GHRU-derived assemblies with metadata-pinned QualiBact PASS/WARN/FAIL labels.</text>
+<text x="105" y="505" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#52616f">Compatibility tiers are computed from current observed metrics, so they can diverge from older QualiBact metadata labels when upstream assemblies differ.</text>
 </svg>

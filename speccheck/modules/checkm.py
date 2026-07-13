@@ -64,4 +64,8 @@ class Checkm:
             if row_count != 1:
                 raise ValueError("The file must contain exactly one row of values.")
 
+        gc_content = parsed_row.get("GC_Content")
+        if isinstance(gc_content, (int, float)) and 0 <= gc_content <= 1:
+            parsed_row["GC_Content"] = gc_content * 100
+
         return parsed_row

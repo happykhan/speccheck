@@ -11,7 +11,7 @@
 </head>
 <body>
     <div class="page-shell">
-        <header class="report-header">
+        <header class="report-header sticky-header">
             <div class="eyebrow">speccheck quality control report</div>
             {% if version %}
                 <h1>QC Report <span>speccheck {{ version }}</span></h1>
@@ -21,35 +21,74 @@
             <p class="report-intro">
                 Summary of assembled sample QC results, criteria checks, and software-specific diagnostics.
             </p>
-            <div class="hero-card">
-                <div class="hero-copy">
-                    <h2>Dataset overview</h2>
-                    <p>{{ sample_count }}</p>
+            <div class="hero-card hero-kpis">
+                {% for kpi in dataset_kpis %}
+                <div class="kpi-card kpi-{{ kpi.tone }}">
+                    <span class="kpi-label">{{ kpi.label }}</span>
+                    <strong class="kpi-value">{{ kpi.value }}</strong>
                 </div>
-                <div class="hero-note">
-                    <strong>QC_PASS</strong>
-                    <span>Passed indicates that every enabled software check passed for that sample.</span>
-                </div>
+                {% endfor %}
             </div>
+            <p class="hero-summary">{{ sample_count }}</p>
         </header>
 
         <main class="report-main">
             <section class="overview-grid">
                 <article class="panel prose">
-                    <h2>Software in report</h2>
-                    {{ software_summary }}
+                    <h2>Warnings and failures</h2>
+                    {% if run_alerts %}
+                    <ul class="alert-list">
+                        {% for alert in run_alerts %}
+                        <li><strong>{{ alert.count }}</strong> {{ alert.reason }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No recurring warning or failure reasons were detected.</p>
+                    {% endif %}
                 </article>
                 <article class="panel prose">
-                    <h2>Top failure reasons</h2>
-                    {{ failure_reasons }}
+                    <h2>Software in report</h2>
+                    {{ software_summary }}
                 </article>
             </section>
 
             <section class="panel prose">
                 <div class="section-heading">
                     <div>
-                        <div class="eyebrow">Overview</div>
-                        <h2>Sample QC status</h2>
+                        <div class="eyebrow">Review</div>
+                        <h2>Sample review table</h2>
+                    </div>
+                </div>
+                <p>The first table keeps the sample review surface concise for large runs.</p>
+                {{ sample_review_table }}
+            </section>
+
+            <section class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Exceptions</div>
+                        <h2>Top failure reasons</h2>
+                    </div>
+                </div>
+                {{ failure_reasons }}
+            </section>
+
+            <section class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Full detail</div>
+                        <h2>Full merged table</h2>
+                    </div>
+                </div>
+                <p>Full parser, metadata, and provenance columns are preserved below the fold.</p>
+                {{ full_detail_table }}
+            </section>
+
+            <section class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Status</div>
+                        <h2>QC status matrix</h2>
                     </div>
                 </div>
                 {{ summary_table }}
@@ -65,7 +104,7 @@
                 {{ metric_summary_tables }}
             </section>
 
-            {% if qualifyr_style_table %}
+{% if qualifyr_style_table %}
             <section class="panel prose">
                 <div class="section-heading">
                     <div>
@@ -75,7 +114,7 @@
                 </div>
                 {{ qualifyr_style_table }}
             </section>
-            {% endif %}
+{% endif %}
 
             <section class="panel prose report-charts">
                 <div class="section-heading">
@@ -103,8 +142,9 @@
                     return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
                 }
                 if (type === "status") {
-                    if (raw === "PASSED") return 1;
-                    if (raw === "FAILED") return 0;
+                    if (raw === "PASSED" || raw === "PASS") return 2;
+                    if (raw === "NOT_EVALUATED" || raw === "WARN") return 1;
+                    if (raw === "FAILED" || raw === "FAIL") return 0;
                 }
                 return raw.toLowerCase();
             };

@@ -10,8 +10,16 @@ https://static.qualibact.org/api/v2/external/thresholds.csv
 
 - thresholds are downloaded as CSV
 - supported metrics are mapped into the internal `speccheck` criteria format
-- unsupported metrics are skipped with warnings
+- `Total_Coding_Sequences` is mapped when final bounds are present
 - existing unmanaged criteria rows are preserved
+- optional report-level compatibility mode adds pinned QualiBact E. coli PASS/WARN/FAIL tier columns
+
+QualiBact thresholds are calibrated around CheckM2-derived metrics. In `speccheck`
+outputs these still use the historical `Checkm.*` column prefix for compatibility,
+but the supported fields are CheckM2-style fields such as `Completeness`,
+`Contamination`, `Genome_Size`, `GC_Content`, `Contig_N50`, `Total_Contigs`, and
+`Total_Coding_Sequences`. CheckM1 marker-lineage output is not supported for
+QualiBact-derived criteria.
 
 ## Supported imported metrics
 
@@ -21,11 +29,35 @@ https://static.qualibact.org/api/v2/external/thresholds.csv
 - `GC_Content`
 - `Completeness`
 - `Contamination`
+- `Total_Coding_Sequences`
 
-## Current limitations
+## QualiBact tier compatibility
 
-- `WARN_*` bands are documented but not turned into a separate runtime verdict tier
-- unsupported metrics such as `Total_Coding_Sequences` are not yet mapped into a native `speccheck` check
+Generic criteria checks remain binary. For manuscript comparison, `summary` can add a pinned QualiBact E. coli v1 compatibility tier:
+
+```bash
+speccheck summary qc_results \
+  --output qc_report \
+  --plot \
+  --qualifyr-style \
+  --qualibact-compat
+```
+
+This adds:
+
+- `qualibact_compat_tier`: `PASS`, `WARN`, or `FAIL`
+- `qualibact_compat_passed`: binary pass/fail after applying the warning policy
+- `qualibact_compat_reasons`: threshold reasons such as `no_of_contigs >670.0`
+- `qualibact_compat_warn_policy`: `warn-as-warn` by default
+- `qualibact_compat_source`: pinned source label
+
+The compatibility source is pinned to:
+
+```text
+https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0
+```
+
+Default warning policy is `warn-as-warn`: WARN remains visible as a tier but does not fail `all_checks_passed`. Use `--qualibact-warn-as-fail` when WARN should fail the binary summary status.
 
 ## Regression fixtures
 

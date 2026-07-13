@@ -17,7 +17,7 @@ The workflow is organized around three commands:
 The runtime input is a set of upstream QC output files. Supported parsers currently include:
 
 - QUAST assembly metrics
-- CheckM/CheckM2-style completeness and contamination tables
+- CheckM2-style completeness and contamination tables
 - Speciator species-assignment output
 - Sylph species-abundance output
 - ARIBA summary tables
@@ -39,9 +39,14 @@ Criteria are represented as CSV rows with the following core fields:
 
 This design keeps runtime checks transparent and reviewable. Criteria can be shipped with the package, supplied by the user, or refreshed from a QualiBact threshold export.
 
+QualiBact-derived criteria are interpreted as CheckM2-calibrated thresholds. The
+column prefix `Checkm.*` is retained for compatibility with earlier `speccheck`
+outputs, but CheckM1 marker-lineage fields are not part of the supported
+QualiBact criteria model.
+
 ## Demonstration panel
 
-For manuscript demonstration, a small *Escherichia coli* panel was selected from QualiBact ATB PASS, WARN, and FAIL lists. Assemblies were downloaded with `atbfetcher`; QUAST metrics were generated locally; and QualiBact/ATB CheckM2 and species metrics were converted into `speccheck` parser-compatible tables.
+For manuscript demonstration, a small *Escherichia coli* panel was selected from pinned QualiBact ATB PASS, WARN, and FAIL metadata and then resolved to real short-read data. Those reads were processed through a local `GHRU-assembly` run, and the resulting upstream outputs were consumed with `speccheck`.
 
 The committed demonstration report is available at:
 
@@ -49,34 +54,37 @@ The committed demonstration report is available at:
 - `examples/qualibact_ecoli/real_panel/report/report.html`
 - `examples/qualibact_ecoli/real_panel/report/report.xlsx`
 
-The report preserves the original QualiBact tier and reason metadata while also showing the current binary `speccheck` QC verdict.
+The report preserves the original QualiBact tier and reason metadata and adds
+`qualibact_compat_tier`, a pinned QualiBact E. coli v1 compatibility tier computed from
+the report metrics. WARN remains a warning tier by default and does not fail the binary
+`all_checks_passed` column unless `--qualibact-warn-as-fail` is used.
 
 ## Reproducibility
 
 Minimal pass/fail reports can be regenerated with:
 
 ```bash
-python scripts/generate_qualibact_example_reports.py
+pixi run python scripts/generate_qualibact_example_reports.py
 ```
 
 The real-panel report can be regenerated with:
 
 ```bash
-python scripts/build_qualibact_ecoli_demo.py
-```
-
-On a Slurm cluster:
-
-```bash
-sbatch scripts/slurm_qualibact_ecoli_demo.sh
+pixi run python scripts/build_ghru_ecoli_panel_report.py \
+  .demo_work/ghru_ecoli_panel/triplet/output \
+  --metadata .demo_work/ghru_ecoli_panel/triplet/metadata.csv \
+  --work-dir .demo_work/ghru_ecoli_panel/triplet/work
 ```
 
 Manuscript figures and summary tables can be regenerated with:
 
 ```bash
-python scripts/create_manuscript_assets.py
+pixi run python scripts/create_manuscript_assets.py
 ```
 
 ## Current validation boundary
 
-The current real-panel workflow runs QUAST locally. CheckM2 and species-assignment values are taken from the QualiBact/ATB exported metrics and converted into parser-compatible tables. A stricter validation run should install a local CheckM2 database and run CheckM2 directly on the downloaded assemblies before regenerating the manuscript panel.
+The current real-panel workflow is validated on a small GHRU-backed read set rather than
+the larger intended cohort. The remaining scale-up work should continue on the same
+read-backed `GHRU-assembly` path. The compatibility tier source is pinned to
+`https://static.qualibact.org/static/species/Escherichia_coli/qualibact-v1.0`.

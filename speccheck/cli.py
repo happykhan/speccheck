@@ -14,6 +14,7 @@ Usage:
 """
 
 import logging
+
 import typer
 from rich.console import Console
 from rich.logging import RichHandler
@@ -22,6 +23,7 @@ from speccheck import __version__
 from speccheck.config import get_default_criteria_path
 from speccheck.main import check as check_func
 from speccheck.main import collect as collect_func
+from speccheck.main import collect_ghru as collect_ghru_func
 from speccheck.main import summary as summary_func
 from speccheck.report import get_default_template_path
 from speccheck.update_criteria import QUALIBACT_DEFAULT_URL
@@ -86,6 +88,21 @@ def collect(
         "--metadata",
         help="CSV file with additional sample metadata (must have sample_id column)",
     ),
+    assembly_type: str = typer.Option(
+        "short",
+        "--assembly-type",
+        help="Criteria assembly mode: all, short, long, or hybrid",
+    ),
+    allow_unknown_organism: bool = typer.Option(
+        False,
+        "--allow-unknown-organism",
+        help="Allow fallback criteria when organism cannot be inferred from parser outputs",
+    ),
+    fail_on_not_evaluated: bool = typer.Option(
+        False,
+        "--fail-on-not-evaluated/--no-fail-on-not-evaluated",
+        help="Treat missing expected metrics as failed parser/sample checks",
+    ),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
     version: bool = typer.Option(
         False,
@@ -99,7 +116,17 @@ def collect(
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    collect_func(organism, filepaths, criteria_file, output_file, sample, metadata)
+    collect_func(
+        organism,
+        filepaths,
+        criteria_file,
+        output_file,
+        sample,
+        metadata,
+        allow_unknown_organism=allow_unknown_organism,
+        assembly_type=assembly_type,
+        fail_on_not_evaluated=fail_on_not_evaluated,
+    )
 
 
 @app.command()
@@ -127,6 +154,16 @@ def summary(
         "--qualifyr-style/--no-qualifyr-style",
         help="Render compact built-in summary tables in a qualifyr-like layout",
     ),
+    qualibact_compat: bool = typer.Option(
+        False,
+        "--qualibact-compat/--no-qualibact-compat",
+        help="Add pinned QualiBact E. coli v1 PASS/WARN/FAIL compatibility columns",
+    ),
+    qualibact_warn_as_fail: bool = typer.Option(
+        False,
+        "--qualibact-warn-as-fail",
+        help="Treat QualiBact WARN tier as failing in all_checks_passed when compatibility mode is enabled",
+    ),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
     version: bool = typer.Option(
         False,
@@ -150,6 +187,73 @@ def summary(
         xlsx_output=xlsx_output,
         interactive_tables=interactive_tables,
         qualifyr_style=qualifyr_style,
+        qualibact_compat=qualibact_compat,
+        qualibact_warn_as_fail=qualibact_warn_as_fail,
+    )
+
+
+@app.command("collect-ghru")
+def collect_ghru(
+    ghru_output_dir: str = typer.Argument(..., help="GHRU output directory"),
+    output_dir: str = typer.Argument(..., help="Directory for per-sample collected CSVs"),
+    sample: list[str] | None = typer.Option(
+        None,
+        "--sample",
+        help="Optional sample name(s) to restrict collection",
+    ),
+    organism: str | None = typer.Option(
+        None,
+        "--organism",
+        help="Optional organism override for all selected samples",
+    ),
+    criteria_file: str = typer.Option(
+        get_default_criteria_path(),
+        "--criteria-file",
+        help="File with criteria for processing",
+    ),
+    metadata: str | None = typer.Option(
+        None,
+        "--metadata",
+        help="CSV file with additional sample metadata (must have sample_id column)",
+    ),
+    work_dir: str | None = typer.Option(
+        None,
+        "--work-dir",
+        help="Optional Nextflow work directory to search for unpublished depth files",
+    ),
+    allow_unknown_organism: bool = typer.Option(
+        False,
+        "--allow-unknown-organism",
+        help="Allow fallback criteria when organism cannot be inferred from parser outputs",
+    ),
+    fail_on_not_evaluated: bool = typer.Option(
+        False,
+        "--fail-on-not-evaluated/--no-fail-on-not-evaluated",
+        help="Treat missing expected metrics as failed parser/sample checks",
+    ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
+    version: bool = typer.Option(
+        False,
+        "--version",
+        callback=version_callback,
+        is_eager=True,
+        help="Show version and exit",
+    ),
+):
+    """Collect per-sample QC CSVs directly from a GHRU output tree."""
+    if verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    collect_ghru_func(
+        ghru_output_dir,
+        output_dir,
+        criteria_file,
+        organism=organism,
+        metadata_file=metadata,
+        allow_unknown_organism=allow_unknown_organism,
+        fail_on_not_evaluated=fail_on_not_evaluated,
+        work_dir=work_dir,
+        sample_ids=sample,
     )
 
 

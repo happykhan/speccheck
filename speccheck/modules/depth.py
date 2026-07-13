@@ -29,7 +29,7 @@ class Depth:
                 if not headers:
                     return False
                 return all(h in headers for h in required_headers)
-        except Exception:
+        except (OSError, csv.Error):
             return False
 
     def fetch_values(self):
