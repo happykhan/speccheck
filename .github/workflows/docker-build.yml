@@ -1,11 +1,14 @@
-name: Docker Build (PR check)
+name: Docker Build
 
-# Builds the Docker image on PRs to verify the Dockerfile is valid.
+# Builds the Docker image on PRs and main pushes to verify the Dockerfile is valid.
 # Does NOT push — pushing only happens in release.yml after merge to main.
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -28,3 +31,5 @@ jobs:
           file: docker/Dockerfile
           platforms: linux/amd64
           push: false
+          build-args: |
+            VERSION=ci
