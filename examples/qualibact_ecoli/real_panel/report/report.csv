@@ -1,4 +1,4 @@
 sample_id,overall_qc,all_checks_passed,baseline_qc,qualibact_tier,qualibact_compat_tier,species,species_confidence,n50,contigs,genome_size,gc_percent,completeness,contamination,depth,top_species,top_abundance,reason_summary,threshold_source
-SAMN42764706,PASS,PASSED,True,WARN,PASS,Escherichia coli,good,112461,304,5575799,50.38,100.0,0.33,48.91,Escherichia coli,100.0,no_of_contigs >600.0; Total_Coding_Sequences >5800.0,QualiBact Escherichia coli qualibact-v1.1
-SAMN42765982,PASS,PASSED,True,FAIL,PASS,Escherichia coli,good,126621,302,5625334,50.51,100.0,0.38,67.1,Escherichia coli,100.0,no_of_contigs >670.0; Total_Coding_Sequences >5800.0; Genome_Size >5700000.0,QualiBact Escherichia coli qualibact-v1.1
-SAMN42766885,PASS,PASSED,True,PASS,PASS,Escherichia coli,good,119508,121,5023793,50.41,100.0,0.21,47.74,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.1
+SAMN42764706,PASS,FAILED,True,WARN,PASS,Escherichia coli,good,112461,304,5575799,50.38,100.0,0.33,48.91,Escherichia coli,100.0,Checkm.GC,QualiBact Escherichia coli qualibact-v1.0
+SAMN42765982,PASS,PASSED,True,FAIL,PASS,Escherichia coli,good,126621,302,5625334,50.51,100.0,0.38,67.1,Escherichia coli,100.0,none,QualiBact Escherichia coli qualibact-v1.0
+SAMN42766885,PASS,FAILED,True,PASS,PASS,Escherichia coli,good,119508,121,5023793,50.41,100.0,0.21,47.74,Escherichia coli,100.0,Checkm.GC,QualiBact Escherichia coli qualibact-v1.0

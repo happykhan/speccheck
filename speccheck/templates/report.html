@@ -13,21 +13,21 @@
     <div class="page-shell">
         <header class="report-header sticky-header">
             <div class="eyebrow">speccheck quality control report</div>
-            {% if version %}
+            {%- if version %}
                 <h1>QC Report <span>speccheck {{ version }}</span></h1>
-            {% else %}
+            {%- else %}
                 <h1>QC Report</h1>
-            {% endif %}
+            {%- endif %}
             <p class="report-intro">
                 Summary of assembled sample QC results, criteria checks, and software-specific diagnostics.
             </p>
             <div class="hero-card hero-kpis">
-                {% for kpi in dataset_kpis %}
+                {%- for kpi in dataset_kpis %}
                 <div class="kpi-card kpi-{{ kpi.tone }}">
                     <span class="kpi-label">{{ kpi.label }}</span>
                     <strong class="kpi-value">{{ kpi.value }}</strong>
                 </div>
-                {% endfor %}
+                {%- endfor %}
             </div>
             <p class="hero-summary">{{ sample_count }}</p>
         </header>
