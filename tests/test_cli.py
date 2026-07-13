@@ -1,3 +1,4 @@
+from click import unstyle
 from typer.testing import CliRunner
 
 from speccheck.cli import app
@@ -88,4 +89,4 @@ def test_collect_pipeline_rejects_unknown_layout(tmp_path):
     )
 
     assert result.exit_code != 0
-    assert "Only --layout ghru is currently supported" in result.output
+    assert "Only --layout ghru is currently supported" in unstyle(result.output)
