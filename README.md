@@ -24,11 +24,12 @@ Primary docs pages:
 
 - [Installation](docs/installation.md)
 - [CLI Usage](docs/cli.md)
+- [Modules and Extensions](docs/modules.md)
 - [Criteria Format](docs/criteria.md)
 - [Reports](docs/reports.md)
 - [QualiBact Integration](docs/qualibact.md)
+- [GHRU Integration](docs/ghru.md)
 - [Manuscript Assets](docs/manuscript.md)
-- [Code Quality Audit](docs/code-quality.md)
 - [Development](docs/development.md)
 
 ## Quick Start
@@ -67,8 +68,8 @@ speccheck check --criteria-file speccheck/config/criteria.csv --update
 
 ## Features
 
-- Explicitly registered parsers for CheckM2-style QC tables, QUAST, Speciator, ARIBA, Sylph, and depth outputs
-- Criteria-driven pass/fail validation
+- Explicitly registered parsers for CheckM2-style QC tables, QUAST, Speciator, ARIBA, Sylph, depth, Fastp, and BUSCO outputs
+- Criteria-driven PASS/WARN/FAIL validation
 - HTML reporting with Plotly charts and interactive sortable/filterable tables
 - Compact qualifyr-style summary tables
 - Optional Excel workbook export from merged reports

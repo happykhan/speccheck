@@ -3,6 +3,7 @@ import os
 
 import pytest
 
+from speccheck.config import get_default_criteria_path
 from speccheck.main import collect, summary
 from speccheck.report import get_default_template_path
 
@@ -17,7 +18,7 @@ def test_collect():
         "tests/collect_test_data/test_sample1.short.tsv",
         "tests/collect_test_data/ariba_mlst_report.details.tsv",
     ]
-    criteria_file = "criteria.csv"
+    criteria_file = get_default_criteria_path()
     output_file = "collect_output.csv"
 
     sample_id = "Sample1"
@@ -43,7 +44,7 @@ def test_collect_rejects_unknown_organism_by_default(tmp_path):
         collect(
             None,
             ["tests/collect_test_data/report.tsv"],
-            "criteria.csv",
+            get_default_criteria_path(),
             str(output_file),
             "Sample1",
         )
@@ -68,7 +69,7 @@ def test_collect_output_can_generate_plotted_summary(tmp_path):
             "tests/collect_test_data/ariba_mlst_report.details.tsv",
             str(depth_file),
         ],
-        "criteria.csv",
+        get_default_criteria_path(),
         str(collect_dir / "E2E_SAMPLE.csv"),
         "E2E_SAMPLE",
     )

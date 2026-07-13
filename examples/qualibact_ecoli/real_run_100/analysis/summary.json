@@ -1,5 +1,5 @@
 {
-  "criteria_sha256": "94ca578103ce4fcd06e80c89e7d76ef7f29a6df0799aacfa92c0acd625506607",
+  "criteria_sha256": "6b21d56411908a87ca67636a2ee6c7712040ce5da009204f4dd3fc0762b64b0e",
   "current_compatibility_tiers": {
     "FAIL": 4,
     "PASS": 90,
@@ -26,8 +26,8 @@
     "PASS": 70,
     "WARN": 20
   },
-  "pixi_lock_sha256": "7c43ea7513dc8dcb12ce1f0663deca906d7f8842d5443c29a1c27381b7dec200",
-  "qualibact_snapshot_sha256": "39d2f97dbb8320fce0dd3ff811d7285b7d7801d78885d263fafeffddbfe9ce61",
+  "pixi_lock_sha256": "2ea1d24a6fbeaca7cfe47d0d8c970d9d3150e78c4a8006eb92af75c2296fc4db",
+  "qualibact_snapshot_sha256": "9db2176278874f4b7ebf9936606710af5770b4f1b362913a6961ff17ac08bd1c",
   "sample_count": 100,
   "selection_rule": "First 70 PASS, 20 WARN, and 10 FAIL rows in the pinned E. coli v1 lists that resolved to paired E. coli ENA reads.",
   "unidentified_species_count": 3,

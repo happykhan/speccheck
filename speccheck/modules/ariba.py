@@ -1,10 +1,12 @@
 import csv
 
+from speccheck.modules.base import Parser
 
-class Ariba:
 
-    def __init__(self, file_path):
-        self.file_path = file_path
+class Ariba(Parser):
+    software_name = "Ariba"
+    description = "ARIBA MLST/contamination summary"
+    supported_filenames = "TSV with gene, allele, coverage, and heterozygosity columns"
 
     @property
     def has_valid_filename(self):

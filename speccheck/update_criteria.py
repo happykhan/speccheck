@@ -8,6 +8,9 @@ from pathlib import Path
 import requests
 
 QUALIBACT_DEFAULT_URL = "https://static.qualibact.org/api/v2/external/thresholds.csv"
+QUALIBACT_REPOSITORY_URL = (
+    "https://raw.githubusercontent.com/cgps-group/qualibact/main/public/api/v2/thresholds.csv"
+)
 CRITERIA_HEADERS = [
     "species",
     "assembly_type",
@@ -15,6 +18,8 @@ CRITERIA_HEADERS = [
     "field",
     "operator",
     "value",
+    "severity",
+    "source",
     "special_field",
 ]
 SNAPSHOT_HEADERS = [
@@ -54,16 +59,22 @@ CONTROLLED_FIELD_KEYS = {
     ("Sylph", "sequence_abundances"),
 }
 BASELINE_ROWS = (
-    ("all", "all", "Sylph", "sequence_abundances", ">=", 99),
-    ("all", "all", "Quast", "Total length (>= 0 bp)", ">=", 100000),
-    ("all", "all", "Quast", "Total length (>= 0 bp)", "<=", 15000000),
-    ("all", "all", "Checkm", "Genome size (bp)", ">=", 100000),
-    ("all", "all", "Checkm", "Genome size (bp)", "<=", 15000000),
-    ("all", "all", "Quast", "N50", ">=", 2000),
-    ("all", "all", "Checkm", "N50 (scaffolds)", ">=", 2000),
-    ("all", "short", "Quast", "# contigs (>= 0 bp)", "<=", 2000),
-    ("all", "short", "Checkm", "# contigs", "<=", 2000),
-    ("all", "all", "Checkm", "Contamination", "<=", 100),
+    ("all", "all", "Sylph", "sequence_abundances", ">=", 99, "fail", "speccheck-default"),
+    ("all", "all", "Quast", "Total length (>= 0 bp)", ">=", 100000, "fail", "speccheck-default"),
+    ("all", "all", "Quast", "Total length (>= 0 bp)", "<=", 15000000, "fail", "speccheck-default"),
+    ("all", "all", "Checkm", "Genome size (bp)", ">=", 100000, "fail", "speccheck-default"),
+    ("all", "all", "Checkm", "Genome size (bp)", "<=", 15000000, "fail", "speccheck-default"),
+    ("all", "all", "Quast", "N50", ">=", 2000, "fail", "speccheck-default"),
+    ("all", "all", "Checkm", "N50 (scaffolds)", ">=", 2000, "fail", "speccheck-default"),
+    ("all", "short", "Quast", "# contigs (>= 0 bp)", "<=", 2000, "fail", "speccheck-default"),
+    ("all", "short", "Checkm", "# contigs", "<=", 2000, "fail", "speccheck-default"),
+    ("all", "all", "Checkm", "Contamination", "<=", 100, "fail", "speccheck-default"),
+    ("all", "all", "Fastp", "after_filtering_q30_rate", ">=", 0.70, "fail", "bactscout-a442af6"),
+    ("all", "all", "Fastp", "after_filtering_q30_rate", ">=", 0.80, "warn", "bactscout-a442af6"),
+    ("all", "all", "Busco", "Complete", ">=", 95, "fail", "speccheck-default"),
+    ("all", "all", "Busco", "Complete", ">=", 98, "warn", "speccheck-default"),
+    ("all", "all", "Busco", "Missing", "<=", 5, "fail", "speccheck-default"),
+    ("all", "all", "Busco", "Missing", "<=", 2, "warn", "speccheck-default"),
 )
 
 
@@ -80,6 +91,10 @@ def _normalize_number(value):
 
 
 def _fetch_qualibact_rows(update_url):
+    local_path = Path(str(update_url).removeprefix("file://"))
+    if local_path.is_file():
+        with open(local_path, encoding="utf-8") as handle:
+            return list(csv.DictReader(handle))
     response = requests.get(update_url, timeout=30)
     response.raise_for_status()
     text = response.text.strip()
@@ -115,7 +130,18 @@ def _choose_threshold_rows(rows):
     return chosen
 
 
-def _make_row(species, assembly_type, software, field, operator, value, special_field=""):
+def _make_row(
+    species,
+    assembly_type,
+    software,
+    field,
+    operator,
+    value,
+    special_field="",
+    *,
+    severity="fail",
+    source="custom",
+):
     return {
         "species": species,
         "assembly_type": assembly_type,
@@ -123,31 +149,87 @@ def _make_row(species, assembly_type, software, field, operator, value, special_
         "field": field,
         "operator": operator,
         "value": value,
+        "severity": severity,
+        "source": source,
         "special_field": special_field,
     }
 
 
-def _helper_rows_for_species(species):
+def _helper_rows_for_species(species, scheme):
     genus = species.split()[0]
     return [
-        _make_row(species, "all", "Speciator", "confidence", "regex", "^good$"),
-        _make_row(species, "all", "Speciator", "genusName", "regex", f"^{genus}"),
+        _make_row(species, "all", "Speciator", "confidence", "regex", "^good$", source=scheme),
+        _make_row(species, "all", "Speciator", "genusName", "regex", f"^{genus}", source=scheme),
         _make_row(
-            species, "all", "Speciator", "speciesName", "regex", f"^{species}", "species_field"
+            species,
+            "all",
+            "Speciator",
+            "speciesName",
+            "regex",
+            f"^{species}",
+            "species_field",
+            source=scheme,
         ),
-        _make_row(species, "all", "Sylph", "number_of_genomes", "=", 1),
-        _make_row(species, "all", "Sylph", "species_name", "regex", f"^{species}", "species_field"),
+        _make_row(species, "all", "Sylph", "number_of_genomes", "=", 1, source=scheme),
+        _make_row(
+            species,
+            "all",
+            "Sylph",
+            "species_name",
+            "regex",
+            f"^{species}",
+            "species_field",
+            source=scheme,
+        ),
     ]
 
 
-def _rows_from_threshold(species, metric, lower, upper):
+def _rows_from_threshold(
+    species,
+    metric,
+    final_lower,
+    final_upper,
+    warn_lower,
+    warn_upper,
+    scheme,
+):
     rows = []
 
     def add_bounds(assembly_type, software, field):
-        if lower is not None:
-            rows.append(_make_row(species, assembly_type, software, field, ">=", lower))
-        if upper is not None:
-            rows.append(_make_row(species, assembly_type, software, field, "<=", upper))
+        if final_lower is not None:
+            rows.append(
+                _make_row(species, assembly_type, software, field, ">=", final_lower, source=scheme)
+            )
+            if warn_lower is not None:
+                rows.append(
+                    _make_row(
+                        species,
+                        assembly_type,
+                        software,
+                        field,
+                        ">=",
+                        warn_lower,
+                        severity="warn",
+                        source=scheme,
+                    )
+                )
+        if final_upper is not None:
+            rows.append(
+                _make_row(species, assembly_type, software, field, "<=", final_upper, source=scheme)
+            )
+            if warn_upper is not None:
+                rows.append(
+                    _make_row(
+                        species,
+                        assembly_type,
+                        software,
+                        field,
+                        "<=",
+                        warn_upper,
+                        severity="warn",
+                        source=scheme,
+                    )
+                )
 
     if metric == "Genome_Size":
         add_bounds("all", "Checkm", "Genome size (bp)")
@@ -161,21 +243,30 @@ def _rows_from_threshold(species, metric, lower, upper):
     elif metric == "N50":
         add_bounds("short", "Checkm", "N50 (scaffolds)")
         add_bounds("short", "Quast", "N50")
-    elif metric == "Completeness":
+    elif metric in {"Completeness", "Completeness_Specific"}:
         add_bounds("all", "Checkm", "Completeness")
     elif metric == "Contamination":
         add_bounds("all", "Checkm", "Contamination")
     elif metric == "Total_Coding_Sequences":
         add_bounds("all", "Checkm", "Total_Coding_Sequences")
-    else:
+    elif metric != "longest":
         logging.warning("Skipping unsupported QualiBact metric %s for %s", metric, species)
     return rows
 
 
 def _baseline_criteria_rows():
     return [
-        _make_row(species, assembly_type, software, field, operator, value)
-        for species, assembly_type, software, field, operator, value in BASELINE_ROWS
+        _make_row(
+            species,
+            assembly_type,
+            software,
+            field,
+            operator,
+            value,
+            severity=severity,
+            source=source,
+        )
+        for species, assembly_type, software, field, operator, value, severity, source in BASELINE_ROWS
     ]
 
 
@@ -187,10 +278,15 @@ def qualibact_rows_to_criteria_rows(rows):
         metric = row["metric"]
         lower = _normalize_number(row.get("FINAL_lower"))
         upper = _normalize_number(row.get("FINAL_upper"))
+        warn_lower = _normalize_number(row.get("WARN_lower"))
+        warn_upper = _normalize_number(row.get("WARN_upper"))
+        scheme = row.get("scheme", "QualiBact")
         if species not in seen_species:
-            criteria_rows.extend(_helper_rows_for_species(species))
+            criteria_rows.extend(_helper_rows_for_species(species, scheme))
             seen_species.add(species)
-        criteria_rows.extend(_rows_from_threshold(species, metric, lower, upper))
+        criteria_rows.extend(
+            _rows_from_threshold(species, metric, lower, upper, warn_lower, warn_upper, scheme)
+        )
     return criteria_rows
 
 
@@ -212,6 +308,8 @@ def _preserve_existing_rows(criteria_file):
                     "field": row.get("field", ""),
                     "operator": row.get("operator", ""),
                     "value": row.get("value", ""),
+                    "severity": row.get("severity", "fail") or "fail",
+                    "source": row.get("source", "custom") or "custom",
                     "special_field": row.get("special_field", ""),
                 }
             )
@@ -255,7 +353,7 @@ def _write_snapshot_artifacts(rows, update_url, snapshot_dir=CONFIG_DIR):
         }
 
     with open(snapshot_path, "w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=SNAPSHOT_HEADERS)
+        writer = csv.DictWriter(handle, fieldnames=SNAPSHOT_HEADERS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(sorted(snapshot_rows, key=lambda row: (row["species"], row["metric"])))
 
@@ -270,6 +368,7 @@ def _write_snapshot_artifacts(rows, update_url, snapshot_dir=CONFIG_DIR):
                 "retrieved_at",
                 "fallback_used",
             ],
+            lineterminator="\n",
         )
         writer.writeheader()
         writer.writerows(sorted(metadata_rows.values(), key=lambda row: row["species"]))
@@ -298,7 +397,7 @@ def get_threshold_source_for_species(species):
     return {
         "threshold_source": "Global baseline only",
         "scheme": "",
-        "fallback_used": "False",
+        "fallback_used": "True",
     }
 
 
@@ -307,6 +406,7 @@ def update_criteria_file(
     update_url=QUALIBACT_DEFAULT_URL,
     *,
     snapshot_dir=CONFIG_DIR,
+    snapshot_source_url=None,
 ):
     logging.info("Updating criteria file from %s", update_url)
     try:
@@ -315,11 +415,23 @@ def update_criteria_file(
         logging.error("Failed to download QualiBact thresholds: %s", exc)
         return False
 
+    effective_url = update_url
+    if not _choose_threshold_rows(qualibact_rows) and update_url == QUALIBACT_DEFAULT_URL:
+        logging.warning(
+            "The QualiBact CDN export contains no supported preferred-scheme rows; "
+            "trying the canonical QualiBact repository export."
+        )
+        try:
+            qualibact_rows = _fetch_qualibact_rows(QUALIBACT_REPOSITORY_URL)
+            effective_url = QUALIBACT_REPOSITORY_URL
+        except (requests.RequestException, ValueError) as exc:
+            logging.error("Failed to download the repository QualiBact thresholds: %s", exc)
+            return False
+
     if not _choose_threshold_rows(qualibact_rows):
         logging.warning(
-            "No supported QualiBact rows found at %s after excluding non-QualiBact schemes. "
-            "Keeping existing species-specific thresholds.",
-            update_url,
+            "No supported QualiBact v1 rows found at %s. Keeping existing species thresholds.",
+            effective_url,
         )
         return False
 
@@ -347,11 +459,15 @@ def update_criteria_file(
     )
 
     with open(criteria_file, "w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=CRITERIA_HEADERS)
+        writer = csv.DictWriter(handle, fieldnames=CRITERIA_HEADERS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(merged)
 
-    _write_snapshot_artifacts(qualibact_rows, update_url, snapshot_dir=snapshot_dir)
+    _write_snapshot_artifacts(
+        qualibact_rows,
+        snapshot_source_url or effective_url,
+        snapshot_dir=snapshot_dir,
+    )
     logging.info("Criteria file updated successfully: %s", criteria_file)
     return True
 

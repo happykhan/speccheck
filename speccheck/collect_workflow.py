@@ -25,6 +25,7 @@ from speccheck.update_criteria import get_threshold_source_for_species
 from speccheck.util import get_all_files, load_modules_with_checks
 
 ASSEMBLY_TYPES = frozenset({"all", "short", "long", "hybrid"})
+STATUS_RANK = {"PASS": 0, "WARN": 1, "FAIL": 2, "NOT_EVALUATED": 3}
 
 
 @dataclass
@@ -96,6 +97,7 @@ def collect(
             not_evaluated_count=qc_report.pop("_not_evaluated_count"),
             fail_on_not_evaluated=fail_on_not_evaluated,
             threshold_source=_threshold_source_for(context, organism),
+            baseline_overridden_count=criteria_layers.get("baseline_overridden_count", 0),
         )
     )
     if metadata_file and sample_id in context.metadata:
@@ -104,9 +106,17 @@ def collect(
     elif metadata_file:
         logging.warning("No metadata found for sample: %s", sample_id)
 
-    logging.info("Writing results to file.")
+    logging.info(
+        "QC result for %s: %s (%d warning(s), %d failure(s), %d not evaluated)",
+        sample_id,
+        qc_report["speccheck_overall_status"],
+        qc_report["speccheck_warning_count"],
+        qc_report["speccheck_failure_count"],
+        qc_report["speccheck_not_evaluated_count"],
+    )
+    logging.info("Writing results to %s", os.path.abspath(output_file))
     write_to_file(output_file, qc_report)
-    logging.info("All checks completed.")
+    logging.info("All checks completed for %s", sample_id)
 
 
 def collect_ghru(
@@ -238,25 +248,33 @@ def _evaluate_sample(
     species_checks_available = bool(species_criteria)
     species_checks_passed = True if species_checks_available else "NOT_AVAILABLE"
     not_evaluated_count = 0
+    warning_reasons = []
+    failure_reasons = []
 
     for software, result in recovered_values.items():
         logging.info("Running checks for %s", software)
         _add_parsed_values(qc_report, software, result)
-        baseline_result, baseline_missing = _evaluate_criteria_group(
-            baseline_criteria,
-            software,
-            result,
-            qc_report,
-            fail_on_not_evaluated=fail_on_not_evaluated,
+        baseline_result, baseline_missing, baseline_warnings, baseline_failures = (
+            _evaluate_criteria_group(
+                baseline_criteria,
+                software,
+                result,
+                qc_report,
+                fail_on_not_evaluated=fail_on_not_evaluated,
+            )
         )
-        species_result, species_missing = _evaluate_criteria_group(
-            species_criteria,
-            software,
-            result,
-            qc_report,
-            fail_on_not_evaluated=fail_on_not_evaluated,
+        species_result, species_missing, species_warnings, species_failures = (
+            _evaluate_criteria_group(
+                species_criteria,
+                software,
+                result,
+                qc_report,
+                fail_on_not_evaluated=fail_on_not_evaluated,
+            )
         )
         not_evaluated_count += baseline_missing + species_missing
+        warning_reasons.extend(baseline_warnings + species_warnings)
+        failure_reasons.extend(baseline_failures + species_failures)
         qc_report[f"{software}.all_checks_passed"] = baseline_result and species_result
         baseline_checks_passed = baseline_checks_passed and baseline_result
         if species_checks_available:
@@ -269,6 +287,15 @@ def _evaluate_sample(
     qc_report["speccheck_baseline_checks_passed"] = baseline_checks_passed
     qc_report["speccheck_species_checks_passed"] = species_checks_passed
     qc_report["speccheck_species_checks_available"] = species_checks_available
+    qc_report["speccheck_warning_count"] = len(warning_reasons)
+    qc_report["speccheck_failure_count"] = len(failure_reasons)
+    qc_report["speccheck_warning_reasons"] = "; ".join(warning_reasons) or "none"
+    qc_report["speccheck_failure_reasons"] = "; ".join(failure_reasons) or "none"
+    qc_report["speccheck_overall_status"] = (
+        "FAIL"
+        if failure_reasons or (fail_on_not_evaluated and not_evaluated_count)
+        else "WARN" if warning_reasons else "PASS"
+    )
     qc_report["_not_evaluated_count"] = not_evaluated_count
     return qc_report
 
@@ -296,6 +323,7 @@ def _collection_provenance(
     not_evaluated_count,
     fail_on_not_evaluated,
     threshold_source,
+    baseline_overridden_count,
 ):
     return {
         "sample_id": sample_id,
@@ -309,6 +337,7 @@ def _collection_provenance(
         "speccheck_threshold_source": threshold_source["threshold_source"],
         "speccheck_threshold_scheme": threshold_source["scheme"],
         "speccheck_threshold_fallback_used": threshold_source["fallback_used"],
+        "speccheck_baseline_overridden_count": baseline_overridden_count,
     }
 
 
@@ -350,16 +379,36 @@ def _evaluate_criteria_group(
 ):
     group_passed = True
     not_evaluated_count = 0
+    warning_reasons = []
+    failure_reasons = []
     for field in criteria:
         if not criteria_applies_to_software(field["software"], software):
             continue
         column = f'{field["software"]}.{field["field"]}.check'
+        status_column = f'{field["software"]}.{field["field"]}.status'
+        already_seen = column in qc_report
+        qc_report.setdefault(column, True)
+        qc_report.setdefault(status_column, "PASS")
         if _result_has_field(result, field):
             test_result = check_criteria(field, result)
-            group_passed = group_passed and test_result
-            qc_report[column] = qc_report.get(column, True) and test_result
-        elif column not in qc_report:
+            if test_result:
+                continue
+            severity = field.get("severity", "fail").upper()
+            reason = (
+                f'{field["software"]}.{field["field"]} '
+                f'{field["operator"]}{field["value"]} ({field.get("source", "custom")})'
+            )
+            if severity == "WARN":
+                warning_reasons.append(reason)
+            else:
+                failure_reasons.append(reason)
+                group_passed = False
+                qc_report[column] = False
+            if STATUS_RANK[severity] > STATUS_RANK[qc_report[status_column]]:
+                qc_report[status_column] = severity
+        elif not already_seen:
             qc_report[column] = "NOT_EVALUATED"
+            qc_report[status_column] = "NOT_EVALUATED"
             group_passed = group_passed and not fail_on_not_evaluated
             not_evaluated_count += 1
             logging.warning(
@@ -368,7 +417,7 @@ def _evaluate_criteria_group(
                 field["field"],
                 software,
             )
-    return group_passed, not_evaluated_count
+    return group_passed, not_evaluated_count, warning_reasons, failure_reasons
 
 
 def _filter_criteria_for_assembly_type(criteria, assembly_type):

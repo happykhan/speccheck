@@ -16,8 +16,10 @@ file_path : str
     Path to the QUAST file to be processed.
 """
 
+from speccheck.modules.base import Parser, parse_scalar
 
-class Quast:
+
+class Quast(Parser):
     """
     A class to represent and validate the QUAST (Quality Assessment Tool for Genome Assemblies) report format.
     Methods
@@ -28,14 +30,9 @@ class Quast:
         Parses the QUAST report file and returns a dictionary of key-value pairs from the report.
     """
 
-    def __init__(self, file_path):
-        """
-        Parameters
-        ----------
-        file_path : str
-            The path to the QUAST report file.
-        """
-        self.file_path = file_path
+    software_name = "Quast"
+    description = "QUAST transposed assembly report"
+    supported_filenames = "*report.tsv with one metric/value pair per row"
 
     @property
     def has_valid_filename(self):
@@ -68,12 +65,7 @@ class Quast:
             if len(parts) != 2:
                 raise ValueError(f"QUAST report row must contain exactly two columns: {line!r}")
             key, value = parts
-            # A float will have a decimal point, so we try to convert the value to float
-            if "." in value and value.replace(".", "").isdigit():
-                value = float(value)
-            # If the value is not a float, we try to convert it to an integer
-            elif value.isdigit():
-                value = int(value)
+            value = parse_scalar(value)
             values[key] = value
             if key == "# N's per 100 kbp":
                 values["Ns per 100 kbp"] = value

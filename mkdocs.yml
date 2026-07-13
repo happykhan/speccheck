@@ -24,11 +24,11 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - CLI Usage: cli.md
+  - Modules and Extensions: modules.md
   - Criteria: criteria.md
   - Reports: reports.md
   - QualiBact: qualibact.md
+  - GHRU Integration: ghru.md
   - Manuscript Assets: manuscript.md
   - Manuscript Methods: methods.md
-  - Code Quality Audit: code-quality.md
-  - Deep Audit: deep-audit.md
   - Development: development.md

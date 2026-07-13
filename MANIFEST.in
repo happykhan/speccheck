@@ -3,11 +3,9 @@ include README.md
 include LICENSE
 include MIGRATION.md
 
-# Include criteria file
-include criteria.csv
-
-# Include templates
-recursive-include templates *.html *.css
+# Include packaged defaults
+recursive-include speccheck/config *.csv
+recursive-include speccheck/templates *.html *.css
 
 # Include test data (optional - uncomment if you want to ship tests)
 # recursive-include tests *.py *.csv *.tsv *.txt *.json

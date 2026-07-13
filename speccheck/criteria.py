@@ -1,11 +1,9 @@
-"""
-This function checks if the criteria file is a
-valid CSV file with the required headers and valid data.
+"""Criteria CSV validation and loading.
 
-
-    tuple: A tuple containing two lists:
-        - errors (list): A list of error messages if the criteria file is invalid.
-        - warnings (list): A list of warning messages for non-critical issues.
+The runtime criteria file is deliberately plain CSV so thresholds can be
+reviewed, cited, and replaced without changing Python code. Rows can be strict
+failure thresholds or warning thresholds, and species-specific rows override
+baseline rows for the same software/field pair.
 """
 
 import csv
@@ -13,27 +11,25 @@ import logging
 import os
 import re
 
+from speccheck.registry import get_parser_classes
+
+REQUIRED_HEADERS = [
+    "species",
+    "assembly_type",
+    "software",
+    "field",
+    "operator",
+    "value",
+    "special_field",
+]
+OPTIONAL_HEADERS = {"severity", "source"}
+VALID_SEVERITIES = {"warn", "fail"}
+
 
 def validate_criteria(criteria_file):
-    """
-    Validate the criteria file for processing.
-    This function checks if the criteria file is a valid JSON file.
-    Args:
-        criteria_file (str): The path to the criteria file.
-    Returns:
-        bool: True if the criteria file is valid, False otherwise.
-    """
-    # Criteria file should be csv
-    required_headers = [
-        "species",
-        "assembly_type",
-        "software",
-        "field",
-        "operator",
-        "value",
-        "special_field",
-    ]
-    valid_software = ["Quast", "Checkm", "Speciator", "Sylph", "Ariba", "DepthParser"]
+    """Return criteria CSV validation errors and warnings."""
+    valid_software = {parser.software_name or parser.__name__ for parser in get_parser_classes()}
+    valid_software.add("DepthParser")
     valid_operators = {">", "<", ">=", "<=", "=", "regex"}
     errors = []
     warnings = []
@@ -56,9 +52,14 @@ def validate_criteria(criteria_file):
         reader = csv.DictReader(f)
 
         # Validate headers
-        if reader.fieldnames != required_headers:
+        fieldnames = reader.fieldnames or []
+        missing_headers = [header for header in REQUIRED_HEADERS if header not in fieldnames]
+        unexpected_headers = set(fieldnames).difference(REQUIRED_HEADERS, OPTIONAL_HEADERS)
+        if missing_headers or unexpected_headers:
             errors.append(
-                f"Invalid headers. Expected: {required_headers}, Found: {reader.fieldnames}"
+                "Invalid headers. "
+                f"Missing: {missing_headers or 'none'}; "
+                f"unexpected: {sorted(unexpected_headers) or 'none'}"
             )
             return errors, warnings
 
@@ -68,7 +69,7 @@ def validate_criteria(criteria_file):
             if not row["species"] or not row["software"] or not row["field"]:
                 errors.append(f"Row {i}: Missing required fields")
                 continue
-            if not any(row["software"].startswith(v) for v in valid_software):
+            if not any(row["software"].startswith(name) for name in valid_software):
                 warnings.append(f"Row {i}: Unsupported software '{row['software']}'")
             # Validate operator
             if row["operator"] not in valid_operators:
@@ -96,20 +97,17 @@ def validate_criteria(criteria_file):
                 warnings.append(
                     f"Row {i}: 'special_field' value is not supported: '{row['special_field']}'"
                 )
+            severity = row.get("severity", "fail").strip().lower() or "fail"
+            if severity not in VALID_SEVERITIES:
+                errors.append(
+                    f"Row {i}: Invalid severity '{row.get('severity')}'. Expected warn or fail"
+                )
 
     return errors, warnings
 
 
 def get_species_field(criteria_file):
-    """
-    Get the field name for the species.
-    This function returns the field name for the species
-    based on a predefined mapping.
-    Args:
-        species (str): The name of the species.
-    Returns:
-        str: The field name for the species.
-    """
+    """Return parser fields marked as organism/species inference fields."""
     rows = []
 
     with open(criteria_file, encoding="utf-8") as f:
@@ -132,35 +130,13 @@ def get_species_field(criteria_file):
 
 
 def get_criteria(criteria_file, species=None):
-    """
-    Get the criteria for a specific species.
-    This function returns the criteria for a specific species
-    based on the species name.
-    Args:
-        criteria_file (str): The path to the criteria file.
-        species (str): The name of the species.
-    Returns:
-        dict: A dictionary of criteria for the species.
-    """
+    """Return baseline criteria plus optional species-specific criteria."""
     criteria = []
     with open(criteria_file, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         merge_criteria = []
         for row in reader:
-            new_criteria = {
-                "assembly_type": row["assembly_type"],
-                "software": row["software"],
-                "field": row["field"],
-                "operator": row["operator"],
-                "value": row["value"],
-                "special_field": row["special_field"],
-            }
-            # A float will have a decimal point, so we try to convert the value to float
-            if "." in new_criteria["value"] and new_criteria["value"].replace(".", "").isdigit():
-                new_criteria["value"] = float(new_criteria["value"])
-            # If the value is not a float, we try to convert it to an integer
-            elif new_criteria["value"].isdigit():
-                new_criteria["value"] = int(new_criteria["value"])
+            new_criteria = _normalize_criteria_row(row)
 
             if row["species"] == "all":
                 criteria.append(new_criteria)
@@ -183,21 +159,41 @@ def get_criteria_layers(criteria_file, species=None):
     with open(criteria_file, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            new_criteria = {
-                "assembly_type": row["assembly_type"],
-                "software": row["software"],
-                "field": row["field"],
-                "operator": row["operator"],
-                "value": row["value"],
-                "special_field": row["special_field"],
-            }
-            if "." in new_criteria["value"] and new_criteria["value"].replace(".", "").isdigit():
-                new_criteria["value"] = float(new_criteria["value"])
-            elif new_criteria["value"].isdigit():
-                new_criteria["value"] = int(new_criteria["value"])
+            new_criteria = _normalize_criteria_row(row)
 
             if row["species"] == "all":
                 baseline.append(new_criteria)
             elif species and row["species"] == species:
                 species_specific.append(new_criteria)
-    return {"baseline": baseline, "species": species_specific}
+    overridden_metrics = {
+        (criterion["software"], criterion["field"]) for criterion in species_specific
+    }
+    applicable_baseline = [
+        criterion
+        for criterion in baseline
+        if (criterion["software"], criterion["field"]) not in overridden_metrics
+    ]
+    return {
+        "baseline": applicable_baseline,
+        "species": species_specific,
+        "baseline_overridden_count": len(baseline) - len(applicable_baseline),
+    }
+
+
+def _normalize_criteria_row(row):
+    value = row["value"]
+    try:
+        numeric = float(value)
+        value = int(numeric) if numeric.is_integer() else numeric
+    except ValueError:
+        pass
+    return {
+        "assembly_type": row["assembly_type"],
+        "software": row["software"],
+        "field": row["field"],
+        "operator": row["operator"],
+        "value": value,
+        "severity": row.get("severity", "fail").strip().lower() or "fail",
+        "source": row.get("source", "custom").strip() or "custom",
+        "special_field": row["special_field"],
+    }

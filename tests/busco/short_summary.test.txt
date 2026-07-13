@@ -1,0 +1,3 @@
+# BUSCO version is: 5.8.3
+# The lineage dataset is: bacteria_odb10
+	C:98.7%[S:98.0%,D:0.7%],F:0.4%,M:0.9%,n:124

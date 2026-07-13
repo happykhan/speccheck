@@ -15,8 +15,8 @@ def collect_files(all_files, module_list):
         for module in module_list:
             current_module = module(filepath)
             if current_module.has_valid_filename and current_module.has_valid_fileformat:
-                logging.debug("File %s passed checks from %s", filepath, module.__name__)
                 module_name = getattr(current_module, "software_name", module.__name__)
+                logging.info("Detected %-10s %s", module_name, os.path.basename(filepath))
                 if module_name in recovered_values:
                     previous = recovered_sources[module_name]
                     raise ValueError(

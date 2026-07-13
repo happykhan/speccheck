@@ -18,7 +18,9 @@ Common options:
 - `--assembly-type all|short|long|hybrid`
 - `--allow-unknown-organism`
 - `--fail-on-not-evaluated / --no-fail-on-not-evaluated`
-- `-v`, `--verbose`
+- global `-v`, `--verbose`
+- global `-q`, `--quiet`
+- global `--log-file PATH`
 
 If `--organism` is omitted, `speccheck` attempts to infer the species from parser outputs marked as species fields in the criteria file. If no single species can be resolved, collection stops by default. Use `--allow-unknown-organism` only when you explicitly want fallback `Unknown` criteria.
 
@@ -85,3 +87,25 @@ speccheck check \
   --update \
   --update-url https://static.qualibact.org/api/v2/external/thresholds.csv
 ```
+
+## `modules`
+
+List parser modules available in the current installation:
+
+```bash
+speccheck modules
+```
+
+This reports built-in modules and third-party parser plugins registered through
+the `speccheck.parsers` entry-point group.
+
+## `inspect`
+
+Identify which files will be recognised before running collection:
+
+```bash
+speccheck inspect path/to/qc_outputs/
+```
+
+Use this command when integrating a new upstream workflow or debugging why a file
+was not included in a report.

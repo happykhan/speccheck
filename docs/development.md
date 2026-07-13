@@ -46,6 +46,15 @@ The project uses `pyproject.toml` as the packaging source of truth and aims for 
 
 Runtime defaults such as templates and criteria should always resolve from packaged resources rather than assuming a source checkout.
 
+## Adding input modules
+
+Use `docs/modules.md` as the contributor-facing contract. New parsers should
+subclass `Parser` or `SingleRowTsvParser`, expose `software_name`,
+`description`, and `supported_filenames`, and include tests for detection,
+rejection, and parsed values. Built-in parsers are registered in
+`speccheck/registry.py`; third-party parsers can use the `speccheck.parsers`
+entry-point group.
+
 Releases are cut manually from the GitHub Actions **Release** workflow after the version has been prepared and merged. Enter the exact version already recorded in `pyproject.toml`, `CHANGELOG.md`, and `CITATION.cff`; the workflow verifies that they agree before creating the tag/release and publishing the Docker image. It intentionally does not run on every push to `main`, so documentation and CI-only commits do not create release churn.
 
 ## Upstream QC on Slurm

@@ -10,7 +10,7 @@ import glob
 import logging
 import os
 
-from speccheck.registry import PARSER_CLASSES
+from speccheck.registry import get_parser_classes
 
 
 def get_all_files(filepaths):
@@ -44,7 +44,7 @@ def get_all_files(filepaths):
 
 def load_modules_with_checks():
     """Return the explicitly supported parser classes."""
-    module_list = list(PARSER_CLASSES)
+    module_list = list(get_parser_classes())
     loaded_classes = ", ".join(cls.__name__ for cls in module_list)
     logging.debug("Loaded modules: %s", loaded_classes)
     return module_list

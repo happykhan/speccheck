@@ -3,7 +3,7 @@
 The runtime criteria format is a CSV with these headers:
 
 ```csv
-species,assembly_type,software,field,operator,value,special_field
+species,assembly_type,software,field,operator,value,severity,source,special_field
 ```
 
 ## Column meanings
@@ -14,6 +14,8 @@ species,assembly_type,software,field,operator,value,special_field
 - `field`: metric field to evaluate
 - `operator`: `>`, `<`, `>=`, `<=`, `=`, or `regex`
 - `value`: threshold value or regex pattern
+- `severity`: `fail` or `warn`; omitted legacy rows are treated as `fail`
+- `source`: provenance label such as `qualibact-v1.0`, `speccheck-default`, or `custom`
 - `special_field`: currently used for `species_field`
 
 ## Notes
@@ -21,6 +23,9 @@ species,assembly_type,software,field,operator,value,special_field
 - Regex-based rows are used for species-identification checks.
 - Numeric rows are used for threshold comparisons.
 - Default packaged criteria live at `speccheck/config/criteria.csv`.
+- Species-specific criteria override generic `species=all` rows for the same
+  `software` and `field`.
+- Generic rows still apply when no species-specific row exists for that metric.
 
 ## Species resolution
 
@@ -64,3 +69,16 @@ Collected CSV outputs include basic speccheck provenance:
 QualiBact thresholds are not consumed directly at runtime. They are converted into this internal CSV format so the rest of the validation engine remains stable.
 
 QualiBact assembly-quality thresholds used here are calibrated around CheckM2-style metrics. The `Checkm` parser name is retained for backward compatibility in column names, but the supported QualiBact criteria use CheckM2 fields such as `Completeness`, `Contamination`, `Genome_Size`, `GC_Content`, `Contig_N50`, `Total_Contigs`, and `Total_Coding_Sequences`. Legacy CheckM1 marker-lineage criteria are not generated or packaged for QualiBact-derived thresholds.
+
+## Non-QualiBact global thresholds
+
+Some supported tools do not have species-specific QualiBact metrics. These use
+explicit global criteria rows:
+
+- `Fastp.after_filtering_q30_rate`: BactScout-derived global short-read Q30
+  policy, `FAIL` below 70% and `WARN` below 80%.
+- `Busco.Complete` and `Busco.Missing`: Speccheck default orthologue
+  completeness policy, not an official universal BUSCO species threshold.
+
+These rows have `species=all` and remain active for every organism unless a
+project-supplied species row overrides the same software and field.

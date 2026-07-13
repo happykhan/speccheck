@@ -8,16 +8,18 @@ Commands:
     check: Validate criteria file integrity
 
 Usage:
-    python speccheck.py collect [OPTIONS] FILEPATHS...
-    python speccheck.py summary [OPTIONS] DIRECTORY
-    python speccheck.py check [OPTIONS]
+    speccheck collect [OPTIONS] FILEPATHS...
+    speccheck summary [OPTIONS] DIRECTORY
+    speccheck check [OPTIONS]
 """
 
 import logging
+from pathlib import Path
 
 import typer
 from rich.console import Console
 from rich.logging import RichHandler
+from rich.table import Table
 
 from speccheck import __version__
 from speccheck.config import get_default_criteria_path
@@ -25,18 +27,29 @@ from speccheck.main import check as check_func
 from speccheck.main import collect as collect_func
 from speccheck.main import collect_ghru as collect_ghru_func
 from speccheck.main import summary as summary_func
+from speccheck.registry import get_parser_classes
 from speccheck.report import get_default_template_path
 from speccheck.update_criteria import QUALIBACT_DEFAULT_URL
+from speccheck.util import get_all_files
 
 app = typer.Typer(help="Process QC reports for genomic data")
 console = Console()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-    datefmt="[%X]",
-    handlers=[RichHandler(console=console, show_time=True, show_level=True, show_path=False)],
-)
+
+def configure_logging(*, verbose=False, quiet=False, log_file=None):
+    """Configure concise terminal logs and an optional plain-text audit log."""
+    level = logging.DEBUG if verbose else logging.WARNING if quiet else logging.INFO
+    handlers = [RichHandler(console=console, show_time=True, show_level=True, show_path=False)]
+    if log_file:
+        Path(log_file).parent.mkdir(parents=True, exist_ok=True)
+        handlers.append(logging.FileHandler(log_file, encoding="utf-8"))
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
+        handlers=handlers,
+        force=True,
+    )
 
 
 def version_callback(value: bool):
@@ -55,13 +68,20 @@ def main_callback(
         is_eager=True,
         help="Show version and exit",
     ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show diagnostic details"),
+    quiet: bool = typer.Option(False, "--quiet", "-q", help="Only show warnings and errors"),
+    log_file: str | None = typer.Option(
+        None, "--log-file", help="Also write a timestamped plain-text run log"
+    ),
 ):
     """
     Process QC reports for genomic data.
 
     Use one of the subcommands: collect, summary, or check.
     """
-    pass
+    if verbose and quiet:
+        raise typer.BadParameter("--verbose and --quiet cannot be used together")
+    configure_logging(verbose=verbose, quiet=quiet, log_file=log_file)
 
 
 @app.command()
@@ -283,6 +303,44 @@ def check(
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
     check_func(criteria_file, update=update, update_url=update_url)
+
+
+@app.command("modules")
+def modules_command():
+    """List input formats available in this installation."""
+    table = Table(title="Supported input modules")
+    table.add_column("Software", style="cyan", no_wrap=True)
+    table.add_column("Accepted input")
+    table.add_column("Purpose")
+    for parser in get_parser_classes():
+        table.add_row(
+            parser.software_name or parser.__name__,
+            parser.supported_filenames or "See parser documentation",
+            parser.description or "QC metric parser",
+        )
+    console.print(table)
+
+
+@app.command("inspect")
+def inspect_inputs(
+    filepaths: list[str] = typer.Argument(..., help="Files or directories to inspect"),
+):
+    """Identify which files Speccheck recognises without writing output."""
+    table = Table(title="Input inspection")
+    table.add_column("File")
+    table.add_column("Detected module", style="cyan")
+    recognised = 0
+    for file_path in get_all_files(filepaths):
+        detected = []
+        for parser_class in get_parser_classes():
+            parser = parser_class(file_path)
+            if parser.has_valid_filename and parser.has_valid_fileformat:
+                detected.append(parser.software_name or parser.__class__.__name__)
+        if detected:
+            recognised += 1
+        table.add_row(file_path, ", ".join(detected) or "not recognised")
+    console.print(table)
+    console.print(f"Recognised {recognised} input file(s).")
 
 
 def main():
