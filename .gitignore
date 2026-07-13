@@ -9,6 +9,9 @@ qc_results/
 hottest100/
 test_summary/
 .demo_work/
+.nextflow/
+.nextflow.log*
+external/
 .venv*/
 detailed.*.csv
 examples/qualibact_ecoli/figures/

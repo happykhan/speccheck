@@ -1,18 +1,21 @@
 name: Release
 
-# Runs on every push to main (i.e. merged PR).
-# 1. Determines bump type from the most recent PR title.
-# 2. Bumps the version in pyproject.toml.
-# 3. Commits the bump and creates an annotated git tag.
-# 4. Creates a GitHub release.
-# 5. Builds and pushes the Docker image to Docker Hub.
+# Runs manually when maintainers are ready to cut a release.
+# 1. Verifies that the requested version is already prepared consistently.
+# 2. Creates an annotated git tag at the validated main commit.
+# 3. Creates a GitHub release.
+# 4. Builds and pushes the Docker image to Docker Hub.
 
 on:
-  push:
-    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Prepared release version (for example, 1.3.0)
+        required: true
+        type: string
 
 permissions:
-  contents: write   # needed to push the version-bump commit and create a release
+  contents: write   # needed to push the tag and create a release
 
 jobs:
   release:
@@ -24,117 +27,73 @@ jobs:
         with:
           # Fetch full history so we can inspect commit messages
           fetch-depth: 0
-          # Use a token that allows pushing back to main
+          # Use a token that allows pushing the validated release tag
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # ------------------------------------------------------------------ #
-      # 1. Work out bump type from the merge-commit subject                 #
-      # ------------------------------------------------------------------ #
-      - name: Determine bump type
-        id: bump
-        run: |
-          # The merge commit message typically starts with "Merge pull request"
-          # followed by the PR title on the next line, OR for squash-merges the
-          # commit subject IS the PR title.  We inspect the full commit message.
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "Commit message:"
-          echo "$COMMIT_MSG"
-
-          if echo "$COMMIT_MSG" | grep -qiE '^breaking:|breaking:'; then
-            BUMP=major
-          elif echo "$COMMIT_MSG" | grep -qiE '^feat:|feat:'; then
-            BUMP=minor
-          else
-            BUMP=patch
-          fi
-
-          echo "bump_type=$BUMP" >> "$GITHUB_OUTPUT"
-          echo "Bump type: $BUMP"
-
-      # ------------------------------------------------------------------ #
-      # 2. Bump version files                                               #
-      # ------------------------------------------------------------------ #
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Bump version
+      - name: Validate prepared release metadata
         id: version
         run: |
-          BUMP_TYPE="${{ steps.bump.outputs.bump_type }}"
+          RELEASE_VERSION="${{ inputs.version }}"
+          python - "$RELEASE_VERSION" <<'EOF'
+          import pathlib
+          import re
+          import sys
+          import tomllib
 
-          # Read current version from pyproject.toml [project] section only
-          CURRENT=$(python - <<'EOF'
-          import re, pathlib
-          text = pathlib.Path("pyproject.toml").read_text()
-          # Match only the version line inside [project] (before the next section)
-          m = re.search(r'(?ms)^\[project\].*?^version\s*=\s*"([^"]+)"', text)
-          if not m:
-              raise SystemExit("Could not find version in [project] section of pyproject.toml")
-          print(m.group(1))
+          requested = sys.argv[1]
+          if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", requested):
+              raise SystemExit(f"Invalid release version: {requested!r}")
+
+          with pathlib.Path("pyproject.toml").open("rb") as handle:
+              package_version = tomllib.load(handle)["project"]["version"]
+          citation = pathlib.Path("CITATION.cff").read_text(encoding="utf-8")
+          changelog = pathlib.Path("CHANGELOG.md").read_text(encoding="utf-8")
+          expected = {
+              "pyproject.toml": package_version == requested,
+              "CITATION.cff": f"version: {requested}" in citation,
+              "CHANGELOG.md": f"## {requested} -" in changelog,
+          }
+          mismatches = [name for name, matches in expected.items() if not matches]
+          if mismatches:
+              raise SystemExit(
+                  f"Release {requested} is not prepared consistently in: "
+                  + ", ".join(mismatches)
+              )
+          print(f"Validated prepared release {requested}")
           EOF
-          )
-          echo "Current version: $CURRENT"
+          echo "release_version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
 
-          # Calculate new version
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-          case "$BUMP_TYPE" in
-            major) NEW="$((MAJOR+1)).0.0" ;;
-            minor) NEW="${MAJOR}.$((MINOR+1)).0" ;;
-            patch) NEW="${MAJOR}.${MINOR}.$((PATCH+1))" ;;
-          esac
-          echo "New version: $NEW"
-
-          # Update pyproject.toml — only the [project] version line
-          python - "$CURRENT" "$NEW" <<'EOF'
-          import re, pathlib, sys
-          old, new = sys.argv[1], sys.argv[2]
-          path = pathlib.Path("pyproject.toml")
-          text = path.read_text()
-          # Replace version only inside the [project] block (before next [section])
-          updated = re.sub(
-              r'(?ms)(^\[project\].*?^version\s*=\s*")[^"]+(")',
-              lambda m: m.group(0).replace(old, new),
-              text,
-              count=1,
-          )
-          if updated == text:
-              raise SystemExit("Failed to update version in pyproject.toml")
-          path.write_text(updated)
-          print("Updated pyproject.toml")
-          EOF
-
-          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
-
-      # ------------------------------------------------------------------ #
-      # 3. Commit bump and push tag                                         #
-      # ------------------------------------------------------------------ #
-      - name: Commit and tag
+      - name: Tag validated commit
         run: |
-          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+          RELEASE_VERSION="${{ steps.version.outputs.release_version }}"
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add pyproject.toml
-          git commit -m "chore: bump version to ${NEW_VERSION} [skip ci]"
-          git tag "v${NEW_VERSION}"
-          git push origin main
-          git push origin "v${NEW_VERSION}"
+          if git rev-parse "v${RELEASE_VERSION}" >/dev/null 2>&1; then
+            echo "Tag v${RELEASE_VERSION} already exists"
+            exit 1
+          fi
+          git tag -a "v${RELEASE_VERSION}" -m "speccheck ${RELEASE_VERSION}"
+          git push origin "v${RELEASE_VERSION}"
 
       # ------------------------------------------------------------------ #
-      # 4. Create GitHub release                                            #
+      # 3. Create GitHub release                                            #
       # ------------------------------------------------------------------ #
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.new_version }}
-          name: v${{ steps.version.outputs.new_version }}
+          tag_name: v${{ steps.version.outputs.release_version }}
+          name: v${{ steps.version.outputs.release_version }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # ------------------------------------------------------------------ #
-      # 5. Build and push Docker image                                      #
+      # 4. Build and push Docker image                                      #
       # ------------------------------------------------------------------ #
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -156,5 +115,5 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            happykhan/speccheck:${{ steps.version.outputs.new_version }}
+            happykhan/speccheck:${{ steps.version.outputs.release_version }}
             happykhan/speccheck:latest

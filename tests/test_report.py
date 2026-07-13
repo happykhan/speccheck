@@ -1,20 +1,13 @@
-import importlib
-import os
 import pandas as pd
-import pytest
-from unittest.mock import MagicMock, patch
 
 from speccheck.report import get_failure_reasons, load_modules_with_checks
 
 
-@patch("os.listdir")
-@patch("os.path.isfile")
-@patch("importlib.util.spec_from_file_location")
-@patch("importlib.util.module_from_spec")
-def test_load_modules_with_checks(
-    mock_module_from_spec, mock_spec_from_file_location, mock_isfile, mock_listdir
-):
-    pass
+def test_load_modules_with_checks_uses_explicit_registry():
+    modules = load_modules_with_checks()
+
+    assert set(modules) == {"Ariba", "Checkm", "Quast", "Speciator", "Sylph"}
+    assert all(hasattr(module, "plot") for module in modules.values())
 
 
 def test_get_failure_reasons_all_passed():

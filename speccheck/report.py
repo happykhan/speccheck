@@ -1,12 +1,15 @@
-import importlib.util
 import logging
-import os
-import pandas as pd
-from jinja2 import Template
 from pathlib import Path
 
+import pandas as pd
+from jinja2 import Template
+
 from speccheck import __version__ as VERSION
+from speccheck.registry import PLOT_CLASSES, add_frame_metric_aliases
 from speccheck.report_tables import (
+    build_concise_report_frame,
+    build_full_detail_table,
+    build_large_run_summary_table,
     build_metric_summary_frames,
     build_qualifyr_style_table,
     get_failure_reasons,
@@ -14,6 +17,7 @@ from speccheck.report_tables import (
     normalize_status,
     render_metric_summary_tables,
     safe_anchor,
+    status_label,
     summary_table,
 )
 
@@ -48,29 +52,9 @@ def make_footer():
 
 
 def load_modules_with_checks():
-    module_dict = {}
-    modules_file_path = PACKAGE_DIR / "plot_modules"
-
-    for filename in os.listdir(modules_file_path):
-        if not filename.endswith(".py"):
-            continue
-
-        curr_module_path = modules_file_path / filename
-        if not os.path.isfile(curr_module_path):
-            continue
-
-        module_name = os.path.splitext(filename)[0]
-        spec = importlib.util.spec_from_file_location(module_name, curr_module_path)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-
-        class_name = module_name.title()
-        if hasattr(module, class_name):
-            cla = getattr(module, class_name)
-            if hasattr(cla, "plot"):
-                module_dict[class_name.split("_")[1]] = cla
-
-    loaded_classes = ", ".join([cls.__name__ for cls in module_dict.values()])
+    """Return the explicitly supported plotting classes."""
+    module_dict = dict(PLOT_CLASSES)
+    loaded_classes = ", ".join(cls.__name__ for cls in module_dict.values())
     logging.debug("Loaded modules: %s", loaded_classes)
     return module_dict
 
@@ -128,16 +112,7 @@ def build_report_context(
         group_df.columns = group_df.columns.str.replace(f"{software}.", "", regex=False)
         group_df.index = group_df["sample_id"]
         group_df.attrs["interactive_tables"] = interactive_tables
-        if software == "Checkm":
-            alias_map = {
-                "GC": "GC_Content",
-                "Genome size (bp)": "Genome_Size",
-                "N50 (scaffolds)": "Contig_N50",
-                "# contigs": "Total_Contigs",
-            }
-            for source, target in alias_map.items():
-                if source in group_df.columns and target not in group_df.columns:
-                    group_df[target] = group_df[source]
+        group_df = add_frame_metric_aliases(group_df, software)
         software_obj = software_modules[software](group_df)
         software_dict[software] = software_obj.summary()
         plotly_jinja_data["software_charts"] += software_obj.plot()
@@ -157,10 +132,21 @@ def build_report_context(
     report_df = report_df.reset_index(drop=True)
 
     summary_frames = build_metric_summary_frames(report_df)
+    concise_report_df = build_concise_report_frame(report_df)
     plotly_jinja_data["sample_count"] = make_sample_counts(report_df.set_index("sample_id"))
     plotly_jinja_data["footer"] = make_footer()
     plotly_jinja_data["summary_table"] = summary_table(
         report_df.set_index("sample_id"),
+        interactive_tables=interactive_tables,
+    )
+    plotly_jinja_data["dataset_kpis"] = _build_dataset_kpis(report_df)
+    plotly_jinja_data["run_alerts"] = _build_run_alerts(concise_report_df)
+    plotly_jinja_data["sample_review_table"] = build_large_run_summary_table(
+        report_df,
+        interactive_tables=interactive_tables,
+    )
+    plotly_jinja_data["full_detail_table"] = build_full_detail_table(
+        report_df,
         interactive_tables=interactive_tables,
     )
     plotly_jinja_data["software_summary"] = get_software_summary(software_dict)
@@ -201,6 +187,10 @@ def plot_charts(
     required_keys = [
         "software_charts",
         "summary_table",
+        "dataset_kpis",
+        "run_alerts",
+        "sample_review_table",
+        "full_detail_table",
         "footer",
         "sample_count",
         "software_summary",
@@ -220,3 +210,56 @@ def plot_charts(
             j2_template = Template(template_file.read())
             output_file.write(j2_template.render(plotly_jinja_data))
     return report_df, summary_frames
+
+
+def _build_dataset_kpis(report_df):
+    total = len(report_df)
+    if total == 0:
+        return []
+    overall = report_df.get(
+        "overall_qc", report_df.get("all_checks_passed", pd.Series(dtype=object))
+    )
+    labels = overall.map(status_label).replace({"PASSED": "PASS", "FAILED": "FAIL"})
+    pass_count = int((labels == "PASS").sum())
+    warn_count = int((labels == "WARN").sum())
+    fail_count = int((labels == "FAIL").sum())
+    pass_rate = (pass_count / total) * 100
+    threshold_source = "Unavailable"
+    if "threshold_source" in report_df.columns and report_df["threshold_source"].notna().any():
+        threshold_source = str(report_df["threshold_source"].dropna().iloc[0])
+    species_summary = "Species unavailable"
+    if "species" in report_df.columns and report_df["species"].notna().any():
+        counts = report_df["species"].fillna("Unknown").value_counts()
+        if len(counts) == 1:
+            species_summary = counts.index[0]
+        else:
+            species_summary = (
+                f"{len(counts)} species; dominant {counts.index[0]} ({counts.iloc[0]})"
+            )
+    return [
+        {"label": "Samples", "value": total, "tone": "neutral"},
+        {"label": "PASS", "value": pass_count, "tone": "pass"},
+        {"label": "WARN", "value": warn_count, "tone": "warn"},
+        {"label": "FAIL", "value": fail_count, "tone": "fail"},
+        {"label": "Pass rate", "value": f"{pass_rate:.1f}%", "tone": "neutral"},
+        {"label": "Threshold source", "value": threshold_source, "tone": "neutral"},
+        {"label": "Species mix", "value": species_summary, "tone": "neutral"},
+    ]
+
+
+def _build_run_alerts(concise_report_df):
+    if concise_report_df.empty or "reason_summary" not in concise_report_df.columns:
+        return []
+    alerts = (
+        concise_report_df[concise_report_df["overall_qc"].isin(["WARN", "FAIL"])]["reason_summary"]
+        .fillna("none")
+        .astype(str)
+    )
+    counts = {}
+    for value in alerts:
+        if not value or value.lower() == "none":
+            continue
+        for part in [item.strip() for item in value.split(";") if item.strip()]:
+            counts[part] = counts.get(part, 0) + 1
+    ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    return [{"reason": reason, "count": count} for reason, count in ranked[:8]]

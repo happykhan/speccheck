@@ -7,6 +7,12 @@
 
 `speccheck` is a Python command-line tool for collecting, validating, and summarizing genome QC metrics from multiple bioinformatics tools. It is designed for species-aware QC workflows and reproducible reporting.
 
+The publication case study processes 100 real, read-backed *Escherichia coli*
+samples through `GHRU-assembly`, then applies a pinned QualiBact E. coli
+compatibility policy. The committed case-study outputs include accessions,
+provenance, reports, concordance analysis, and manuscript figures under
+[`examples/qualibact_ecoli/real_run_100`](examples/qualibact_ecoli/real_run_100/).
+
 ## Documentation
 
 Project documentation is built with MkDocs Material and intended for GitHub Pages:
@@ -18,11 +24,12 @@ Primary docs pages:
 
 - [Installation](docs/installation.md)
 - [CLI Usage](docs/cli.md)
+- [Modules and Extensions](docs/modules.md)
 - [Criteria Format](docs/criteria.md)
 - [Reports](docs/reports.md)
 - [QualiBact Integration](docs/qualibact.md)
+- [GHRU Integration](docs/ghru.md)
 - [Manuscript Assets](docs/manuscript.md)
-- [Code Quality Audit](docs/code-quality.md)
 - [Development](docs/development.md)
 
 ## Quick Start
@@ -43,11 +50,15 @@ Collect QC metrics:
 speccheck collect tests/practice_data/Sample_178db692semb --sample Sample_178db692semb
 ```
 
+If `--organism` is not provided, `speccheck` infers it from species parser outputs and stops if no single species can be resolved. Use `--allow-unknown-organism` only for explicit fallback runs.
+
 Generate a merged report:
 
 ```bash
 speccheck summary qc_results --plot --qualifyr-style --xlsx-output qc_report/report.xlsx
 ```
+
+`summary` merges concise collected CSV files, ignores `detailed.*.csv` companions, and rejects duplicate sample IDs.
 
 Refresh criteria from QualiBact:
 
@@ -57,8 +68,8 @@ speccheck check --criteria-file speccheck/config/criteria.csv --update
 
 ## Features
 
-- Automatic module detection for CheckM, QUAST, Speciator, ARIBA, Sylph, and DepthParser outputs
-- Criteria-driven pass/fail validation
+- Explicitly registered parsers for CheckM2-style QC tables, QUAST, Speciator, ARIBA, Sylph, depth, Fastp, and BUSCO outputs
+- Criteria-driven PASS/WARN/FAIL validation
 - HTML reporting with Plotly charts and interactive sortable/filterable tables
 - Compact qualifyr-style summary tables
 - Optional Excel workbook export from merged reports
@@ -83,6 +94,7 @@ Regenerate manuscript figures and example summary tables:
 
 ```bash
 python scripts/create_manuscript_assets.py
+python scripts/create_real_run_100_assets.py
 ```
 
 Build a wheel:
@@ -93,4 +105,4 @@ python -m build
 
 ## Citation
 
-If you use `speccheck` in a manuscript, cite the software and include the repository URL. Structured citation metadata is provided in [`CITATION.cff`](CITATION.cff).
+If you use `speccheck` in a manuscript, cite the software and include the repository URL. Structured citation metadata is provided in [`CITATION.cff`](CITATION.cff). Zenodo archive metadata is provided in `.zenodo.json`; after a GitHub Release is archived by Zenodo, cite the release DOI for the exact version used.

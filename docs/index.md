@@ -19,9 +19,12 @@ It is designed for:
 
 - automatic module detection
 - packaged default criteria and templates
-- QualiBact import path for criteria refresh
+- QualiBact-derived species thresholds with generic fallback rows
+- global Fastp Q30 and BUSCO defaults for tools outside QualiBact
 - interactive tables in HTML reports
 - compact qualifyr-style summary tables
 - manuscript-ready E. coli example reports and static figures
 
-See the rest of the docs for installation, CLI details, criteria structure, and development notes.
+Start with the CLI page for routine use, the modules page for supported inputs
+and parser extensions, and the manuscript pages for the 100-sample E. coli case
+study.

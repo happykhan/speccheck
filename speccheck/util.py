@@ -7,9 +7,10 @@ If the class has a method named 'has_valid_fileformat', it is added to the list 
 """
 
 import glob
-import importlib.util
 import logging
 import os
+
+from speccheck.registry import get_parser_classes
 
 
 def get_all_files(filepaths):
@@ -42,30 +43,8 @@ def get_all_files(filepaths):
 
 
 def load_modules_with_checks():
-    """Load Python modules with required checks from the 'modules' directory."""
-    module_list = []
-    modules_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
-
-    for filename in os.listdir(modules_file_path):
-        if not filename.endswith(".py"):
-            continue
-
-        curr_module_path = os.path.join(modules_file_path, filename)
-        if not os.path.isfile(curr_module_path):
-            continue
-
-        module_name = os.path.splitext(filename)[0]
-        spec = importlib.util.spec_from_file_location(module_name, curr_module_path)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-
-        # Check if module has a class matching its name in TitleCase
-        class_name = module_name.title()
-        if hasattr(module, class_name):
-            cla = getattr(module, class_name)
-            if hasattr(cla, "has_valid_fileformat"):
-                module_list.append(cla)
-
-    loaded_classes = ", ".join([cls.__name__ for cls in module_list])
+    """Return the explicitly supported parser classes."""
+    module_list = list(get_parser_classes())
+    loaded_classes = ", ".join(cls.__name__ for cls in module_list)
     logging.debug("Loaded modules: %s", loaded_classes)
     return module_list

@@ -14,6 +14,8 @@
 - `report.html` is self-contained, with embedded report styles
 - `report.xlsx` when `--xlsx-output` is supplied
 
+When merging inputs, `summary` uses concise collected CSVs, ignores `detailed.*.csv` companions, and rejects duplicate or missing sample IDs.
+
 ## HTML report
 
 The HTML report includes:
@@ -27,7 +29,7 @@ The HTML report includes:
 Example report generation from the pinned QualiBact E. coli pass/fail fixtures:
 
 ```bash
-python scripts/generate_qualibact_example_reports.py
+pixi run python scripts/generate_qualibact_example_reports.py
 ```
 
 This creates manuscript-oriented example outputs under `examples/qualibact_ecoli/`.
@@ -35,17 +37,14 @@ This creates manuscript-oriented example outputs under `examples/qualibact_ecoli
 Real QualiBact ATB E. coli panel generation:
 
 ```bash
-python scripts/build_qualibact_ecoli_demo.py
+pixi run python scripts/build_ghru_ecoli_panel_report.py \
+  .demo_work/ghru_ecoli_panel/triplet/output \
+  --metadata .demo_work/ghru_ecoli_panel/triplet/metadata.csv \
+  --work-dir .demo_work/ghru_ecoli_panel/triplet/work
 ```
 
-For Slurm:
-
-```bash
-sbatch scripts/slurm_qualibact_ecoli_demo.sh
-```
-
-This writes `examples/qualibact_ecoli/real_panel/report/` and keeps raw FASTA
-downloads/intermediate QUAST output in `.demo_work/qualibact_ecoli_real/`.
+This writes `examples/qualibact_ecoli/real_panel/report/` from real upstream
+`GHRU-assembly` outputs.
 
 Interactive table behavior:
 

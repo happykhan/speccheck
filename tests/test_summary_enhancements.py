@@ -1,6 +1,8 @@
+from pathlib import Path
+
 import openpyxl
 import pandas as pd
-from pathlib import Path
+import pytest
 
 from speccheck.main import summary
 from speccheck.report import get_default_template_path
@@ -26,6 +28,7 @@ def _build_speccheck_summary_input(source_csv, destination):
                 "Checkm.Genome size (bp)": row["Genome_Size"],
                 "Checkm.# contigs": row["number"],
                 "Checkm.N50 (scaffolds)": row["N50"],
+                "Checkm.Total_Coding_Sequences": row["Total_Coding_Sequences"],
                 "Checkm.Completeness.check": True,
                 "Checkm.Contamination.check": float(row["Contamination"]) <= 2.0,
                 "Quast.all_checks_passed": n50_pass and contig_pass and genome_pass,
@@ -111,3 +114,195 @@ def test_summary_respects_no_interactive_tables(tmp_path):
     assert 'class="table report-table js-sort-filter"' not in report_html
     assert "parseValue" not in report_html
     assert '<link rel="stylesheet" href="bulma.css">' not in report_html
+
+
+def test_summary_adds_qualibact_compatibility_columns(tmp_path):
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+    pd.DataFrame(
+        [
+            {
+                "sample_id": "PASS1",
+                "all_checks_passed": True,
+                "Checkm.all_checks_passed": True,
+                "Checkm.Completeness": 100,
+                "Checkm.Contamination": 0.2,
+                "Checkm.GC_Content": 50.5,
+                "Checkm.Genome_Size": 5100000,
+                "Checkm.Contig_N50": 120000,
+                "Checkm.Total_Contigs": 200,
+                "Quast.all_checks_passed": True,
+                "Quast.N50": 120000,
+                "Quast.# contigs (>= 0 bp)": 200,
+                "Quast.GC (%)": 50.5,
+                "Quast.Total length (>= 0 bp)": 5100000,
+                "Quast.Largest contig": 500000,
+                "Checkm.Total_Coding_Sequences": 4800,
+                "Speciator.speciesName": "Escherichia coli",
+                "Speciator.confidence": "good",
+            },
+            {
+                "sample_id": "WARN1",
+                "all_checks_passed": True,
+                "Checkm.all_checks_passed": True,
+                "Checkm.Completeness": 100,
+                "Checkm.Contamination": 0.3,
+                "Checkm.GC_Content": 50.4387,
+                "Checkm.Genome_Size": 5695351,
+                "Checkm.Contig_N50": 114262,
+                "Checkm.Total_Contigs": 665,
+                "Quast.all_checks_passed": True,
+                "Quast.N50": 114262,
+                "Quast.# contigs (>= 0 bp)": 665,
+                "Quast.GC (%)": 50.4387,
+                "Quast.Total length (>= 0 bp)": 5695351,
+                "Quast.Largest contig": 297694,
+                "Checkm.Total_Coding_Sequences": 6055,
+                "Speciator.speciesName": "Escherichia coli",
+                "Speciator.confidence": "good",
+            },
+            {
+                "sample_id": "FAIL1",
+                "all_checks_passed": True,
+                "Checkm.all_checks_passed": True,
+                "Checkm.Completeness": 100,
+                "Checkm.Contamination": 0.4,
+                "Checkm.GC_Content": 50.5585,
+                "Checkm.Genome_Size": 5738641,
+                "Checkm.Contig_N50": 126621,
+                "Checkm.Total_Contigs": 679,
+                "Quast.all_checks_passed": True,
+                "Quast.N50": 126621,
+                "Quast.# contigs (>= 0 bp)": 679,
+                "Quast.GC (%)": 50.5585,
+                "Quast.Total length (>= 0 bp)": 5738641,
+                "Quast.Largest contig": 312707,
+                "Checkm.Total_Coding_Sequences": 6105,
+                "Speciator.speciesName": "Escherichia coli",
+                "Speciator.confidence": "good",
+            },
+        ]
+    ).to_csv(input_dir / "samples.csv", index=False)
+
+    summary(
+        str(input_dir),
+        str(output_dir),
+        "Speciator.speciesName",
+        "sample_id",
+        get_default_template_path(),
+        plot=True,
+        qualifyr_style=True,
+        qualibact_compat=True,
+    )
+
+    report = pd.read_csv(output_dir / "report.csv")
+    tiers = dict(zip(report["sample_id"], report["qualibact_compat_tier"], strict=False))
+    passed = dict(zip(report["sample_id"], report["all_checks_passed"], strict=False))
+    html = (output_dir / "report.html").read_text(encoding="utf-8")
+
+    assert tiers == {"PASS1": "PASS", "WARN1": "WARN", "FAIL1": "FAIL"}
+    assert passed["WARN1"] == "PASSED"
+    assert passed["FAIL1"] == "FAILED"
+    assert "qualibact_compat_tier" in html
+    assert "Total_Coding_Sequences &gt;5800.0" in html
+
+
+def test_historical_qualibact_label_does_not_override_current_qc(tmp_path):
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+    pd.DataFrame(
+        [
+            {
+                "sample_id": "HISTORICAL_FAIL",
+                "all_checks_passed": True,
+                "qualibact_tier": "FAIL",
+                "qualibact_reasons": "historical assembly failed",
+            }
+        ]
+    ).to_csv(input_dir / "sample.csv", index=False)
+
+    summary(
+        str(input_dir),
+        str(output_dir),
+        "Speciator.speciesName",
+        "sample_id",
+        get_default_template_path(),
+    )
+
+    report = pd.read_csv(output_dir / "report.csv")
+    assert report.loc[0, "overall_qc"] == "PASSED"
+    assert report.loc[0, "qualibact_tier"] == "FAIL"
+    assert report.loc[0, "reason_summary"] == "none"
+
+
+def test_summary_rejects_duplicate_sample_ids(tmp_path):
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+    pd.DataFrame(
+        [
+            {"sample_id": "S1", "all_checks_passed": True},
+            {"sample_id": "S1", "all_checks_passed": False},
+        ]
+    ).to_csv(input_dir / "duplicates.csv", index=False)
+
+    with pytest.raises(ValueError, match="duplicate sample IDs"):
+        summary(
+            str(input_dir),
+            str(output_dir),
+            "Speciator.speciesName",
+            "sample_id",
+            get_default_template_path(),
+            plot=False,
+        )
+
+
+def test_summary_rejects_missing_sample_column(tmp_path):
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+    pd.DataFrame([{"wrong_id": "S1", "all_checks_passed": True}]).to_csv(
+        input_dir / "missing_sample.csv", index=False
+    )
+
+    with pytest.raises(ValueError, match="missing required sample column"):
+        summary(
+            str(input_dir),
+            str(output_dir),
+            "Speciator.speciesName",
+            "sample_id",
+            get_default_template_path(),
+            plot=False,
+        )
+
+
+def test_summary_ignores_detailed_csv_and_output_directory(tmp_path):
+    input_dir = tmp_path / "input"
+    output_dir = input_dir / "summary"
+    input_dir.mkdir()
+    pd.DataFrame([{"sample_id": "S1", "all_checks_passed": True}]).to_csv(
+        input_dir / "sample.csv", index=False
+    )
+    pd.DataFrame([{"sample_id": "S1", "extra": "legacy"}]).to_csv(
+        input_dir / "detailed.sample.csv", index=False
+    )
+    output_dir.mkdir()
+    pd.DataFrame([{"sample_id": "S1", "old": "report"}]).to_csv(
+        output_dir / "report.csv", index=False
+    )
+
+    summary(
+        str(input_dir),
+        str(output_dir),
+        "Speciator.speciesName",
+        "sample_id",
+        get_default_template_path(),
+        plot=False,
+    )
+
+    report = pd.read_csv(output_dir / "report.csv")
+    assert list(report["sample_id"]) == ["S1"]
+    assert "extra" not in report.columns
+    assert "old" not in report.columns

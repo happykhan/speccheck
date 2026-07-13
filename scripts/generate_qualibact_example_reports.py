@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generate manuscript-friendly example reports from pinned QualiBact fixtures."""
 
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 from speccheck.main import summary
 from speccheck.report import get_default_template_path
@@ -32,6 +33,7 @@ def build_speccheck_summary_input(source_csv, destination):
                 "Checkm.Genome size (bp)": row["Genome_Size"],
                 "Checkm.# contigs": row["number"],
                 "Checkm.N50 (scaffolds)": row["N50"],
+                "Checkm.Total_Coding_Sequences": row["Total_Coding_Sequences"],
                 "Checkm.Completeness.check": True,
                 "Checkm.Contamination.check": float(row["Contamination"]) <= 2.0,
                 "Quast.all_checks_passed": n50_pass and contig_pass and genome_pass,
@@ -76,6 +78,7 @@ def generate_report(name, fixture_name):
         xlsx_output=str(output_dir / "report.xlsx"),
         interactive_tables=True,
         qualifyr_style=True,
+        qualibact_compat=True,
     )
 
 

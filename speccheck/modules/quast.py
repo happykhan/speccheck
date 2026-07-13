@@ -16,10 +16,10 @@ file_path : str
     Path to the QUAST file to be processed.
 """
 
-import re
+from speccheck.modules.base import Parser, parse_scalar
 
 
-class Quast:
+class Quast(Parser):
     """
     A class to represent and validate the QUAST (Quality Assessment Tool for Genome Assemblies) report format.
     Methods
@@ -30,14 +30,9 @@ class Quast:
         Parses the QUAST report file and returns a dictionary of key-value pairs from the report.
     """
 
-    def __init__(self, file_path):
-        """
-        Parameters
-        ----------
-        file_path : str
-            The path to the QUAST report file.
-        """
-        self.file_path = file_path
+    software_name = "Quast"
+    description = "QUAST transposed assembly report"
+    supported_filenames = "*report.tsv with one metric/value pair per row"
 
     @property
     def has_valid_filename(self):
@@ -45,48 +40,18 @@ class Quast:
 
     @property
     def has_valid_fileformat(self):
-        with open(self.file_path, encoding="utf-8") as file:
-            first_line = file.readline()
-            if "\t" not in first_line:
-                return False
-
-        with open(self.file_path, encoding="utf-8") as file:
-            lines = file.readlines()
-            lines = [line for line in lines if line.strip()]
-        expected_lines = [
-            r"Assembly\t+\S+",
-            r"# contigs \(>= 0 bp\)\t+\d+",
-            r"# contigs \(>= 1000 bp\)\t+\d+",
-            r"# contigs \(>= 5000 bp\)\t+\d+",
-            r"# contigs \(>= 10000 bp\)\t+\d+",
-            r"# contigs \(>= 25000 bp\)\t+\d+",
-            r"# contigs \(>= 50000 bp\)\t+\d+",
-            r"Total length \(>= 0 bp\)\t+\d+",
-            r"Total length \(>= 1000 bp\)\t+\d+",
-            r"Total length \(>= 5000 bp\)\t+\d+",
-            r"Total length \(>= 10000 bp\)\t+\d+",
-            r"Total length \(>= 25000 bp\)\t+\d+",
-            r"Total length \(>= 50000 bp\)\t+\d+",
-            r"# contigs\t+\d+",
-            r"Largest contig\t+\d+",
-            r"Total length\t+\d+",
-            r"GC \(\%\)\t+\d+\.\d+",
-            r"N50\t+\d+",
-            r"N90\t+\d+",
-            r"auN\t+\d+\.\d+",
-            r"L50\t+\d+",
-            r"L90\t+\d+",
-            r"# N's per 100 kbp\t+\d+\.\d+",
-        ]
-
-        if len(lines) != len(expected_lines):
+        try:
+            values = self.fetch_values()
+        except ValueError:
             return False
-
-        for line, pattern in zip(lines, expected_lines, strict=False):
-            if not re.match(pattern, line.strip()):
-                return False
-
-        return True
+        required_keys = {
+            "Assembly",
+            "# contigs (>= 0 bp)",
+            "Total length (>= 0 bp)",
+            "GC (%)",
+            "N50",
+        }
+        return required_keys.issubset(values)
 
     def fetch_values(self):
         with open(self.file_path, encoding="utf-8") as file:
@@ -94,13 +59,15 @@ class Quast:
 
         values = {}
         for line in lines:
-            key, value = line.strip().split("\t")
-            # A float will have a decimal point, so we try to convert the value to float
-            if "." in value and value.replace(".", "").isdigit():
-                value = float(value)
-            # If the value is not a float, we try to convert it to an integer
-            elif value.isdigit():
-                value = int(value)
+            if not line.strip():
+                continue
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) != 2:
+                raise ValueError(f"QUAST report row must contain exactly two columns: {line!r}")
+            key, value = parts
+            value = parse_scalar(value)
             values[key] = value
+            if key == "# N's per 100 kbp":
+                values["Ns per 100 kbp"] = value
 
         return values

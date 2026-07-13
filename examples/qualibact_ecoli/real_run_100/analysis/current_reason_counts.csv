@@ -1,0 +1,10 @@
+reason,sample_count
+GC_Content <50.25,5
+N50 <20000.0,4
+Speciator.genusName,4
+Speciator.speciesName,4
+GC_Content >50.88,3
+Genome_Size <4400000.0,3
+Genome_Size >5700000.0,2
+no_of_contigs >670.0,1
+Total_Coding_Sequences >5800.0,1

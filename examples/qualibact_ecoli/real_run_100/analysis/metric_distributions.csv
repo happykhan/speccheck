@@ -1,0 +1,13 @@
+metric,label,qualibact_tier,count,min,q1,median,q3,max
+n50,N50 (bp),PASS,70,25362.0,121629.0,164496.5,210780.0,357673.0
+n50,N50 (bp),WARN,20,90639.0,142760.0,176848.5,199369.0,208992.0
+n50,N50 (bp),FAIL,10,1571.0,6287.5,24833.0,73267.75,126621.0
+contigs,Contigs,PASS,70,41.0,73.0,93.0,207.5,392.0
+contigs,Contigs,WARN,20,68.0,73.0,75.5,81.25,317.0
+contigs,Contigs,FAIL,10,1.0,176.25,327.5,503.0,1033.0
+genome_size,Genome size (bp),PASS,70,4451925.0,4922314.25,5090141.0,5312483.25,5557044.0
+genome_size,Genome size (bp),WARN,20,4892715.0,4900044.5,4901382.0,4903531.25,5576464.0
+genome_size,Genome size (bp),FAIL,10,5377.0,1279360.75,5001317.5,5612410.75,6288281.0
+contamination,Contamination (%),PASS,70,0.0,0.12,0.21,0.3775,1.06
+contamination,Contamination (%),WARN,20,0.08,0.08,0.08,0.09,0.39
+contamination,Contamination (%),FAIL,10,0.0,0.025,0.375,0.98,7.76

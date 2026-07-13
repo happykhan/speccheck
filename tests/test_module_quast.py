@@ -1,4 +1,5 @@
 import os
+
 import pytest
 
 from speccheck.modules.quast import Quast
@@ -62,5 +63,22 @@ def test_fetch_values(quast_file):
         "L50": 10,
         "L90": 20,
         "# N's per 100 kbp": 0.5,
+        "Ns per 100 kbp": 0.5,
     }
     assert quast.fetch_values() == expected_values
+
+
+def test_quast_validation_accepts_reordered_required_rows(tmp_path):
+    data = """N50\t25000
+Assembly\tSampleAssembly
+Unexpected optional metric\tpresent
+GC (%)\t50.5
+Total length (>= 0 bp)\t3000000
+# contigs (>= 0 bp)\t100
+"""
+    file_path = tmp_path / "report.tsv"
+    file_path.write_text(data, encoding="utf-8")
+
+    quast = Quast(file_path)
+    assert quast.has_valid_fileformat
+    assert quast.fetch_values()["N50"] == 25000

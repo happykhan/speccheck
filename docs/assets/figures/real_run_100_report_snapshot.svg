@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1250" height="730" viewBox="0 0 1250 730">
+<rect width="100%" height="100%" fill="#f6f8fa"/>
+<text x="50" y="58" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#1f2933" text-anchor="start">speccheck 100-sample review snapshot</text>
+<text x="50" y="92" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#52616f" text-anchor="start">Samples requiring review under the current pinned compatibility policy</text>
+<text x="55" y="145" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f2933" text-anchor="start">Sample</text>
+<text x="260" y="145" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f2933" text-anchor="start">Historical</text>
+<text x="400" y="145" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f2933" text-anchor="start">Current</text>
+<text x="535" y="145" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f2933" text-anchor="start">N50</text>
+<text x="660" y="145" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f2933" text-anchor="start">Contigs</text>
+<text x="790" y="145" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f2933" text-anchor="start">Reason</text>
+<text x="55" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMD00019005</text>
+<text x="260" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="400" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="535" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">5,377</text>
+<text x="660" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">1</text>
+<text x="790" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">N50 &lt;20000.0; GC_Content &gt;50.88; Genome_Size &lt;4400000.0</text>
+<line x1="50" y1="199" x2="1195" y2="199" stroke="#e2e8f0"/>
+<text x="55" y="234" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMD00019007</text>
+<text x="260" y="234" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="400" y="234" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="535" y="234" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">2,909</text>
+<text x="660" y="234" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">11</text>
+<text x="790" y="234" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">N50 &lt;20000.0; GC_Content &gt;50.88; Genome_Size &lt;4400000.0</text>
+<line x1="50" y1="248" x2="1195" y2="248" stroke="#e2e8f0"/>
+<text x="55" y="283" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMD00019012</text>
+<text x="260" y="283" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="400" y="283" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="535" y="283" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">1,571</text>
+<text x="660" y="283" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">164</text>
+<text x="790" y="283" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">N50 &lt;20000.0; Genome_Size &lt;4400000.0</text>
+<line x1="50" y1="297" x2="1195" y2="297" stroke="#e2e8f0"/>
+<text x="55" y="332" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMN42689957</text>
+<text x="260" y="332" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="400" y="332" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="535" y="332" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">9,019</text>
+<text x="660" y="332" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">1033</text>
+<text x="790" y="332" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">N50 &lt;20000.0; no_of_contigs &gt;670.0</text>
+<line x1="50" y1="346" x2="1195" y2="346" stroke="#e2e8f0"/>
+<text x="55" y="381" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMD00062394</text>
+<text x="260" y="381" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="400" y="381" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b7791f" text-anchor="start">WARN</text>
+<text x="535" y="381" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">112,151</text>
+<text x="660" y="381" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">213</text>
+<text x="790" y="381" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">GC_Content &lt;50.25; Genome_Size &gt;5700000.0</text>
+<line x1="50" y1="395" x2="1195" y2="395" stroke="#e2e8f0"/>
+<text x="55" y="430" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMD00071305</text>
+<text x="260" y="430" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="400" y="430" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b7791f" text-anchor="start">WARN</text>
+<text x="535" y="430" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">23,419</text>
+<text x="660" y="430" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">353</text>
+<text x="790" y="430" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">GC_Content &gt;50.88</text>
+<line x1="50" y1="444" x2="1195" y2="444" stroke="#e2e8f0"/>
+<text x="55" y="479" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMN42744342</text>
+<text x="260" y="479" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">FAIL</text>
+<text x="400" y="479" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b7791f" text-anchor="start">WARN</text>
+<text x="535" y="479" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">57,220</text>
+<text x="660" y="479" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">550</text>
+<text x="790" y="479" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">GC_Content &lt;50.25; Genome_Size &gt;5700000.0; Total_Coding...</text>
+<line x1="50" y1="493" x2="1195" y2="493" stroke="#e2e8f0"/>
+<text x="55" y="528" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMN42764698</text>
+<text x="260" y="528" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b7791f" text-anchor="start">WARN</text>
+<text x="400" y="528" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b7791f" text-anchor="start">WARN</text>
+<text x="535" y="528" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">90,639</text>
+<text x="660" y="528" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">307</text>
+<text x="790" y="528" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">GC_Content &lt;50.25</text>
+<line x1="50" y1="542" x2="1195" y2="542" stroke="#e2e8f0"/>
+<text x="55" y="577" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMN42764701</text>
+<text x="260" y="577" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#2f6f5e" text-anchor="start">PASS</text>
+<text x="400" y="577" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b7791f" text-anchor="start">WARN</text>
+<text x="535" y="577" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">130,515</text>
+<text x="660" y="577" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">197</text>
+<text x="790" y="577" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">GC_Content &lt;50.25</text>
+<line x1="50" y1="591" x2="1195" y2="591" stroke="#e2e8f0"/>
+<text x="55" y="626" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SAMN42764703</text>
+<text x="260" y="626" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#2f6f5e" text-anchor="start">PASS</text>
+<text x="400" y="626" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#b7791f" text-anchor="start">WARN</text>
+<text x="535" y="626" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">115,531</text>
+<text x="660" y="626" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">201</text>
+<text x="790" y="626" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">GC_Content &lt;50.25</text>
+<line x1="50" y1="640" x2="1195" y2="640" stroke="#e2e8f0"/>
+</svg>

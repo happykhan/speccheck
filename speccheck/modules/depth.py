@@ -1,7 +1,9 @@
 import csv
 
+from speccheck.modules.base import Parser
 
-class Depth:
+
+class Depth(Parser):
     """
     Parser for depth.tsv files.
     Handles three types:
@@ -10,8 +12,9 @@ class Depth:
       3. Hybrid            → two rows, Read_type = short & long
     """
 
-    def __init__(self, file_path):
-        self.file_path = file_path
+    software_name = "Depth"
+    description = "GHRU short-, long-, or hybrid-read assembly depth"
+    supported_filenames = "TSV containing Sample_id, Read_type, and Depth"
 
     @property
     def has_valid_filename(self):
@@ -29,7 +32,7 @@ class Depth:
                 if not headers:
                     return False
                 return all(h in headers for h in required_headers)
-        except Exception:
+        except (OSError, csv.Error):
             return False
 
     def fetch_values(self):

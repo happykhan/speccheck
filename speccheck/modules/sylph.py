@@ -1,11 +1,13 @@
 import csv
 import re
 
+from speccheck.modules.base import Parser
 
-class Sylph:
 
-    def __init__(self, file_path):
-        self.file_path = file_path
+class Sylph(Parser):
+    software_name = "Sylph"
+    description = "Sylph taxonomic abundance and ANI profile"
+    supported_filenames = "Sylph profile TSV"
 
     @property
     def has_valid_filename(self):

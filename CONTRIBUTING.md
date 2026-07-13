@@ -332,7 +332,7 @@ speccheck/
 
 2. Add tests in `tests/test_module_your_tool.py`
 
-3. Module is auto-discovered by `load_modules_with_checks()`
+3. Register built-in modules in `speccheck/registry.py`, or register external modules with the `speccheck.parsers` entry-point group.
 
 ### Adding a Plot Module
 
@@ -352,7 +352,7 @@ speccheck/
 speccheck -v collect ...
 
 # Use Python debugger
-python -m pdb speccheck.py collect ...
+python -m pdb -m speccheck.cli collect ...
 
 # VS Code debugging
 # Use .vscode/launch.json configurations

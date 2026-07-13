@@ -5,7 +5,7 @@ This directory contains manuscript-oriented example reports generated from Quali
 ## Generate the example reports
 
 ```bash
-python scripts/generate_qualibact_example_reports.py
+pixi run python scripts/generate_qualibact_example_reports.py
 ```
 
 This creates:
@@ -23,25 +23,50 @@ The HTML report is self-contained and embeds its stylesheet directly, so there i
 
 ## Real QualiBact ATB E. coli panel
 
-The real-panel demonstration uses a small PASS/WARN/FAIL selection from the QualiBact E. coli ATB lists, downloads the assemblies with `atbfetcher`, runs QUAST, converts QualiBact ATB CheckM2/species metrics into `speccheck` parser inputs, and generates a report:
+The committed `real_panel` example is now sourced from real upstream `GHRU-assembly` outputs plus the pinned QualiBact selection metadata in:
+
+- `examples/qualibact_ecoli/real_panel/input/selected_qualibact_ecoli.csv`
+- `examples/qualibact_ecoli/real_panel/input/speccheck_metadata.csv`
+
+Rebuild the committed report from a finished local GHRU output tree with:
 
 ```bash
-python scripts/build_qualibact_ecoli_demo.py
+pixi run python scripts/build_ghru_ecoli_panel_report.py \
+  .demo_work/ghru_ecoli_panel/triplet/output \
+  --metadata .demo_work/ghru_ecoli_panel/triplet/metadata.csv \
+  --work-dir .demo_work/ghru_ecoli_panel/triplet/work
 ```
 
-On a Slurm cluster:
+This is the preferred route when the goal is to validate `speccheck` against real upstream `GHRU-assembly` outputs rather than synthetic parser inputs.
+
+## Real 100-sample E. coli run
+
+The old assembly-based 100-sample builder has been removed. The remaining 100-sample path is GHRU-backed:
 
 ```bash
-sbatch scripts/slurm_qualibact_ecoli_demo.sh
+scripts/stage_ghru_ecoli_run_100.sh
+scripts/submit_ghru_ecoli_run_100.sh
 ```
 
-The generated report is written to:
+That route:
 
-- `examples/qualibact_ecoli/real_panel/report/report.html`
-- `examples/qualibact_ecoli/real_panel/report/report.csv`
-- `examples/qualibact_ecoli/real_panel/report/report.xlsx`
+- chooses the 70 PASS / 20 WARN / 10 FAIL cohort from QualiBact metadata
+- resolves each selected sample to ENA paired-end reads
+- downloads reads on a login node
+- writes a GHRU `samplesheet.csv` plus metadata
+- runs `external/GHRU-assembly`
+- leaves the output ready for `speccheck collect-ghru` and `summary`
 
-Raw downloaded FASTA files and intermediate QUAST outputs are kept under `.demo_work/qualibact_ecoli_real/` and are intentionally not committed. The committed `real_panel/input/` files record the selected accessions and QualiBact metadata used to generate the demonstration.
+The generic staging logic lives in `scripts/stage_ghru_ecoli_cohort.py`.
+
+The run is complete. Compact publication assets are committed under
+`examples/qualibact_ecoli/real_run_100/`; raw reads, assemblies, databases, and
+Nextflow work files remain under `.demo_work/` and are excluded from Git. Rebuild
+the analysis tables and figures with:
+
+```bash
+pixi run python scripts/create_real_run_100_assets.py
+```
 
 ## Manuscript screenshots
 
@@ -61,12 +86,15 @@ scripts/export_report_screenshots.sh
 
 The script writes screenshots to `examples/qualibact_ecoli/figures/`. It requires a working headless Chromium, Chrome, or Firefox installation.
 
-## Upstream analysis template
+## GHRU validation helpers
 
-For environments where you want to rerun the upstream QC tools before `speccheck collect`, use the Slurm-ready template:
+For the BMRC-backed validation route used in this repo:
 
 ```bash
-scripts/upstream_qc_slurm_template.sh
+scripts/stage_ghru_validation_assets.sh
+scripts/submit_ghru_short_validation.sh
+scripts/stage_ghru_ecoli_panel.sh triplet
+scripts/submit_ghru_ecoli_panel.sh triplet
+scripts/stage_ghru_ecoli_run_100.sh
+scripts/submit_ghru_ecoli_run_100.sh
 ```
-
-It is a site-specific template, not a complete workflow manager. Replace the placeholder Speciator, Sylph, and ARIBA commands with the commands used in your environment.
