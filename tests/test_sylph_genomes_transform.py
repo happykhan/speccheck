@@ -19,7 +19,7 @@ def test_sylph_genomes_accession_extraction(tmp_path):
         "Depth.Read_type": "short",
         "Sylph.all_checks_passed": True,
         "Sylph.top_species": "Escherichia coli",
-        "Sylph.top_taxonomic_abundance": 0.9,
+        "Sylph.top_abundance_percent": 90.0,
         "Sylph.genomes": raw,
         "Quast.all_checks_passed": True,
         "Quast.# contigs (>= 0 bp).check": True,

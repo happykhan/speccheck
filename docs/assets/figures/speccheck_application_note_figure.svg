@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1280" viewBox="0 0 1800 1280" role="img" aria-labelledby="title desc">
+  <title id="title">Speccheck workflow, 100-sample results, and species-specific N50 thresholds</title>
+  <desc id="desc">A three-panel figure showing the Speccheck decision workflow, current QC results for 100 read-backed samples, and preferred QualiBact N50 failure thresholds for six bacterial species.</desc>
+  <rect width="1800" height="1280" fill="#ffffff"/>
+  <style>
+    .title{font:700 34px Arial,Helvetica,sans-serif;fill:#17212b}.panel{font:700 28px Arial,Helvetica,sans-serif;fill:#17212b}.label{font:600 21px Arial,Helvetica,sans-serif;fill:#263746}.body{font:400 19px Arial,Helvetica,sans-serif;fill:#405261}.small{font:400 17px Arial,Helvetica,sans-serif;fill:#536471}.axis{stroke:#7b8794;stroke-width:2}.grid{stroke:#d9e1e8;stroke-width:1}.arrow{stroke:#55717f;stroke-width:4;fill:none;marker-end:url(#arrow)}.box{fill:#f5f8fa;stroke:#78909c;stroke-width:2}.policy{fill:#eef4ff;stroke:#526fa3;stroke-width:2}.output{fill:#eff8f3;stroke:#4a806b;stroke-width:2}.pass{fill:#2f6f5e}.warn{fill:#b7791f}.fail{fill:#b42318}.ne{fill:#64748b}.threshold{fill:#355f8a}.reference{stroke:#1f2933;stroke-width:3;stroke-dasharray:10 8}.divider{stroke:#cad4dd;stroke-width:2}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#55717f"/></marker></defs>
+
+  <text x="70" y="62" class="title">Speccheck turns bacterial genome QC measurements into explicit, reviewable decisions</text>
+
+  <text x="70" y="122" class="panel">A  Decision workflow</text>
+  <rect x="85" y="165" width="340" height="180" rx="14" class="box"/>
+  <text x="255" y="205" text-anchor="middle" class="label">Published upstream outputs</text>
+  <text x="255" y="245" text-anchor="middle" class="body">CheckM/CheckM2, QUAST,</text>
+  <text x="255" y="277" text-anchor="middle" class="body">Speciator, Sylph, ARIBA,</text>
+  <text x="255" y="309" text-anchor="middle" class="body">depth, Fastp and BUSCO</text>
+  <path d="M425 255 H535" class="arrow"/>
+  <rect x="540" y="165" width="360" height="180" rx="14" class="policy"/>
+  <text x="720" y="205" text-anchor="middle" class="label">speccheck collect</text>
+  <text x="720" y="245" text-anchor="middle" class="body">Normalise metrics</text>
+  <text x="720" y="277" text-anchor="middle" class="body">Resolve species</text>
+  <text x="720" y="309" text-anchor="middle" class="body">Apply versioned criteria</text>
+  <rect x="590" y="375" width="260" height="94" rx="12" class="box"/>
+  <text x="720" y="410" text-anchor="middle" class="label">Criteria policy</text>
+  <text x="720" y="441" text-anchor="middle" class="small">QualiBact or local rules</text>
+  <path d="M720 375 V347" class="arrow"/>
+  <path d="M900 255 H1010" class="arrow"/>
+  <rect x="1015" y="165" width="300" height="180" rx="14" class="policy"/>
+  <text x="1165" y="205" text-anchor="middle" class="label">speccheck summary</text>
+  <text x="1165" y="245" text-anchor="middle" class="body">Merge the cohort</text>
+  <text x="1165" y="277" text-anchor="middle" class="body">Check identifiers</text>
+  <text x="1165" y="309" text-anchor="middle" class="body">Preserve provenance</text>
+  <path d="M1315 255 H1425" class="arrow"/>
+  <rect x="1430" y="165" width="300" height="180" rx="14" class="output"/>
+  <text x="1580" y="205" text-anchor="middle" class="label">Review and automation</text>
+  <text x="1580" y="245" text-anchor="middle" class="body">Concise and full CSV</text>
+  <text x="1580" y="277" text-anchor="middle" class="body">Standalone HTML</text>
+  <text x="1580" y="309" text-anchor="middle" class="body">Optional XLSX</text>
+  <text x="900" y="510" text-anchor="middle" class="body">All user-facing QC fields use PASS, WARN, FAIL or NOT_EVALUATED.</text>
+  <line x1="70" y1="545" x2="1730" y2="545" class="divider"/>
+
+  <text x="70" y="602" class="panel">B  Completed 100-sample read-backed case study</text>
+  <text x="120" y="654" class="label">Combined Speccheck verdict</text>
+  <text x="930" y="654" class="label">Pinned QualiBact compatibility verdict</text>
+  <line x1="170" y1="860" x2="790" y2="860" class="axis"/>
+  <line x1="980" y1="860" x2="1600" y2="860" class="axis"/>
+  <rect x="225" y="690" width="115" height="170" class="pass"/><text x="282" y="680" text-anchor="middle" class="label">85</text><text x="282" y="895" text-anchor="middle" class="small">PASS</text>
+  <rect x="405" y="852" width="115" height="8" class="warn"/><text x="462" y="842" text-anchor="middle" class="label">4</text><text x="462" y="895" text-anchor="middle" class="small">WARN</text>
+  <rect x="585" y="838" width="115" height="22" class="fail"/><text x="642" y="828" text-anchor="middle" class="label">11</text><text x="642" y="895" text-anchor="middle" class="small">FAIL</text>
+  <rect x="995" y="682" width="115" height="178" class="pass"/><text x="1052" y="672" text-anchor="middle" class="label">89</text><text x="1052" y="895" text-anchor="middle" class="small">PASS</text>
+  <rect x="1145" y="852" width="115" height="8" class="warn"/><text x="1202" y="842" text-anchor="middle" class="label">4</text><text x="1202" y="895" text-anchor="middle" class="small">WARN</text>
+  <rect x="1295" y="852" width="115" height="8" class="fail"/><text x="1352" y="842" text-anchor="middle" class="label">4</text><text x="1352" y="895" text-anchor="middle" class="small">FAIL</text>
+  <rect x="1445" y="854" width="115" height="6" class="ne"/><text x="1502" y="844" text-anchor="middle" class="label">3</text><text x="1502" y="895" text-anchor="middle" class="small">NOT_EVALUATED</text>
+  <text x="900" y="944" text-anchor="middle" class="body">Exact agreement with historical QualiBact labels: 73/100. Historical labels were not treated as ground truth.</text>
+  <line x1="70" y1="982" x2="1730" y2="982" class="divider"/>
+
+  <text x="70" y="1038" class="panel">C  The same N50 value can produce different species-specific decisions</text>
+  <text x="1610" y="1038" text-anchor="end" class="small">Preferred QualiBact schemes</text>
+  <line x1="475" y1="1092" x2="1640" y2="1092" class="axis"/>
+  <g class="small" text-anchor="middle"><text x="475" y="1122">0</text><text x="766" y="1122">20 kb</text><text x="1057" y="1122">40 kb</text><text x="1348" y="1122">60 kb</text><text x="1640" y="1122">80 kb</text></g>
+  <g class="grid"><line x1="766" y1="1060" x2="766" y2="1250"/><line x1="1057" y1="1060" x2="1057" y2="1250"/><line x1="1348" y1="1060" x2="1348" y2="1250"/></g>
+  <line x1="1057" y1="1058" x2="1057" y2="1250" class="reference"/><text x="1075" y="1076" class="small">example N50 = 40 kb</text>
+  <g class="body" text-anchor="end">
+    <text x="435" y="1148">Escherichia coli</text>
+    <text x="435" y="1172">Neisseria gonorrhoeae</text>
+    <text x="435" y="1196">Staphylococcus aureus</text>
+    <text x="435" y="1220">Mycobacterium tuberculosis</text>
+    <text x="435" y="1244">Pseudomonas aeruginosa</text>
+    <text x="435" y="1268">Klebsiella pneumoniae</text>
+  </g>
+  <circle cx="766" cy="1141" r="9" class="threshold"/>
+  <circle cx="839" cy="1165" r="9" class="threshold"/>
+  <circle cx="883" cy="1189" r="9" class="threshold"/>
+  <circle cx="970" cy="1213" r="9" class="threshold"/>
+  <circle cx="1086" cy="1237" r="9" class="threshold"/>
+  <circle cx="1319" cy="1261" r="9" class="threshold"/>
+</svg>

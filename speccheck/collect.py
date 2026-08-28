@@ -5,6 +5,8 @@ import os
 import re
 from collections.abc import Iterable
 
+from speccheck.report_tables import REPORT_SCHEMA_VERSION, combine_qc_statuses, status_label
+
 
 def collect_files(all_files, module_list):
     # Execute checks for each file using discovered modules
@@ -175,22 +177,73 @@ def write_to_file(output_file, qc_report):
     if os.path.dirname(output_file):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
+    qc_report = dict(qc_report)
+    looks_like_qc = any(
+        key.startswith(
+            (
+                "Speciator.",
+                "Depth.",
+                "Sylph.",
+                "Quast.",
+                "Checkm.",
+                "Fastp.",
+                "Busco.",
+                "Ariba.",
+            )
+        )
+        for key in qc_report
+    ) or ("sample_id" in qc_report and "all_checks_passed" in qc_report)
+    if looks_like_qc:
+        qc_report.setdefault(
+            "speccheck_qc",
+            status_label(qc_report.get("speccheck_overall_status"))
+            or status_label(qc_report.get("all_checks_passed")),
+        )
+        for key, value in list(qc_report.items()):
+            if key.endswith(".check"):
+                qc_report.setdefault(key.removesuffix(".check") + ".status", status_label(value))
+
+        for software in (
+            "Speciator",
+            "Depth",
+            "Sylph",
+            "Quast",
+            "Checkm",
+            "Fastp",
+            "Busco",
+            "Ariba",
+        ):
+            status_key = f"{software}.qc_status"
+            if status_key in qc_report:
+                continue
+            metric_statuses = [
+                value
+                for key, value in qc_report.items()
+                if key.startswith(f"{software}.") and key.endswith(".status")
+            ]
+            legacy_status = qc_report.get(f"{software}.all_checks_passed")
+            qc_report[status_key] = combine_qc_statuses(legacy_status, *metric_statuses)
+
     def _format_cell(key, val):
-        """
-        Convert only QC result fields (*.all_checks_passed, *.check)
-        into PASSED / FAILED. Leave all other values unchanged.
-        """
+        """Serialize every QC field with one status vocabulary."""
         if val is None:
             return ""
 
-        key_is_status = key.endswith("all_checks_passed") or key.endswith(".check")
-
-        # Convert only the QC result fields
+        if key.endswith(".check"):
+            status_key = key.removesuffix(".check") + ".status"
+            val = qc_report.get(status_key, val)
+        key_is_status = (
+            key.endswith("all_checks_passed")
+            or key.endswith(".check")
+            or key.endswith(".status")
+            or key.endswith(".qc_status")
+            or key.endswith("_qc")
+        )
         if key_is_status:
-            if isinstance(val, bool):
-                return "PASSED" if val else "FAILED"
-            if isinstance(val, str) and val.lower() in ("true", "false"):
-                return "PASSED" if val.lower() == "true" else "FAILED"
+            return status_label(val) or str(val)
+
+        if isinstance(val, bool):
+            return "YES" if val else "NO"
 
         # Default behaviour for everything else
         return str(val)
@@ -198,55 +251,67 @@ def write_to_file(output_file, qc_report):
     # Columns required in concise output and their explicit order
     concise_columns = [
         "sample_id",
-        "all_checks_passed",
-        "Speciator.all_checks_passed",
+        "speccheck_qc",
+        "Speciator.qc_status",
         "Speciator.speciesName",
         "Speciator.confidence",
-        "Depth.all_checks_passed",
+        "Depth.qc_status",
         "Depth.Depth",
         "Depth.Read_type",
-        "Sylph.all_checks_passed",
+        "Sylph.qc_status",
         "Sylph.top_species",
-        "Sylph.top_taxonomic_abundance",
+        "Sylph.top_abundance_percent",
+        "Sylph.top_sequence_abundance_percent",
         "Sylph.top_adjusted_ani",
         "Sylph.number_of_genomes",
         "Sylph.species_name",
-        "Sylph.taxonomic_abundances",
-        "Quast.all_checks_passed",
-        "Quast.# contigs (>= 0 bp).check",
+        "Sylph.taxonomic_abundances_percent",
+        "Sylph.sequence_abundances_percent",
+        "Quast.qc_status",
+        "Quast.# contigs (>= 0 bp).status",
         "Quast.# contigs (>= 0 bp)",
-        "Quast.# contigs",
-        "Quast.N50.check",
+        "Quast.N50.status",
         "Quast.N50",
-        "Quast.Total length (>= 0 bp).check",
+        "Quast.Total length (>= 0 bp).status",
         "Quast.Total length (>= 0 bp)",
-        "Quast.Total length",
-        "Quast.GC (%).check",
+        "Quast.GC (%).status",
         "Quast.GC (%)",
         "Quast.Largest contig",
-        "Checkm.all_checks_passed",
-        "Checkm.Completeness.check",
+        "Checkm.qc_status",
+        "Checkm.Completeness.status",
         "Checkm.Completeness",
-        "Checkm.Contamination.check",
+        "Checkm.Contamination.status",
         "Checkm.Contamination",
         "Checkm.GC_Content",
         "Checkm.Genome_Size",
         "Checkm.Contig_N50",
         "Checkm.Total_Contigs",
         "Checkm.Total_Coding_Sequences",
-        "Checkm.GC",
-        "Checkm.Genome size (bp)",
-        "Checkm.N50 (scaffolds)",
-        "Checkm.# contigs",
+        "Fastp.qc_status",
+        "Fastp.after_filtering_q30_rate.status",
+        "Fastp.after_filtering_q30_rate",
+        "Fastp.passed_filter_rate",
+        "Fastp.duplication_rate",
+        "Busco.qc_status",
+        "Busco.Complete.status",
+        "Busco.Complete",
+        "Busco.Missing.status",
+        "Busco.Missing",
+        "Busco.Duplicated",
+        "Busco.Fragmented",
+        "Busco.Lineage",
+        "Ariba.qc_status",
+        "Ariba.percent.status",
+        "Ariba.percent",
+        "Ariba.passed",
+        "Ariba.total",
+        "Ariba.not_called",
         "Sylph.genomes",
+        "report_schema_version",
     ]
 
-    # Heuristic: determine if this is a full speccheck QC report
-    looks_like_qc = any(
-        k.startswith(("Speciator.", "Depth.", "Sylph.", "Quast.", "Checkm.")) for k in qc_report
-    ) or ("sample_id" in qc_report and "all_checks_passed" in qc_report)
-
     if looks_like_qc:
+        qc_report["report_schema_version"] = REPORT_SCHEMA_VERSION
         # Sanitize Sylph.genomes to contain only accession IDs
         if "Sylph.genomes" in qc_report:
             qc_report = dict(qc_report)  # shallow copy to avoid mutating caller
@@ -284,20 +349,20 @@ def write_to_file(output_file, qc_report):
             )
         logging.info("Detailed results written to %s", detailed_path)
 
-        extra_check_columns = sorted(
-            [key for key in qc_report if key.endswith(".check") and key not in concise_columns]
+        extra_status_columns = sorted(
+            [key for key in qc_report if key.endswith(".status") and key not in concise_columns]
         )
         metadata_columns = sorted(
             [
                 key
                 for key in qc_report
                 if key not in concise_columns
-                and key not in extra_check_columns
+                and key not in extra_status_columns
                 and key not in {"Sample", "sample_id", "all_checks_passed"}
                 and "." not in key
             ]
         )
-        concise_fieldnames = concise_columns + extra_check_columns + metadata_columns
+        concise_fieldnames = concise_columns + extra_status_columns + metadata_columns
 
         # 2) Write concise CSV with stable QC columns plus sample metadata.
         with open(output_file, "w", encoding="utf-8", newline="") as f_out:

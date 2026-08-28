@@ -203,9 +203,18 @@ def _load_metadata(metadata_file):
         return {}
     if not os.path.isfile(metadata_file):
         raise FileNotFoundError(f"Metadata file not found: {metadata_file}")
-    metadata_df = pd.read_csv(metadata_file)
+    metadata_header = pd.read_csv(metadata_file, nrows=0)
+    dtype = {"sample_id": "string"} if "sample_id" in metadata_header.columns else None
+    metadata_df = pd.read_csv(metadata_file, dtype=dtype)
     if "sample_id" not in metadata_df.columns:
         raise ValueError("Metadata file must contain a 'sample_id' column")
+    if metadata_df["sample_id"].isna().any():
+        raise ValueError("Metadata file contains missing sample_id values")
+    sample_ids = metadata_df["sample_id"].astype(str)
+    if sample_ids.str.strip().eq("").any():
+        raise ValueError("Metadata file contains blank sample_id values")
+    if sample_ids.ne(sample_ids.str.strip()).any():
+        raise ValueError("Metadata file contains sample_id values with surrounding whitespace")
     if metadata_df["sample_id"].duplicated().any():
         raise ValueError("Metadata file contains duplicate sample_id values")
     metadata_df.set_index("sample_id", inplace=True)
@@ -248,6 +257,12 @@ def _evaluate_sample(
     species_checks_available = bool(species_criteria)
     species_checks_passed = True if species_checks_available else "NOT_AVAILABLE"
     not_evaluated_count = 0
+    baseline_not_evaluated_count = 0
+    species_not_evaluated_count = 0
+    baseline_warning_reasons = []
+    baseline_failure_reasons = []
+    species_warning_reasons = []
+    species_failure_reasons = []
     warning_reasons = []
     failure_reasons = []
 
@@ -273,8 +288,20 @@ def _evaluate_sample(
             )
         )
         not_evaluated_count += baseline_missing + species_missing
+        baseline_not_evaluated_count += baseline_missing
+        species_not_evaluated_count += species_missing
+        baseline_warning_reasons.extend(baseline_warnings)
+        baseline_failure_reasons.extend(baseline_failures)
+        species_warning_reasons.extend(species_warnings)
+        species_failure_reasons.extend(species_failures)
         warning_reasons.extend(baseline_warnings + species_warnings)
         failure_reasons.extend(baseline_failures + species_failures)
+        qc_report[f"{software}.qc_status"] = _aggregate_qc_status(
+            warnings=baseline_warnings + species_warnings,
+            failures=baseline_failures + species_failures,
+            not_evaluated=baseline_missing + species_missing,
+            fail_on_not_evaluated=fail_on_not_evaluated,
+        )
         qc_report[f"{software}.all_checks_passed"] = baseline_result and species_result
         baseline_checks_passed = baseline_checks_passed and baseline_result
         if species_checks_available:
@@ -287,6 +314,22 @@ def _evaluate_sample(
     qc_report["speccheck_baseline_checks_passed"] = baseline_checks_passed
     qc_report["speccheck_species_checks_passed"] = species_checks_passed
     qc_report["speccheck_species_checks_available"] = species_checks_available
+    qc_report["speccheck_baseline_qc"] = _aggregate_qc_status(
+        warnings=baseline_warning_reasons,
+        failures=baseline_failure_reasons,
+        not_evaluated=baseline_not_evaluated_count,
+        fail_on_not_evaluated=fail_on_not_evaluated,
+    )
+    qc_report["speccheck_species_qc"] = (
+        _aggregate_qc_status(
+            warnings=species_warning_reasons,
+            failures=species_failure_reasons,
+            not_evaluated=species_not_evaluated_count,
+            fail_on_not_evaluated=fail_on_not_evaluated,
+        )
+        if species_checks_available
+        else "NOT_EVALUATED"
+    )
     qc_report["speccheck_warning_count"] = len(warning_reasons)
     qc_report["speccheck_failure_count"] = len(failure_reasons)
     qc_report["speccheck_warning_reasons"] = "; ".join(warning_reasons) or "none"
@@ -295,11 +338,19 @@ def _evaluate_sample(
         "FAIL"
         if failure_reasons or (fail_on_not_evaluated and not_evaluated_count)
         else "WARN"
-        if warning_reasons
+        if warning_reasons or not_evaluated_count
         else "PASS"
     )
     qc_report["_not_evaluated_count"] = not_evaluated_count
     return qc_report
+
+
+def _aggregate_qc_status(*, warnings, failures, not_evaluated, fail_on_not_evaluated):
+    if failures or (fail_on_not_evaluated and not_evaluated):
+        return "FAIL"
+    if warnings or not_evaluated:
+        return "WARN"
+    return "PASS"
 
 
 def _add_parsed_values(qc_report, software, result):

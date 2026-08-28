@@ -33,21 +33,25 @@ The case study demonstrates three things:
 
 The completed 100-sample run produced:
 
-- 85 current compatibility PASS samples;
+- 89 current compatibility PASS samples;
 - 4 current compatibility WARN samples;
 - 4 current compatibility FAIL samples;
-- 7 current compatibility NOT_AVAILABLE samples;
-- 69/100 exact tier agreement with the historical labels;
+- 3 current compatibility NOT_EVALUATED samples;
+- 73/100 exact tier agreement with the historical labels;
 - 3 samples with unidentified Speciator results.
 
 These values describe concordance between historical labels and current
 measurements. They are not sensitivity or specificity estimates, because the
 historical labels are not treated as ground truth.
 
-`NOT_AVAILABLE` is deliberate here. The compatibility overlay is pinned to an
-E. coli QualiBact threshold set, so Speccheck does not invent an E. coli
-compatibility tier when the current species assignment falls outside that pinned
-policy or cannot be identified.
+The publication figure combines the decision workflow, the combined and
+QualiBact-specific verdict distributions, and the species-specific N50 example:
+
+![Speccheck application-note figure](assets/figures/speccheck_application_note_figure.png)
+
+The compatibility overlay applies the pinned E. coli QualiBact threshold set to
+E. coli and *Shigella* assignments. The 3 unidentified assemblies remain
+`NOT_EVALUATED`; Speccheck does not assign them an E. coli compatibility tier.
 
 ![Tier concordance](assets/figures/real_run_100_tier_concordance.png)
 
@@ -60,9 +64,10 @@ happen. It highlights assembly and contamination metrics by historical tier.
 
 ## Report snapshot
 
-The HTML report is intended for interactive review. It starts with cohort-level
-counts, then moves into sample review, warning/failure reasons, metric summaries,
-software diagnostics, and a collapsible full-detail table.
+The HTML report is intended for interactive review. It opens on an exception-first
+review queue with sample-detail dialogs. Cohort summaries, per-tool diagnostics,
+and the full provenance table remain collapsed until requested, with persistent
+desktop navigation and a compact mobile jump menu.
 
 ![Report snapshot](assets/figures/real_run_100_report_snapshot.png)
 

@@ -26,6 +26,19 @@ def test_checkmvalues():
     assert values["Completeness"] == 93.2
 
 
+def test_checkm1_practice_output_is_normalized():
+    path = "tests/practice_data/Sample_1cc0da37semb/Sample_1cc0da37semb.short (1).tsv"
+    parser = Checkm(path)
+    assert parser.has_valid_fileformat
+    values = parser.fetch_values()
+    assert values["Name"] == "Sample_1cc0da37semb.short"
+    assert values["Genome_Size"] == values["Genome size (bp)"]
+    assert values["GC_Content"] == values["GC"]
+    assert values["Total_Contigs"] == values["# contigs"]
+    assert values["Contig_N50"] == values["N50 (scaffolds)"]
+    assert values["Total_Coding_Sequences"] == values["# predicted genes"]
+
+
 def test_checkm_gc_fraction_is_normalized_to_percent(tmp_path):
     checkm_file = tmp_path / "checkm.tsv"
     checkm_file.write_text(

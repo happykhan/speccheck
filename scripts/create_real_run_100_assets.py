@@ -21,12 +21,12 @@ DEFAULT_REPORT_ROOT = ROOT / ".demo_work/publication_100_final/report"
 DEFAULT_OUTPUT = ROOT / "examples/qualibact_ecoli/real_run_100"
 DOC_FIGURE_DIR = ROOT / "docs/assets/figures"
 TIERS = ("PASS", "WARN", "FAIL")
-CURRENT_TIERS = ("PASS", "WARN", "FAIL", "NOT_AVAILABLE")
+CURRENT_TIERS = ("PASS", "WARN", "FAIL", "NOT_EVALUATED")
 COLORS = {
     "PASS": "#2f6f5e",
     "WARN": "#b7791f",
     "FAIL": "#b42318",
-    "NOT_AVAILABLE": "#64748b",
+    "NOT_EVALUATED": "#64748b",
 }
 METRICS = {
     "n50": "N50 (bp)",
@@ -73,7 +73,7 @@ def write_svg(path: Path, width: int, height: int, body: list[str]):
 
 
 def concordance_table(report: pd.DataFrame) -> pd.DataFrame:
-    table = pd.crosstab(report["qualibact_tier"], report["qualibact_compat_tier"])
+    table = pd.crosstab(report["historical_qualibact_qc"], report["qualibact_qc"])
     return table.reindex(index=TIERS, columns=CURRENT_TIERS, fill_value=0)
 
 
@@ -149,7 +149,7 @@ def metric_statistics(report: pd.DataFrame) -> pd.DataFrame:
     for metric, label in METRICS.items():
         for tier in TIERS:
             values = pd.to_numeric(
-                report.loc[report["qualibact_tier"] == tier, metric], errors="coerce"
+                report.loc[report["historical_qualibact_qc"] == tier, metric], errors="coerce"
             ).dropna()
             records.append(
                 {
@@ -213,8 +213,8 @@ def write_metric_figure(path: Path, statistics: pd.DataFrame):
 
 
 def write_report_snapshot(path: Path, report: pd.DataFrame):
-    review = report[report["qualibact_compat_tier"].isin(["FAIL", "WARN", "NOT_AVAILABLE"])].copy()
-    review = review.sort_values(["qualibact_compat_tier", "sample_id"]).head(10)
+    review = report[report["qualibact_qc"].isin(["FAIL", "WARN", "NOT_EVALUATED"])].copy()
+    review = review.sort_values(["qualibact_qc", "sample_id"]).head(10)
     body = [
         svg_text(50, 58, "speccheck 100-sample review snapshot", size=30, weight=700),
         svg_text(
@@ -233,8 +233,8 @@ def write_report_snapshot(path: Path, report: pd.DataFrame):
     for row in review.to_dict(orient="records"):
         values = (
             row["sample_id"],
-            row["qualibact_tier"],
-            row["qualibact_compat_tier"],
+            row["historical_qualibact_qc"],
+            row["qualibact_qc"],
             f"{int(row['n50']):,}",
             int(row["contigs"]),
             row["reason_summary"],
@@ -289,7 +289,7 @@ def build_assets(run_root: Path, report_root: Path, output: Path):
     analysis_dir.mkdir(parents=True, exist_ok=True)
     matrix = concordance_table(report)
     matrix.to_csv(analysis_dir / "tier_concordance.csv")
-    discordant = report[report["qualibact_tier"] != report["qualibact_compat_tier"]]
+    discordant = report[report["historical_qualibact_qc"] != report["qualibact_qc"]]
     discordant.to_csv(analysis_dir / "discordant_samples.csv", index=False)
     statistics = metric_statistics(report)
     statistics.to_csv(analysis_dir / "metric_distributions.csv", index=False)
@@ -304,8 +304,8 @@ def build_assets(run_root: Path, report_root: Path, output: Path):
     agreement = int(sum(matrix.loc[tier, tier] for tier in TIERS))
     summary = {
         "sample_count": 100,
-        "historical_tiers": report["qualibact_tier"].value_counts().to_dict(),
-        "current_compatibility_tiers": report["qualibact_compat_tier"].value_counts().to_dict(),
+        "historical_tiers": report["historical_qualibact_qc"].value_counts().to_dict(),
+        "current_compatibility_tiers": report["qualibact_qc"].value_counts().to_dict(),
         "exact_tier_agreement_count": agreement,
         "exact_tier_agreement_fraction": agreement / 100,
         "discordant_count": int(len(discordant)),

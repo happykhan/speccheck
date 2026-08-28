@@ -148,7 +148,7 @@ QualiBact thresholds are converted into the internal criteria CSV format:
 speccheck check \
   --criteria-file speccheck/config/criteria.csv \
   --update \
-  --update-url https://static.qualibact.org/api/v2/external/thresholds.csv
+  --update-url https://static.qualibact.org/api/v2/thresholds.csv
 ```
 
 Existing unmanaged rows are preserved. This is how Speccheck can keep global

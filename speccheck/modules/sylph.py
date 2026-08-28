@@ -1,4 +1,5 @@
 import csv
+import math
 import re
 
 from speccheck.modules.base import Parser
@@ -9,56 +10,41 @@ class Sylph(Parser):
     description = "Sylph taxonomic abundance and ANI profile"
     supported_filenames = "Sylph profile TSV"
 
+    required_headers = {
+        "Sample_file",
+        "Genome_file",
+        "Taxonomic_abundance",
+        "Sequence_abundance",
+        "Adjusted_ANI",
+        "Contig_name",
+    }
+
     @property
     def has_valid_filename(self):
         return self.file_path.endswith(".tsv")
 
     @property
     def has_valid_fileformat(self):
-
-        required_headers = [
-            "Sample_file",
-            "Genome_file",
-            "Taxonomic_abundance",
-            "Sequence_abundance",
-            "Adjusted_ANI",
-            "Eff_cov",
-            "ANI_5-95_percentile",
-            "Eff_lambda",
-            "Lambda_5-95_percentile",
-            "Median_cov",
-            "Mean_cov_geq1",
-            "Containment_ind",
-            "Naive_ANI",
-            "kmers_reassigned",
-            "Contig_name",
-        ]
-        with open(self.file_path, encoding="utf-8") as file:
-            first_line = file.readline()
-            if "\t" not in first_line:
-                return False
-
-        with open(self.file_path, encoding="utf-8") as file:
-            lines = file.readlines()
-            lines = [line for line in lines if line.strip()]
-        # Check if the first line is the header and has the required headers
-        if first_line.strip().split("\t") != required_headers:
+        try:
+            with open(self.file_path, encoding="utf-8", newline="") as file:
+                headers = csv.DictReader(file, delimiter="\t").fieldnames or []
+        except (OSError, UnicodeError, csv.Error):
             return False
-
-        return True
+        return self.required_headers.issubset(headers)
 
     def fetch_values(self):
-        with open(self.file_path, encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8", newline="") as file:
             reader = csv.DictReader(file, delimiter="\t")
             result = {
                 "genomes": "",
                 "number_of_genomes": 0,
-                "taxonomic_abundances": "",
-                "sequence_abundances": "",
+                "taxonomic_abundances_percent": "",
+                "sequence_abundances_percent": "",
                 "adjusted_anis": "",
                 "species_names": "",
                 "top_species": "",
-                "top_taxonomic_abundance": 0.0,
+                "top_abundance_percent": 0.0,
+                "top_sequence_abundance_percent": 0.0,
                 "top_adjusted_ani": 0.0,
             }
             genomes = []
@@ -79,8 +65,8 @@ class Sylph(Parser):
                 genomes.append(genome_file)
 
                 # Extract taxonomic and sequence abundances
-                tax_abundance = float(row.get("Taxonomic_abundance", 0))
-                seq_abundance = float(row.get("Sequence_abundance", 0))
+                tax_abundance = _percentage(row, "Taxonomic_abundance")
+                seq_abundance = _percentage(row, "Sequence_abundance")
                 taxonomic_abundances.append(tax_abundance)
                 sequence_abundances.append(seq_abundance)
 
@@ -106,8 +92,8 @@ class Sylph(Parser):
             # Store all values as semicolon-separated strings
             result["genomes"] = ";".join(genomes)
             result["species_name"] = ";".join(species)
-            result["taxonomic_abundances"] = ";".join(map(str, taxonomic_abundances))
-            result["sequence_abundances"] = ";".join(map(str, sequence_abundances))
+            result["taxonomic_abundances_percent"] = ";".join(map(str, taxonomic_abundances))
+            result["sequence_abundances_percent"] = ";".join(map(str, sequence_abundances))
             result["adjusted_anis"] = ";".join(map(str, adjusted_anis))
 
             # Find top hit (highest taxonomic abundance)
@@ -116,7 +102,8 @@ class Sylph(Parser):
                 result["top_species"] = (
                     species[max_abundance_idx] if max_abundance_idx < len(species) else "Unknown"
                 )
-                result["top_taxonomic_abundance"] = taxonomic_abundances[max_abundance_idx]
+                result["top_abundance_percent"] = taxonomic_abundances[max_abundance_idx]
+                result["top_sequence_abundance_percent"] = max(sequence_abundances)
                 result["top_adjusted_ani"] = (
                     adjusted_anis[max_abundance_idx]
                     if max_abundance_idx < len(adjusted_anis)
@@ -124,3 +111,14 @@ class Sylph(Parser):
                 )
 
             return result
+
+
+def _percentage(row, field):
+    value = row.get(field)
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"Sylph field '{field}' must be numeric; received {value!r}.") from error
+    if not math.isfinite(numeric) or not 0 <= numeric <= 100:
+        raise ValueError(f"Sylph field '{field}' must be a finite percentage from 0 to 100.")
+    return numeric

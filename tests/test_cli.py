@@ -104,7 +104,6 @@ def test_summary_command_dispatches_reporting_options(monkeypatch, tmp_path):
         interactive_tables,
         qualifyr_style,
         qualibact_compat,
-        qualibact_warn_as_fail,
     ):
         calls.update(
             {
@@ -118,7 +117,6 @@ def test_summary_command_dispatches_reporting_options(monkeypatch, tmp_path):
                 "interactive_tables": interactive_tables,
                 "qualifyr_style": qualifyr_style,
                 "qualibact_compat": qualibact_compat,
-                "qualibact_warn_as_fail": qualibact_warn_as_fail,
             }
         )
 
@@ -149,7 +147,6 @@ def test_summary_command_dispatches_reporting_options(monkeypatch, tmp_path):
             "--no-interactive-tables",
             "--qualifyr-style",
             "--qualibact-compat",
-            "--qualibact-warn-as-fail",
         ],
     )
 
@@ -164,7 +161,6 @@ def test_summary_command_dispatches_reporting_options(monkeypatch, tmp_path):
     assert calls["interactive_tables"] is False
     assert calls["qualifyr_style"] is True
     assert calls["qualibact_compat"] is True
-    assert calls["qualibact_warn_as_fail"] is True
 
 
 def test_check_command_dispatches_update_options(monkeypatch, tmp_path):

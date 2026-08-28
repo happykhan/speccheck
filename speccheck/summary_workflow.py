@@ -11,10 +11,11 @@ from speccheck.qualibact import add_qualibact_compatibility_columns
 from speccheck.report import plot_charts
 from speccheck.report_tables import (
     build_concise_report_frame,
+    build_full_report_frame,
     build_metric_summary_frames,
+    combine_qc_statuses,
     export_summary_workbook,
     status_label,
-    status_rank,
 )
 
 
@@ -29,7 +30,6 @@ def summary(
     interactive_tables=True,
     qualifyr_style=False,
     qualibact_compat=False,
-    qualibact_warn_as_fail=False,
 ):
     """Merge collected CSVs and write concise, full, HTML, and XLSX reports."""
     os.makedirs(output, exist_ok=True)
@@ -41,13 +41,11 @@ def summary(
 
     report_df = _build_report_frame(merged_data)
     if qualibact_compat:
-        report_df = _apply_qualibact_policy(
-            report_df,
-            warn_as_fail=qualibact_warn_as_fail,
-        )
+        report_df = add_qualibact_compatibility_columns(report_df)
     report_df = decorate_report_dataframe(report_df)
     concise_report_df = build_concise_report_frame(report_df)
-    normalized_full_df = normalize_report_status_columns(report_df)
+    full_report_df = build_full_report_frame(report_df)
+    normalized_full_df = normalize_report_status_columns(full_report_df)
     normalized_concise_df = normalize_report_status_columns(concise_report_df)
 
     normalized_concise_df.to_csv(os.path.join(output, "report.csv"), index=False)
@@ -94,17 +92,6 @@ def _build_report_frame(merged_data):
     return pd.DataFrame(rows).reindex(columns=[field for field in fieldnames if field in rows[0]])
 
 
-def _apply_qualibact_policy(report_df, warn_as_fail=False):
-    result = add_qualibact_compatibility_columns(report_df, warn_as_fail=warn_as_fail)
-    if warn_as_fail:
-        result["all_checks_passed"] = result["qualibact_compat_passed"]
-    else:
-        failed_mask = result["qualibact_compat_tier"] == "FAIL"
-        result["all_checks_passed"] = result["all_checks_passed"].astype(object)
-        result.loc[failed_mask, "all_checks_passed"] = False
-    return result
-
-
 def discover_summary_csvs(directory, output):
     """Find summary inputs while excluding detailed and generated artifacts."""
     csv_files = []
@@ -146,13 +133,29 @@ def merge_summary_csvs(csv_files, sample_id):
     merged_data = {}
     seen_samples = {}
     for path in csv_files:
-        frame = pd.read_csv(path)
+        header = pd.read_csv(path, nrows=0)
+        identifier_columns = [
+            column
+            for column in header.columns
+            if column == sample_id or column.lower().endswith((".sample_id", ".sampleid"))
+        ]
+        frame = pd.read_csv(path, dtype=dict.fromkeys(identifier_columns, "string"))
         if sample_id not in frame.columns:
             raise ValueError(
                 f"Summary input {path} is missing required sample column '{sample_id}'."
             )
         if frame[sample_id].isna().any():
             raise ValueError(f"Summary input {path} contains missing sample IDs in '{sample_id}'.")
+        sample_values = frame[sample_id].astype(str)
+        blank = sample_values.str.strip().eq("")
+        if blank.any():
+            raise ValueError(f"Summary input {path} contains blank sample IDs in '{sample_id}'.")
+        padded = sample_values.ne(sample_values.str.strip())
+        if padded.any():
+            raise ValueError(
+                f"Summary input {path} contains sample IDs with surrounding whitespace "
+                f"in '{sample_id}'."
+            )
         duplicated = frame[frame[sample_id].duplicated(keep=False)][sample_id].astype(str).tolist()
         if duplicated:
             duplicate_names = ", ".join(sorted(set(duplicated)))
@@ -161,6 +164,18 @@ def merge_summary_csvs(csv_files, sample_id):
             )
         for row in frame.to_dict(orient="records"):
             current_sample = str(row.pop(sample_id))
+            embedded_sample_columns = [
+                column for column in row if column.lower().endswith((".sample_id", ".sampleid"))
+            ]
+            for column in embedded_sample_columns:
+                embedded_sample = row[column]
+                if pd.isna(embedded_sample):
+                    continue
+                if str(embedded_sample) != current_sample:
+                    raise ValueError(
+                        f"Sample ID mismatch in {path}: '{sample_id}' is "
+                        f"'{current_sample}', but '{column}' is '{embedded_sample}'."
+                    )
             if current_sample in seen_samples:
                 raise ValueError(
                     f"Duplicate sample ID '{current_sample}' found in both "
@@ -178,19 +193,56 @@ def normalize_report_status_columns(report_df):
         column
         for column in normalized.columns
         if column.endswith(".check")
+        or column.endswith(".status")
+        or column.endswith(".qc_status")
+        or column.endswith("_qc")
         or column.endswith("all_checks_passed")
-        or column == "qualibact_compat_passed"
     ]
     for column in status_columns:
         normalized[column] = normalized[column].map(lambda value: status_label(value) or value)
+    for column in (
+        "speccheck_fail_on_not_evaluated",
+        "speccheck_species_checks_available",
+        "speccheck_threshold_fallback_used",
+    ):
+        if column not in normalized.columns:
+            continue
+        normalized[column] = normalized[column].map(_yes_no_label)
     return normalized
+
+
+def _yes_no_label(value):
+    if pd.isna(value):
+        return ""
+    normalized = str(value).strip().lower()
+    if normalized in {"true", "yes", "1"}:
+        return "YES"
+    if normalized in {"false", "no", "0"}:
+        return "NO"
+    return value
 
 
 def decorate_report_dataframe(report_df):
     decorated = report_df.copy()
+    for column in list(decorated.columns):
+        if not column.endswith(".all_checks_passed"):
+            continue
+        software = column.removesuffix(".all_checks_passed")
+        metric_statuses = [
+            decorated[metric]
+            for metric in decorated.columns
+            if metric.startswith(f"{software}.") and metric.endswith((".status", ".check"))
+        ]
+        decorated[f"{software}.qc_status"] = pd.concat(
+            [decorated[column], *metric_statuses], axis=1
+        ).apply(lambda row: combine_qc_statuses(*row), axis=1)
+    decorated["speccheck_qc"] = decorated.apply(_row_speccheck_qc_label, axis=1)
+    if "qualibact_compat_tier" in decorated.columns:
+        decorated["qualibact_qc"] = decorated["qualibact_compat_tier"].map(status_label)
+    if "qualibact_tier" in decorated.columns:
+        decorated["historical_qualibact_qc"] = decorated["qualibact_tier"].map(status_label)
     decorated["overall_qc"] = decorated.apply(_row_overall_qc_label, axis=1)
     aliases = {
-        "speccheck_baseline_checks_passed": "baseline_qc",
         "Speciator.speciesName": "species",
         "Speciator.confidence": "species_confidence",
         "speccheck_threshold_source": "threshold_source",
@@ -203,22 +255,40 @@ def decorate_report_dataframe(report_df):
 
 
 def _row_overall_qc_label(row):
-    value = row.get("qualibact_compat_tier")
-    if pd.notna(value):
-        return str(value)
-    return status_label(row.get("all_checks_passed")) or ""
+    return combine_qc_statuses(row.get("speccheck_qc"), row.get("qualibact_qc"))
+
+
+def _row_speccheck_qc_label(row):
+    if pd.notna(row.get("speccheck_qc")):
+        return status_label(row.get("speccheck_qc"))
+    if pd.notna(row.get("speccheck_overall_status")):
+        return status_label(row.get("speccheck_overall_status"))
+    return status_label(row.get("all_checks_passed"))
 
 
 def _row_reason_summary(row):
-    compatibility_reason = row.get("qualibact_compat_reasons")
-    if pd.notna(compatibility_reason) and str(compatibility_reason).strip().lower() not in {
-        "",
-        "none",
-    }:
-        return str(compatibility_reason)
-    reasons = [
-        column.removesuffix(".check")
-        for column, value in row.items()
-        if column.endswith(".check") and status_rank(value) == 0
-    ]
-    return "; ".join(reasons[:5]) or "none"
+    reasons = []
+    speccheck_qc = status_label(row.get("speccheck_qc"))
+    if speccheck_qc == "FAIL":
+        reasons.extend(_split_reasons(row.get("speccheck_failure_reasons")))
+    elif speccheck_qc == "WARN":
+        reasons.extend(_split_reasons(row.get("speccheck_warning_reasons")))
+
+    if status_label(row.get("qualibact_qc")) in {"WARN", "FAIL"}:
+        reasons.extend(_split_reasons(row.get("qualibact_compat_reasons")))
+
+    if not reasons and speccheck_qc in {"WARN", "FAIL"}:
+        reasons = []
+        for column, value in row.items():
+            if not column.endswith((".check", ".status")):
+                continue
+            if status_label(value) != speccheck_qc:
+                continue
+            reasons.append(column.removesuffix(".check").removesuffix(".status"))
+    return "; ".join(dict.fromkeys(reasons)) or "none"
+
+
+def _split_reasons(value):
+    if pd.isna(value) or str(value).strip().lower() in {"", "none"}:
+        return []
+    return [part.strip() for part in str(value).split(";") if part.strip()]

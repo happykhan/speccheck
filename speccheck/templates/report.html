@@ -4,14 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>speccheck QC report</title>
-    <script src="https://cdn.plot.ly/plotly-3.0.0-rc.2.min.js" charset="utf-8"></script>
     <style>
 {{ embedded_styles }}
     </style>
 </head>
 <body>
     <div class="page-shell">
-        <header class="report-header sticky-header">
+        <header id="overview" class="report-header sticky-header">
             <div class="eyebrow">speccheck quality control report</div>
             {%- if version %}
                 <h1>QC Report <span>speccheck {{ version }}</span></h1>
@@ -23,28 +22,93 @@
             </p>
             <div class="hero-card hero-kpis">
                 {%- for kpi in dataset_kpis %}
+{% if interactive_tables and kpi.filter %}
+                <button type="button" class="kpi-card kpi-{{ kpi.tone }} kpi-filter" data-status-filter="{{ kpi.filter }}">
+                    <span class="kpi-label">{{ kpi.label }}</span>
+                    <strong class="kpi-value">{{ kpi.value }}</strong>
+                </button>
+{% else %}
                 <div class="kpi-card kpi-{{ kpi.tone }}">
                     <span class="kpi-label">{{ kpi.label }}</span>
                     <strong class="kpi-value">{{ kpi.value }}</strong>
                 </div>
+{% endif %}
                 {%- endfor %}
             </div>
-            <p class="hero-summary">{{ sample_count }}</p>
+{% if run_context %}
+            <dl class="run-context">
+{% for item in run_context %}
+                <div><dt>{{ item.label }}</dt><dd>{{ item.value }}</dd></div>
+{% endfor %}
+            </dl>
+{% endif %}
         </header>
 
-        <nav class="report-nav" aria-label="Report sections">
-            <a href="#sample-review">Sample review</a>
-            <a href="#exceptions">Warnings and failures</a>
-            <a href="#metric-summary">Metric summaries</a>
-            <a href="#status-matrix">Status matrix</a>
-            <a href="#software-diagnostics">Software diagnostics</a>
-            <a href="#full-detail">Full detail</a>
-        </nav>
+        <div class="mobile-jump">
+            <label for="report-jump">Jump to</label>
+            <select id="report-jump">
+                <option value="#overview">Overview</option>
+                <option value="#sample-review">Review queue ({{ review_status_counts.NEEDS_REVIEW }})</option>
+                <option value="#metric-summary">Cohort metrics</option>
+                <option value="#software-diagnostics">Tool diagnostics</option>
+{% for tool in software_navigation %}
+                <option value="#{{ tool.id }}">{{ tool.name }}{% if tool.review_count %} ({{ tool.review_count }}){% endif %}</option>
+{% endfor %}
+                <option value="#full-detail">Data and provenance</option>
+            </select>
+        </div>
 
-        <main class="report-main">
-            <section id="exceptions" class="overview-grid">
+        <div class="report-layout" id="report-layout">
+            <aside class="report-sidebar">
+                <button type="button" class="sidebar-toggle" aria-expanded="true" aria-label="Collapse report navigation">
+                    <span aria-hidden="true">←</span><span class="sidebar-toggle-label">Collapse</span>
+                </button>
+                <nav class="report-nav" aria-label="Report sections">
+                    <a href="#overview" data-section-link><span>Overview</span></a>
+                    <a href="#sample-review" data-section-link>
+                        <span>Review queue</span><strong>{{ review_status_counts.NEEDS_REVIEW }}</strong>
+                    </a>
+                    <a href="#metric-summary" data-section-link><span>Cohort metrics</span></a>
+                    <a href="#software-diagnostics" data-section-link><span>Tool diagnostics</span></a>
+{% if software_navigation %}
+                    <div class="report-subnav">
+{% for tool in software_navigation %}
+                        <a href="#{{ tool.id }}" data-section-link>
+                            <span>{{ tool.name }}</span>{% if tool.review_count %}<strong>{{ tool.review_count }}</strong>{% endif %}
+                        </a>
+{% endfor %}
+                    </div>
+{% endif %}
+                    <a href="#full-detail" data-section-link><span>Data and provenance</span></a>
+                </nav>
+            </aside>
+
+            <main class="report-main">
+            <section id="sample-review" class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Action first</div>
+                        <h2>Review queue</h2>
+                    </div>
+                </div>
+                <p class="review-lede"><strong>{{ review_status_counts.NEEDS_REVIEW }} of {{ review_status_counts.ALL }} samples require review.</strong> Select a row for its key metrics, tool statuses and failed checks.</p>
+{% if interactive_tables %}
+                <div class="status-tabs" role="group" aria-label="Filter samples by QC status" data-default-filter="{% if review_status_counts.NEEDS_REVIEW %}NEEDS_REVIEW{% else %}ALL{% endif %}">
+                    <button type="button" data-status-filter="NEEDS_REVIEW">Needs review <span>{{ review_status_counts.NEEDS_REVIEW }}</span></button>
+                    <button type="button" data-status-filter="FAIL">FAIL <span>{{ review_status_counts.FAIL }}</span></button>
+                    <button type="button" data-status-filter="WARN">WARN <span>{{ review_status_counts.WARN }}</span></button>
+                    <button type="button" data-status-filter="NOT_EVALUATED">Not evaluated <span>{{ review_status_counts.NOT_EVALUATED }}</span></button>
+                    <button type="button" data-status-filter="PASS">PASS <span>{{ review_status_counts.PASS }}</span></button>
+                    <button type="button" data-status-filter="ALL">All <span>{{ review_status_counts.ALL }}</span></button>
+                </div>
+                <p id="review-filter-summary" class="review-filter-summary" aria-live="polite"></p>
+{% endif %}
+                {{ sample_review_table }}
+            </section>
+
+            <section id="review-reasons" class="overview-grid">
                 <article class="panel prose">
-                    <h2>Warnings and failures</h2>
+                    <h2>Top review reasons</h2>
 {% if run_alerts %}
                     <ul class="alert-list">
 {% for alert in run_alerts %}
@@ -56,75 +120,57 @@
 {% endif %}
                 </article>
                 <article class="panel prose">
-                    <h2>Software in report</h2>
-                    {{ software_summary }}
+                    <h2>How to use this report</h2>
+                    <ol class="workflow-steps">
+                        <li>Start with FAIL and WARN samples in the review queue.</li>
+                        <li>Open a sample row to inspect its metrics and failed checks.</li>
+                        <li>Use tool diagnostics only when a reason needs investigation.</li>
+                    </ol>
                 </article>
             </section>
 
-            <section id="sample-review" class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Review</div>
-                        <h2>Sample review table</h2>
-                    </div>
-                </div>
-                <p>The first table keeps the sample review surface concise for large runs.</p>
-                {{ sample_review_table }}
-            </section>
-
-            <section class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Exceptions</div>
-                        <h2>Top failure reasons</h2>
-                    </div>
-                </div>
-                {{ failure_reasons }}
-            </section>
-
             <section id="metric-summary" class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Metrics</div>
-                        <h2>Compact summary tables</h2>
-                    </div>
-                </div>
-                {{ metric_summary_tables }}
+                <details class="section-disclosure">
+                    <summary>
+                        <span><span class="eyebrow">Cohort</span><strong>Cohort metrics</strong></span>
+                        <span class="summary-hint">Four compact distribution summaries</span>
+                    </summary>
+                    <div class="section-disclosure-body">{{ metric_summary_tables }}</div>
+                </details>
             </section>
 
-            <section id="status-matrix" class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Status</div>
-                        <h2>QC status matrix</h2>
-                    </div>
-                </div>
-                {{ summary_table }}
-            </section>
-
-{% if qualifyr_style_table %}
-            <section class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Review table</div>
-                        <h2>Qualifyr-style sample view</h2>
-                    </div>
-                </div>
-                {{ qualifyr_style_table }}
-            </section>
-{% endif %}
-
-            <section id="software-diagnostics" class="panel prose report-charts">
+            <section id="software-diagnostics" class="panel prose report-charts diagnostics-section">
                 <div class="section-heading">
                     <div>
                         <div class="eyebrow">Diagnostics</div>
-                        <h2>Software-specific plots</h2>
+                        <h2>Tool diagnostics</h2>
                     </div>
                 </div>
+                <p>Open a tool only when a sample-level result needs investigation. Opening one tool closes the others.</p>
                 {{ software_charts }}
             </section>
 
             <section id="full-detail" class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Export and audit</div>
+                        <h2>Data and provenance</h2>
+                    </div>
+                </div>
+                <div class="download-actions" aria-label="Report downloads">
+                    <a href="report.csv" download>Download concise CSV</a>
+                    <a href="report.full.csv" download>Download full CSV</a>
+                </div>
+                <details class="heavy-section provenance-section">
+                    <summary>
+                        <span>
+                            <span class="eyebrow">Methods</span>
+                            <strong>Software and citations</strong>
+                        </span>
+                        <span class="summary-hint">Tools represented in this report</span>
+                    </summary>
+                    <div class="section-disclosure-body">{{ software_summary }}</div>
+                </details>
                 <details class="heavy-section">
                     <summary>
                         <span>
@@ -137,8 +183,23 @@
                     {{ full_detail_table }}
                 </details>
             </section>
-        </main>
+            </main>
+        </div>
     </div>
+
+{% if interactive_tables %}
+    <dialog id="sample-detail-dialog" class="sample-detail-dialog" aria-labelledby="sample-detail-title">
+        <div class="sample-detail-header">
+            <div>
+                <div class="eyebrow">Sample detail</div>
+                <h2 id="sample-detail-title"></h2>
+            </div>
+            <form method="dialog"><button type="submit" class="dialog-close" aria-label="Close sample details">Close</button></form>
+        </div>
+        <div id="sample-detail-content" class="sample-detail-content"></div>
+    </dialog>
+    <script id="sample-details-data" type="application/json">{{ sample_details_json }}</script>
+{% endif %}
 
     <footer class="report-footer">
         {{ footer }}
@@ -154,15 +215,15 @@
                     return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
                 }
                 if (type === "status") {
-                    if (raw === "PASSED" || raw === "PASS") return 2;
+                    if (raw === "PASS") return 3;
                     if (raw === "NOT_EVALUATED" || raw === "WARN") return 1;
-                    if (raw === "FAILED" || raw === "FAIL") return 0;
+                    if (raw === "FAIL") return 0;
                 }
                 return raw.toLowerCase();
             };
 
             const visibleRows = (table) => Array.from(table.querySelectorAll("tbody tr"))
-                .filter((row) => row.dataset.filterHidden !== "true");
+                .filter((row) => row.dataset.searchHidden !== "true" && row.dataset.statusHidden !== "true");
 
             const applyPagination = (table) => {
                 const pageSize = Number(table.dataset.pageSize || 0);
@@ -223,7 +284,7 @@
                     if (!table) return;
                     table.querySelectorAll("tbody tr").forEach((row) => {
                         const text = row.innerText.toLowerCase();
-                        row.dataset.filterHidden = text.includes(term) ? "false" : "true";
+                        row.dataset.searchHidden = text.includes(term) ? "false" : "true";
                     });
                     table.dataset.currentPage = "1";
                     applyPagination(table);
@@ -243,6 +304,212 @@
                 });
                 applyPagination(table);
             });
+
+            const reviewTable = document.getElementById("sample-review-table");
+            const statusButtons = Array.from(document.querySelectorAll("[data-status-filter]"));
+            const statusTabs = document.querySelector(".status-tabs");
+            const filterSummary = document.getElementById("review-filter-summary");
+
+            const setReviewStatus = (status) => {
+                if (!reviewTable) return;
+                let visibleCount = 0;
+                reviewTable.querySelectorAll("tbody tr").forEach((row) => {
+                    const rowStatus = row.dataset.qcStatus || "";
+                    const visible = status === "ALL"
+                        || (status === "NEEDS_REVIEW" && ["FAIL", "WARN", "NOT_EVALUATED"].includes(rowStatus))
+                        || rowStatus === status;
+                    row.dataset.statusHidden = visible ? "false" : "true";
+                    if (visible) visibleCount += 1;
+                });
+                reviewTable.dataset.currentPage = "1";
+                applyPagination(reviewTable);
+                statusButtons.forEach((button) => {
+                    const active = button.dataset.statusFilter === status;
+                    button.classList.toggle("is-active", active);
+                    if (button.closest(".status-tabs")) button.setAttribute("aria-pressed", String(active));
+                });
+                if (filterSummary) {
+                    const label = {
+                        NEEDS_REVIEW: "requiring review",
+                        FAIL: "with FAIL status",
+                        WARN: "with WARN status",
+                        NOT_EVALUATED: "not evaluated",
+                        PASS: "with PASS status",
+                        ALL: "in this report",
+                    }[status];
+                    filterSummary.textContent = `Showing ${visibleCount} sample${visibleCount === 1 ? "" : "s"} ${label}.`;
+                }
+            };
+
+            statusButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    setReviewStatus(button.dataset.statusFilter);
+                    document.getElementById("sample-review")?.scrollIntoView({ block: "start" });
+                });
+            });
+            setReviewStatus(statusTabs?.dataset.defaultFilter || "ALL");
+
+            const metricSpeciesFilter = document.getElementById("metric-species-filter");
+            const metricSpeciesSummary = document.getElementById("metric-species-summary");
+            metricSpeciesFilter?.addEventListener("change", () => {
+                const selected = metricSpeciesFilter.value;
+                document.querySelectorAll("[data-metric-species]").forEach((view) => {
+                    view.hidden = view.dataset.metricSpecies !== selected;
+                });
+                const option = metricSpeciesFilter.selectedOptions[0];
+                if (metricSpeciesSummary && option) {
+                    const count = Number(option.dataset.sampleCount || 0);
+                    const scope = selected === "all" ? "all species" : option.textContent.replace(/ \(\d+ samples?\)$/, "");
+                    metricSpeciesSummary.textContent = `Showing ${count} sample${count === 1 ? "" : "s"} for ${scope}.`;
+                }
+            });
+
+            const dialog = document.getElementById("sample-detail-dialog");
+            const detailTitle = document.getElementById("sample-detail-title");
+            const detailContent = document.getElementById("sample-detail-content");
+            const detailsNode = document.getElementById("sample-details-data");
+            const sampleDetails = detailsNode ? JSON.parse(detailsNode.textContent) : {};
+            const sectionNames = {
+                overview: "QC overview",
+                metrics: "Key metrics",
+                tools: "Tool status",
+                checks: "Warnings and failed checks",
+                provenance: "Provenance",
+            };
+
+            const openSampleDetails = (sampleId) => {
+                const detail = sampleDetails[sampleId];
+                if (!dialog || !detail) return;
+                detailTitle.textContent = sampleId;
+                detailContent.replaceChildren();
+                Object.entries(sectionNames).forEach(([key, heading]) => {
+                    const fields = detail[key] || [];
+                    if (!fields.length) return;
+                    const section = document.createElement("section");
+                    const title = document.createElement("h3");
+                    const list = document.createElement("dl");
+                    title.textContent = heading;
+                    fields.forEach((field) => {
+                        const wrapper = document.createElement("div");
+                        const term = document.createElement("dt");
+                        const value = document.createElement("dd");
+                        term.textContent = field.label;
+                        value.textContent = field.value;
+                        if (["PASS", "WARN", "FAIL", "NOT_EVALUATED"].includes(field.value)) {
+                            value.className = `detail-status qc-${field.value.toLowerCase().replace("_", "-")}`;
+                        }
+                        wrapper.append(term, value);
+                        list.append(wrapper);
+                    });
+                    section.append(title, list);
+                    detailContent.append(section);
+                });
+                dialog.showModal();
+            };
+
+            document.querySelectorAll(".sample-review-row").forEach((row) => {
+                row.addEventListener("click", () => openSampleDetails(row.dataset.sampleId));
+                row.addEventListener("keydown", (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openSampleDetails(row.dataset.sampleId);
+                    }
+                });
+            });
+
+            const chartTooltip = document.createElement("div");
+            chartTooltip.className = "chart-tooltip";
+            chartTooltip.hidden = true;
+            chartTooltip.setAttribute("role", "tooltip");
+            document.body.append(chartTooltip);
+
+            const placeChartTooltip = (event) => {
+                const gap = 14;
+                const bounds = chartTooltip.getBoundingClientRect();
+                chartTooltip.style.left = `${Math.min(event.clientX + gap, window.innerWidth - bounds.width - gap)}px`;
+                chartTooltip.style.top = `${Math.min(event.clientY + gap, window.innerHeight - bounds.height - gap)}px`;
+            };
+            const showChartTooltip = (target, event) => {
+                chartTooltip.textContent = target.dataset.tooltip || "";
+                chartTooltip.hidden = false;
+                placeChartTooltip(event);
+            };
+            const hideChartTooltip = () => {
+                chartTooltip.hidden = true;
+            };
+
+            document.querySelectorAll("[data-tooltip]").forEach((target) => {
+                target.addEventListener("pointerenter", (event) => showChartTooltip(target, event));
+                target.addEventListener("pointermove", placeChartTooltip);
+                target.addEventListener("pointerleave", hideChartTooltip);
+                target.addEventListener("focus", () => {
+                    const bounds = target.getBoundingClientRect();
+                    showChartTooltip(target, {
+                        clientX: bounds.left + (bounds.width / 2),
+                        clientY: bounds.top + (bounds.height / 2),
+                    });
+                });
+                target.addEventListener("blur", hideChartTooltip);
+            });
+
+            document.querySelectorAll(".svg-data-point").forEach((point) => {
+                point.addEventListener("click", () => openSampleDetails(point.dataset.sampleId));
+                point.addEventListener("keydown", (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openSampleDetails(point.dataset.sampleId);
+                    }
+                });
+            });
+            dialog?.addEventListener("click", (event) => {
+                const bounds = dialog.getBoundingClientRect();
+                const outside = event.clientX < bounds.left || event.clientX > bounds.right
+                    || event.clientY < bounds.top || event.clientY > bounds.bottom;
+                if (outside) dialog.close();
+            });
+
+            document.querySelectorAll(".tool-diagnostic").forEach((diagnostic) => {
+                diagnostic.addEventListener("toggle", () => {
+                    if (!diagnostic.open) return;
+                    document.querySelectorAll(".tool-diagnostic[open]").forEach((other) => {
+                        if (other !== diagnostic) other.open = false;
+                    });
+                });
+            });
+
+            const layout = document.getElementById("report-layout");
+            const sidebarToggle = document.querySelector(".sidebar-toggle");
+            sidebarToggle?.addEventListener("click", () => {
+                const collapsed = layout.classList.toggle("sidebar-collapsed");
+                sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+                sidebarToggle.setAttribute("aria-label", collapsed ? "Expand report navigation" : "Collapse report navigation");
+                sidebarToggle.querySelector("[aria-hidden]").textContent = collapsed ? "→" : "←";
+            });
+
+            const jump = document.getElementById("report-jump");
+            jump?.addEventListener("change", () => {
+                const target = document.querySelector(jump.value);
+                if (target instanceof HTMLDetailsElement) target.open = true;
+                target?.scrollIntoView({ block: "start" });
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach((link) => {
+                link.addEventListener("click", () => {
+                    const target = document.querySelector(link.getAttribute("href"));
+                    if (target instanceof HTMLDetailsElement) target.open = true;
+                });
+            });
+
+            if ("IntersectionObserver" in window) {
+                const links = Array.from(document.querySelectorAll("[data-section-link]"));
+                const sections = links.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+                const observer = new IntersectionObserver((entries) => {
+                    const visible = entries.filter((entry) => entry.isIntersecting).sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+                    if (!visible) return;
+                    links.forEach((link) => link.classList.toggle("is-active", link.getAttribute("href") === `#${visible.target.id}`));
+                }, { rootMargin: "-15% 0px -70% 0px", threshold: [0, 0.1, 0.5] });
+                sections.forEach((section) => observer.observe(section));
+            }
         })();
     </script>
 {% endif %}

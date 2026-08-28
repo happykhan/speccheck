@@ -66,7 +66,7 @@ Outputs:
 | File | Use |
 | --- | --- |
 | `report.csv` | compact merged result for review and downstream scripts |
-| `report.full.csv` | wide table with parser, metadata, and provenance columns |
+| `report.full.csv` | human-ordered parser, metadata, and provenance table |
 | `report.html` | interactive human review report |
 | `report.xlsx` | optional workbook with summary and full sheets |
 
@@ -74,13 +74,14 @@ Outputs:
 
 Start with:
 
-- `overall_qc`: `PASS`, `WARN`, `FAIL`, or `NOT_EVALUATED`;
-- `all_checks_passed`: binary convenience value;
+- `overall_qc`: worst current `PASS`, `WARN`, or `FAIL` result;
+- `speccheck_qc`: native Speccheck result, including non-QualiBact criteria;
 - `reason_summary`: compact explanation of warnings, failures, and missing
   checks.
 
-`NOT_EVALUATED` means Speccheck expected a metric from the selected criteria but
-could not find it in the parsed input. It is not the same as failing a threshold.
+`NOT_EVALUATED` means Speccheck expected a metric but could not find it. It is
+not the same as failing a threshold; under the default policy it contributes a
+sample-level `WARN`.
 
 ## 6. Pipeline layout shortcut
 
