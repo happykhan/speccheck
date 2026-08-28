@@ -1,9 +1,18 @@
 reason,sample_count
-No pinned QualiBact scheme for species,7
+Speciator.genusName,7
+Speciator.speciesName,7
+Checkm.Completeness,3
+Checkm.Contig_N50,3
+Checkm.Genome_Size,3
+Quast.N50,3
+Quast.Total length (>= 0 bp),3
+Speciator.confidence,3
 GC_Content <50.25,3
 GC_Content <50.09,2
 Genome_Size >5700000.0,2
 Contamination >2.0,2
+Checkm.GC_Content,1
+Quast.GC (%),1
 GC_Content >51.13,1
 Total_Coding_Sequences <4200.0,1
 N50 <20000.0,1

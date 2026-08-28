@@ -1,3 +1,3 @@
-sample_id,overall_qc,all_checks_passed,qualibact_compat_tier,species,species_confidence,n50,contigs,genome_size,gc_percent,completeness,contamination,top_species,top_abundance,reason_summary
-SAMN42766885,PASS,PASSED,PASS,Escherichia coli,good,120461.0,184.0,5043262.0,50.4198,100.0,0.21,Escherichia coli,0.95,none
-SAMN42766886,PASS,PASSED,PASS,Escherichia coli,good,172285.0,159.0,5269811.0,50.6951,100.0,0.5,Escherichia coli,0.95,none
+sample_id,overall_qc,speccheck_qc,qualibact_qc,historical_qualibact_qc,reason_summary,species,species_confidence,n50,contigs,genome_size,gc_percent,completeness,contamination,depth,top_species,top_abundance_percent,threshold_source,report_schema_version
+SAMN42766885,PASS,PASS,PASS,,none,Escherichia coli,good,120461.0,184.0,5043262.0,50.4198,100.0,0.21,,Escherichia coli,95.0,,1.0
+SAMN42766886,PASS,PASS,PASS,,none,Escherichia coli,good,172285.0,159.0,5269811.0,50.6951,100.0,0.5,,Escherichia coli,95.0,,1.0

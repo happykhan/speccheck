@@ -32,7 +32,7 @@ def test_collect():
     with open(output_file, encoding="utf-8") as f:
         content = f.read()
         assert "Sample1" in content
-        assert "Quast.N50.check" in content
+        assert "Quast.N50.status" in content
     os.remove(output_file)
     os.remove(f"detailed.{output_file}")
 
@@ -91,13 +91,13 @@ def test_collect_output_can_generate_plotted_summary(tmp_path):
     with open(collect_dir / "E2E_SAMPLE.csv", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
     assert rows[0]["speccheck_assembly_type"] == "short"
-    assert rows[0]["speccheck_fail_on_not_evaluated"] == "False"
+    assert rows[0]["speccheck_fail_on_not_evaluated"] == "NO"
     assert rows[0]["speccheck_version"]
     assert len(rows[0]["speccheck_criteria_sha256"]) == 64
     assert rows[0]["speccheck_input_file_count"] == "6"
     report_html = (summary_dir / "report.html").read_text(encoding="utf-8")
     assert "Speciator" in report_html
-    assert "Confidence" in report_html
+    assert "Species confidence" in report_html
 
 
 def test_collect_filters_criteria_by_assembly_type(tmp_path):
@@ -127,7 +127,7 @@ def test_collect_filters_criteria_by_assembly_type(tmp_path):
 
     with open(output_file, encoding="utf-8", newline="") as handle:
         row = next(csv.DictReader(handle))
-    assert row["Quast.N50.check"] == "PASSED"
+    assert row["Quast.N50.status"] == "PASS"
     assert row["speccheck_assembly_type"] == "long"
 
 
@@ -155,9 +155,9 @@ def test_collect_reports_not_evaluated_missing_metrics(tmp_path):
 
     with open(output_file, encoding="utf-8", newline="") as handle:
         row = next(csv.DictReader(handle))
-    assert row["Quast.Missing review metric.check"] == "NOT_EVALUATED"
-    assert row["Quast.all_checks_passed"] == "PASSED"
-    assert row["all_checks_passed"] == "PASSED"
+    assert row["Quast.Missing review metric.status"] == "NOT_EVALUATED"
+    assert row["Quast.qc_status"] == "WARN"
+    assert row["speccheck_qc"] == "WARN"
     assert row["speccheck_not_evaluated_count"] == "1"
 
 
@@ -186,6 +186,6 @@ def test_collect_can_fail_on_not_evaluated_missing_metrics(tmp_path):
 
     with open(output_file, encoding="utf-8", newline="") as handle:
         row = next(csv.DictReader(handle))
-    assert row["Quast.Missing review metric.check"] == "NOT_EVALUATED"
-    assert row["Quast.all_checks_passed"] == "FAILED"
-    assert row["all_checks_passed"] == "FAILED"
+    assert row["Quast.Missing review metric.status"] == "NOT_EVALUATED"
+    assert row["Quast.qc_status"] == "FAIL"
+    assert row["speccheck_qc"] == "FAIL"

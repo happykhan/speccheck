@@ -1,5 +1,9 @@
-import plotly.express as px
-import plotly.offline as pyo
+from html import escape
+
+import pandas as pd
+
+from speccheck.plot_modules.svg_charts import render_species_bar_chart
+from speccheck.report_tables import dataframe_to_interactive_table, status_label
 
 
 class Plot_Speciator:
@@ -27,46 +31,49 @@ class Plot_Speciator:
             )
             for species in self.df["speciesName"].unique():
                 species_count = self.df[self.df["speciesName"] == species].shape[0]
-                html_fragment += f"<li>{species}: {species_count} sample(s)</li>"
+                html_fragment += f"<li>{escape(str(species))}: {species_count} sample(s)</li>"
             html_fragment += "</ul></div>"
         else:
             html_fragment += (
                 '<div class="status-note pass"><p><strong>Single-species assignment:</strong> '
-                f"{self.df['speciesName'].unique()[0]} across all samples.</p></div>"
+                f"{escape(str(self.df['speciesName'].unique()[0]))} across all samples.</p></div>"
             )
 
-        interactive_tables = self.df.attrs.get("interactive_tables", True)
-        table_class = "table report-table"
-        if interactive_tables:
-            table_class += " js-sort-filter"
-        html_fragment += (
-            f'<div class="table-container"><table class="{table_class}" id="speciator-results">'
-            '<thead><tr><th data-type="string">Species</th><th data-type="string">Confidence</th></tr></thead><tbody>'
-        )
-        table_df = self.df[["speciesName", "confidence"]].copy()
-        for _, row in table_df.iterrows():
-            html_fragment += f"<tr><td>{row['speciesName']}</td><td>{row['confidence']}</td></tr>"
-        html_fragment += "</tbody></table></div>"
+        if "qc_status" in self.df:
+            statuses = self.df["qc_status"].map(status_label)
+        elif "all_checks_passed" in self.df:
+            statuses = self.df["all_checks_passed"].map(status_label)
+        else:
+            statuses = pd.Series("NOT_EVALUATED", index=self.df.index)
+        exceptions = self.df.loc[statuses != "PASS", ["speciesName", "confidence"]].copy()
+        if exceptions.empty:
+            html_fragment += "<p>No Speciator exceptions require review.</p>"
+        else:
+            exceptions["QC"] = statuses.loc[exceptions.index]
+            exceptions.index.name = "Sample"
+            html_fragment += (
+                f"<p><strong>{len(exceptions)} assignment exceptions require review.</strong></p>"
+                + dataframe_to_interactive_table(
+                    exceptions.reset_index(),
+                    "speciator-exceptions",
+                    interactive=self.df.attrs.get("interactive_tables", True),
+                    page_size=25,
+                )
+            )
 
-        species_count = table_df["speciesName"].value_counts().reset_index()
-        species_count.columns = ["Species Name", "Count"]
-        species_fig = px.pie(
-            species_count,
-            values="Count",
-            names="Species Name",
-            title="Species distribution",
-            labels={"Species Name": "Species", "Count": "Count"},
-            color_discrete_sequence=["#1f5f8b", "#667085", "#2f6f5e", "#8a6f3d"],
+        species_status_counts = (
+            pd.DataFrame(
+                {"species": self.df["speciesName"], "status": statuses},
+                index=self.df.index,
+            )
+            .groupby(["species", "status"], dropna=False)
+            .size()
+            .unstack(fill_value=0)
         )
-        species_fig.update_layout(
-            hovermode="closest",
-            height=560,
-            paper_bgcolor="#ffffff",
-            font={"color": "#1f2933"},
-            margin={"l": 24, "r": 24, "t": 64, "b": 24},
+        html_fragment += render_species_bar_chart(
+            self.df["speciesName"].value_counts(),
+            title="Species distribution by Speciator QC",
+            status_counts=species_status_counts,
         )
-        html_fragment += (
-            f'<div class="chart-frame">{pyo.plot(species_fig, include_plotlyjs=False, output_type="div")}</div>'
-            "</section>"
-        )
+        html_fragment += "</section>"
         return html_fragment

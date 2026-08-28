@@ -26,7 +26,10 @@ If `--organism` is omitted, `speccheck` attempts to infer the species from parse
 
 `--assembly-type` controls which criteria rows are evaluated. The default is `short`, which applies `all` and `short` criteria rows. `long` applies `all` and `long` rows, `hybrid` applies `all`, `short`, and `long` rows, and `all` applies only rows explicitly marked `all`. The selected mode is recorded in collected CSV outputs as `speccheck_assembly_type`.
 
-If an expected metric is missing from a detected parser output, the relevant `*.check` column is reported as `NOT_EVALUATED`. By default this is visible review metadata but does not change the parser/sample pass flag. Add `--fail-on-not-evaluated` for strict release or CI runs where incomplete evidence should fail the sample.
+If an expected metric is missing from a detected parser output, the relevant
+`*.status` column is `NOT_EVALUATED`. By default this makes the parser and sample
+status `WARN`. Add `--fail-on-not-evaluated` for strict release or CI runs where
+incomplete evidence should produce `FAIL`.
 
 Example:
 
@@ -67,9 +70,9 @@ speccheck summary qc_results \
 ```
 
 Use `--qualibact-compat` to add pinned *E. coli* QualiBact v1 `PASS`/`WARN`/`FAIL`
-tier columns to `report.csv`, `report.html`, and optional XLSX output. WARN remains a
-warning tier by default; add `--qualibact-warn-as-fail` if WARN should also fail the
-binary `all_checks_passed` summary.
+evaluation to `report.csv`, `report.html`, and optional XLSX output. WARN remains
+a warning in both `qualibact_qc` and `overall_qc`; warnings are not silently
+converted into failures.
 
 ## `collect-pipeline`
 
@@ -120,7 +123,7 @@ Refresh from QualiBact:
 speccheck check \
   --criteria-file speccheck/config/criteria.csv \
   --update \
-  --update-url https://static.qualibact.org/api/v2/external/thresholds.csv
+  --update-url https://static.qualibact.org/api/v2/thresholds.csv
 ```
 
 ## `modules`

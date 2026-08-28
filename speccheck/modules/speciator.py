@@ -7,6 +7,7 @@ class Speciator(SingleRowTsvParser):
     software_name = "Speciator"
     description = "Speciator species assignment and confidence"
     supported_filenames = "TSV with the standard Speciator header"
+    exact_headers = False
     required_headers = (
         "Sample_id",
         "taxId",

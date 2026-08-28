@@ -179,11 +179,6 @@ def summary(
         "--qualibact-compat/--no-qualibact-compat",
         help="Add pinned QualiBact E. coli v1 PASS/WARN/FAIL compatibility columns",
     ),
-    qualibact_warn_as_fail: bool = typer.Option(
-        False,
-        "--qualibact-warn-as-fail",
-        help="Treat QualiBact WARN tier as failing in all_checks_passed when compatibility mode is enabled",
-    ),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
     version: bool = typer.Option(
         False,
@@ -208,7 +203,6 @@ def summary(
         interactive_tables=interactive_tables,
         qualifyr_style=qualifyr_style,
         qualibact_compat=qualibact_compat,
-        qualibact_warn_as_fail=qualibact_warn_as_fail,
     )
 
 

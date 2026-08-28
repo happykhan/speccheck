@@ -15,6 +15,10 @@ QUALIBACT_ECOLI_V1_SOURCE = (
 )
 QUALIBACT_ECOLI_V1_LABEL = "QualiBact Escherichia coli qualibact-v1.0"
 
+# QualiBact's E. coli policy is also used for Shigella assignments. Shigella
+# remains unchanged in report species fields; only threshold selection is aliased.
+QUALIBACT_THRESHOLD_GENUS_ALIASES = {"shigella": "Escherichia coli"}
+
 METRIC_COLUMNS = {
     "N50": (
         "Quast.N50",
@@ -124,16 +128,23 @@ def _row_species(row, explicit_species=None):
     return None
 
 
-def evaluate_qualibact_row(row, *, species=None, warn_as_fail=False):
+def _threshold_species(resolved_species):
+    if not resolved_species:
+        return None
+    normalized = " ".join(str(resolved_species).split())
+    genus = normalized.split(maxsplit=1)[0].casefold()
+    return QUALIBACT_THRESHOLD_GENUS_ALIASES.get(genus, normalized)
+
+
+def evaluate_qualibact_row(row, *, species=None):
     """Evaluate one row against its species' pinned QualiBact scheme."""
     resolved_species = _row_species(row, species)
-    thresholds = load_thresholds().get(resolved_species, ())
+    threshold_species = _threshold_species(resolved_species)
+    thresholds = load_thresholds().get(threshold_species, ())
     if not thresholds:
         return {
-            "qualibact_compat_tier": "NOT_AVAILABLE",
-            "qualibact_compat_passed": "NOT_AVAILABLE",
+            "qualibact_compat_tier": "NOT_EVALUATED",
             "qualibact_compat_reasons": "No pinned QualiBact scheme for species",
-            "qualibact_compat_warn_policy": ("warn-as-fail" if warn_as_fail else "warn-as-warn"),
             "qualibact_compat_source": "not available",
             "qualibact_compat_metrics_evaluated": 0,
             "qualibact_compat_metrics_missing": 0,
@@ -165,31 +176,31 @@ def evaluate_qualibact_row(row, *, species=None, warn_as_fail=False):
 
     if not evaluated:
         tier = "NOT_EVALUATED"
-        passed = "NOT_EVALUATED"
         reasons = "No matching metrics were available"
     else:
         tier = "FAIL" if fail_reasons else "WARN" if warn_reasons else "PASS"
-        passed = tier == "PASS" or (tier == "WARN" and not warn_as_fail)
         reasons = "; ".join(fail_reasons + warn_reasons) or "none"
     return {
         "qualibact_compat_tier": tier,
-        "qualibact_compat_passed": passed,
         "qualibact_compat_reasons": reasons,
-        "qualibact_compat_warn_policy": "warn-as-fail" if warn_as_fail else "warn-as-warn",
-        "qualibact_compat_source": f"Pinned QualiBact scheme for {resolved_species}",
+        "qualibact_compat_source": (
+            f"Pinned QualiBact scheme for {threshold_species}"
+            if threshold_species == resolved_species
+            else f"Pinned QualiBact scheme for {threshold_species} (applied to {resolved_species})"
+        ),
         "qualibact_compat_metrics_evaluated": evaluated,
         "qualibact_compat_metrics_missing": missing,
     }
 
 
-def evaluate_ecoli_v1_row(row, warn_as_fail=False):
+def evaluate_ecoli_v1_row(row):
     """Backward-compatible E. coli v1 evaluator."""
-    result = evaluate_qualibact_row(row, species="Escherichia coli", warn_as_fail=warn_as_fail)
+    result = evaluate_qualibact_row(row, species="Escherichia coli")
     result["qualibact_compat_source"] = QUALIBACT_ECOLI_V1_LABEL
     return result
 
 
-def add_qualibact_compatibility_columns(df, warn_as_fail=False):
+def add_qualibact_compatibility_columns(df):
     """Add QualiBact compatibility columns to a report frame.
 
     Historical report tables did not carry a species column and were explicitly
@@ -201,9 +212,9 @@ def add_qualibact_compatibility_columns(df, warn_as_fail=False):
     rows = []
     for record in df.to_dict(orient="records"):
         if _row_species(record) is None:
-            result = evaluate_ecoli_v1_row(record, warn_as_fail=warn_as_fail)
+            result = evaluate_ecoli_v1_row(record)
         else:
-            result = evaluate_qualibact_row(record, warn_as_fail=warn_as_fail)
+            result = evaluate_qualibact_row(record)
         record.update(result)
         rows.append(record)
     return pd.DataFrame(rows)

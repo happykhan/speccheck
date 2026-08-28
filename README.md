@@ -59,7 +59,10 @@ Generate a merged report:
 speccheck summary qc_results --plot --qualifyr-style --xlsx-output qc_report/report.xlsx
 ```
 
-`summary` merges concise collected CSV files, ignores `detailed.*.csv` companions, and rejects duplicate sample IDs.
+`summary` merges concise collected CSV files, ignores `detailed.*.csv`
+companions, preserves sample IDs as strings, and rejects duplicate or
+conflicting records. Cohort reports use only `PASS`, `WARN`, `FAIL`, and
+`NOT_EVALUATED` for QC statuses.
 
 Collect a recognised workflow output layout, such as GHRU Assembly, after a
 Nextflow run:
@@ -79,9 +82,9 @@ speccheck check --criteria-file speccheck/config/criteria.csv --update
 
 ## Features
 
-- Explicitly registered parsers for CheckM2-style QC tables, QUAST, Speciator, ARIBA, Sylph, depth, Fastp, and BUSCO outputs
+- Explicitly registered parsers for CheckM/CheckM2, native wide or transposed QUAST, Speciator, ARIBA, Sylph, depth, Fastp, and BUSCO outputs
 - Criteria-driven PASS/WARN/FAIL validation
-- HTML reporting with Plotly charts and interactive sortable/filterable tables
+- Standalone offline HTML reporting with an exception-first review queue, sample details, species-filtered cohort metrics, lightweight inline SVG charts, collapsed diagnostics, and responsive navigation
 - Compact qualifyr-style summary tables
 - Optional Excel workbook export from merged reports
 - Packaged default criteria and templates for pip/conda style installs

@@ -340,7 +340,7 @@ speccheck/
    ```python
    def plot(plot_dict, species_name):
        """Generate visualization."""
-       # Return plotly figure or HTML table
+       # Return an inline SVG chart or HTML table
    ```
 
 2. Register in `report.py` if needed

@@ -1,9 +1,10 @@
-import plotly.express as px
-import plotly.offline as pyo
+from speccheck.plot_modules.svg_charts import render_scatter_chart
+from speccheck.report_tables import status_label
 
 
-def _is_passed(value):
-    return str(value).strip().lower() in {"passed", "pass", "true", "1", "yes"}
+def _status_series(df):
+    column = "qc_status" if "qc_status" in df.columns else "all_checks_passed"
+    return df[column].map(status_label)
 
 
 class Plot_Quast:
@@ -24,41 +25,19 @@ class Plot_Quast:
             "citation": self.citation,
         }
 
-    def _apply_layout(self, fig, height):
-        fig.update_layout(
-            height=height,
-            paper_bgcolor="#ffffff",
-            plot_bgcolor="#f6f8fa",
-            font={"color": "#1f2933"},
-            margin={"l": 56, "r": 24, "t": 64, "b": 56},
-        )
-        fig.update_xaxes(gridcolor="#d7dde3", zerolinecolor="#aeb8c2")
-        fig.update_yaxes(gridcolor="#d7dde3", zerolinecolor="#aeb8c2")
-        return fig
-
-    def _make_scatter_plot(self, col, row, color, title):
-        fig = px.scatter(
+    def _make_scatter_plot(self, col, row, title):
+        return render_scatter_chart(
             self.df,
-            y=col,
-            x=row,
-            color=color,
-            marginal_x="violin",
-            marginal_y="violin",
+            y_column=col,
+            x_column=row,
+            y_label="N50 (bp)",
+            x_label="Total assembly length (bp)",
             title=title,
-            hover_name="sample_id" if "sample_id" in self.df.columns else None,
-            hover_data={"species": False},
-            color_discrete_sequence=["#1f5f8b", "#667085", "#2f6f5e", "#8a6f3d"],
         )
-        if self.df["species"].nunique() == 1:
-            fig.update_layout(showlegend=False)
-        else:
-            fig.update_layout(hovermode="closest", legend_title=color.title())
-        self._apply_layout(fig, 720)
-        return f'<div class="chart-frame">{pyo.plot(fig, include_plotlyjs=False, output_type="div")}</div>'
 
     def _status_html(self):
-        status = self.df["all_checks_passed"].astype(str).str.lower()
-        passed_mask = status.isin(["passed", "true", "1", "yes"])
+        status = _status_series(self.df)
+        passed_mask = status == "PASS"
         if passed_mask.sum() == len(self.df):
             return (
                 '<div class="status-note pass"><p><strong>Pass:</strong> '
@@ -67,8 +46,8 @@ class Plot_Quast:
 
         items = []
         for col in self.df.columns:
-            if col.endswith(".check") and col != "all_checks_passed":
-                fail_count = len(self.df) - int(self.df[col].map(_is_passed).sum())
+            if col.endswith((".check", ".status")):
+                fail_count = int((self.df[col].map(status_label) == "FAIL").sum())
                 if fail_count > 0:
                     col_name = col.split(".")[0]
                     items.append(f"<li>{fail_count} sample(s) failed the {col_name} check.</li>")
@@ -92,14 +71,7 @@ class Plot_Quast:
             + self._make_scatter_plot(
                 col="N50",
                 row="Total length (>= 0 bp)",
-                color="species",
                 title="N50 vs total assembly length",
-            )
-            + self._make_scatter_plot(
-                col="# contigs (>= 0 bp)",
-                row="Largest contig",
-                color="species",
-                title="Contig count vs largest contig",
             )
             + "</section>"
         )

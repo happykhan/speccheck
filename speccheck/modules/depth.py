@@ -1,4 +1,5 @@
 import csv
+import math
 
 from speccheck.modules.base import Parser
 
@@ -58,12 +59,18 @@ class Depth(Parser):
                     if key == "Depth":
                         try:
                             parsed_row[key] = float(value)
-                        except ValueError:
-                            parsed_row[key] = value
+                        except ValueError as error:
+                            raise ValueError("Depth must be numeric.") from error
+                        if not math.isfinite(parsed_row[key]) or parsed_row[key] < 0:
+                            raise ValueError("Depth must be a finite non-negative number.")
                     else:
                         parsed_row[key] = value
 
                 parsed_rows.append(parsed_row)
+
+            sample_ids = {row.get("Sample_id") for row in parsed_rows}
+            if None in sample_ids or len(sample_ids) != 1:
+                raise ValueError("Depth rows must contain one consistent Sample_id.")
 
             # Validate based on row count and read types
             if len(parsed_rows) == 1:

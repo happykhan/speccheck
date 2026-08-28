@@ -7,6 +7,7 @@ class Ariba(Parser):
     software_name = "Ariba"
     description = "ARIBA MLST/contamination summary"
     supported_filenames = "TSV with gene, allele, coverage, and heterozygosity columns"
+    required_headers = {"gene", "allele", "cov", "pc", "ctgs", "depth", "hetmin", "hets"}
 
     @property
     def has_valid_filename(self):
@@ -15,20 +16,12 @@ class Ariba(Parser):
     @property
     def has_valid_fileformat(self):
 
-        required_headers = ["gene", "allele", "cov", "pc", "ctgs", "depth", "hetmin", "hets"]
-        with open(self.file_path, encoding="utf-8") as file:
-            first_line = file.readline()
-            if "\t" not in first_line:
-                return False
-
-        with open(self.file_path, encoding="utf-8") as file:
-            lines = file.readlines()
-            lines = [line for line in lines if line.strip()]
-        # Check if the first line is the header and has the required headers
-        if first_line.strip().split("\t") != required_headers:
+        try:
+            with open(self.file_path, encoding="utf-8", newline="") as file:
+                headers = csv.DictReader(file, delimiter="\t").fieldnames or []
+        except (OSError, UnicodeError, csv.Error):
             return False
-
-        return True
+        return self.required_headers.issubset(headers)
 
     def fetch_values(self):
         with open(self.file_path, encoding="utf-8") as file:
@@ -41,5 +34,5 @@ class Ariba(Parser):
                 if row["allele"] in ["ND"]:
                     result["not_called"] += 1
                 result["total"] += 1
-            result["percent"] = result["passed"] / result["total"] * 100
+            result["percent"] = result["passed"] / result["total"] * 100 if result["total"] else 0.0
         return result

@@ -1,4 +1,5 @@
 import csv
+import json
 import logging
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -7,7 +8,8 @@ from pathlib import Path
 
 import requests
 
-QUALIBACT_DEFAULT_URL = "https://static.qualibact.org/api/v2/external/thresholds.csv"
+QUALIBACT_DEFAULT_URL = "https://static.qualibact.org/api/v2/thresholds.csv"
+QUALIBACT_INDEX_URL = "https://static.qualibact.org/api/v2/index.json"
 QUALIBACT_REPOSITORY_URL = (
     "https://raw.githubusercontent.com/cgps-group/qualibact/main/public/api/v2/thresholds.csv"
 )
@@ -56,10 +58,19 @@ CONTROLLED_FIELD_KEYS = {
     ("Speciator", "speciesName"),
     ("Sylph", "number_of_genomes"),
     ("Sylph", "species_name"),
-    ("Sylph", "sequence_abundances"),
+    ("Sylph", "top_sequence_abundance_percent"),
 }
 BASELINE_ROWS = (
-    ("all", "all", "Sylph", "sequence_abundances", ">=", 99, "fail", "speccheck-default"),
+    (
+        "all",
+        "all",
+        "Sylph",
+        "top_sequence_abundance_percent",
+        ">=",
+        99,
+        "fail",
+        "speccheck-default",
+    ),
     ("all", "all", "Quast", "Total length (>= 0 bp)", ">=", 100000, "fail", "speccheck-default"),
     ("all", "all", "Quast", "Total length (>= 0 bp)", "<=", 15000000, "fail", "speccheck-default"),
     ("all", "all", "Checkm", "Genome size (bp)", ">=", 100000, "fail", "speccheck-default"),
@@ -103,30 +114,45 @@ def _fetch_qualibact_rows(update_url):
     return list(csv.DictReader(StringIO(text)))
 
 
+def _fetch_preferred_schemes(index_url=QUALIBACT_INDEX_URL):
+    response = requests.get(index_url, timeout=30)
+    response.raise_for_status()
+    payload = json.loads(response.text)
+    species_records = payload.get("species")
+    if not isinstance(species_records, list):
+        raise ValueError("QualiBact index does not contain a species list")
+    return {
+        row["species"]: row["preferred_scheme"]
+        for row in species_records
+        if row.get("species") and row.get("preferred_scheme")
+    }
+
+
 def _scheme_priority(scheme):
     if scheme in PREFERRED_SCHEMES:
         return PREFERRED_SCHEMES.index(scheme)
     return len(PREFERRED_SCHEMES)
 
 
-def _filter_supported_rows(rows):
-    return [row for row in rows if row.get("scheme") in PREFERRED_SCHEMES]
-
-
-def _choose_threshold_rows(rows):
+def _choose_threshold_rows(rows, preferred_schemes=None):
+    """Choose each species metric from its indexed scheme, then a stable fallback."""
+    preferred_schemes = preferred_schemes or {}
     grouped = defaultdict(list)
-    for row in _filter_supported_rows(rows):
-        grouped[(row["species"], row["metric"])].append(row)
-
+    for row in rows:
+        if row.get("species") and row.get("metric") and row.get("scheme"):
+            grouped[(row["species"], row["metric"])].append(row)
     chosen = []
-    for group_rows in grouped.values():
-        group_rows.sort(
+    for (species, _metric), metric_rows in grouped.items():
+        preferred = preferred_schemes.get(species)
+        metric_rows.sort(
             key=lambda row: (
-                _scheme_priority(row.get("scheme", "")),
+                0 if preferred and row["scheme"] == preferred else 1,
+                _scheme_priority(row["scheme"]),
+                row["scheme"],
                 row.get("source", ""),
             )
         )
-        chosen.append(group_rows[0])
+        chosen.append(metric_rows[0])
     return chosen
 
 
@@ -270,10 +296,10 @@ def _baseline_criteria_rows():
     ]
 
 
-def qualibact_rows_to_criteria_rows(rows):
+def qualibact_rows_to_criteria_rows(rows, preferred_schemes=None):
     criteria_rows = _baseline_criteria_rows()
     seen_species = set()
-    for row in _choose_threshold_rows(rows):
+    for row in _choose_threshold_rows(rows, preferred_schemes):
         species = row["species"].replace("_", " ")
         metric = row["metric"]
         lower = _normalize_number(row.get("FINAL_lower"))
@@ -316,19 +342,20 @@ def _preserve_existing_rows(criteria_file):
     return preserved
 
 
-def _write_snapshot_artifacts(rows, update_url, snapshot_dir=CONFIG_DIR):
+def _write_snapshot_artifacts(rows, update_url, snapshot_dir=CONFIG_DIR, preferred_schemes=None):
     snapshot_dir = Path(snapshot_dir)
     snapshot_dir.mkdir(parents=True, exist_ok=True)
     snapshot_path = snapshot_dir / QUALIBACT_SNAPSHOT_PATH.name
     metadata_path = snapshot_dir / QUALIBACT_SNAPSHOT_METADATA_PATH.name
-    chosen_rows = _choose_threshold_rows(rows)
+    chosen_rows = _choose_threshold_rows(rows, preferred_schemes)
     retrieved_at = datetime.now(timezone.utc).isoformat()
     snapshot_rows = []
     metadata_rows = {}
     for row in chosen_rows:
         species = row["species"].replace("_", " ")
         scheme = row.get("scheme", "")
-        fallback_used = scheme != PREFERRED_SCHEMES[0]
+        expected_scheme = (preferred_schemes or {}).get(row["species"])
+        fallback_used = bool(expected_scheme and scheme != expected_scheme)
         snapshot_rows.append(
             {
                 "species": species,
@@ -407,6 +434,7 @@ def update_criteria_file(
     *,
     snapshot_dir=CONFIG_DIR,
     snapshot_source_url=None,
+    preferred_schemes=None,
 ):
     logging.info("Updating criteria file from %s", update_url)
     try:
@@ -415,27 +443,22 @@ def update_criteria_file(
         logging.error("Failed to download QualiBact thresholds: %s", exc)
         return False
 
-    effective_url = update_url
-    if not _choose_threshold_rows(qualibact_rows) and update_url == QUALIBACT_DEFAULT_URL:
-        logging.warning(
-            "The QualiBact CDN export contains no supported preferred-scheme rows; "
-            "trying the canonical QualiBact repository export."
-        )
+    preferred_schemes = preferred_schemes or {}
+    if update_url == QUALIBACT_DEFAULT_URL and not preferred_schemes:
         try:
-            qualibact_rows = _fetch_qualibact_rows(QUALIBACT_REPOSITORY_URL)
-            effective_url = QUALIBACT_REPOSITORY_URL
-        except (requests.RequestException, ValueError) as exc:
-            logging.error("Failed to download the repository QualiBact thresholds: %s", exc)
+            preferred_schemes = _fetch_preferred_schemes()
+        except (requests.RequestException, ValueError, json.JSONDecodeError) as exc:
+            logging.error("Failed to download the QualiBact preferred-scheme index: %s", exc)
             return False
 
-    if not _choose_threshold_rows(qualibact_rows):
+    if not _choose_threshold_rows(qualibact_rows, preferred_schemes):
         logging.warning(
-            "No supported QualiBact v1 rows found at %s. Keeping existing species thresholds.",
-            effective_url,
+            "No usable QualiBact threshold rows found at %s. Keeping existing species thresholds.",
+            update_url,
         )
         return False
 
-    generated_rows = qualibact_rows_to_criteria_rows(qualibact_rows)
+    generated_rows = qualibact_rows_to_criteria_rows(qualibact_rows, preferred_schemes)
     preserved_rows = _preserve_existing_rows(criteria_file)
 
     merged = []
@@ -465,8 +488,9 @@ def update_criteria_file(
 
     _write_snapshot_artifacts(
         qualibact_rows,
-        snapshot_source_url or effective_url,
+        snapshot_source_url or update_url,
         snapshot_dir=snapshot_dir,
+        preferred_schemes=preferred_schemes,
     )
     logging.info("Criteria file updated successfully: %s", criteria_file)
     return True

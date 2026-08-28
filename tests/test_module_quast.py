@@ -82,3 +82,12 @@ Total length (>= 0 bp)\t3000000
     quast = Quast(file_path)
     assert quast.has_valid_fileformat
     assert quast.fetch_values()["N50"] == 25000
+
+
+def test_quast_accepts_native_wide_practice_output():
+    path = "tests/practice_data/Sample_1cc0da37semb/Sample_1cc0da37semb.short (2).tsv"
+    parser = Quast(path)
+    assert parser.has_valid_fileformat
+    values = parser.fetch_values()
+    assert values["Assembly"] == "Sample_1cc0da37semb.short"
+    assert isinstance(values["N50"], int)

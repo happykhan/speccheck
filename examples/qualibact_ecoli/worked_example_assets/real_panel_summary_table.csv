@@ -1,4 +1,4 @@
-sample_id,qualibact_tier,qualibact_compat_tier,qualibact_compat_reasons,all_checks_passed,Quast.N50,Quast.# contigs (>= 0 bp),Checkm.Completeness,Checkm.Contamination,qualibact_reasons
-SAMN42764706,WARN,PASS,none,PASSED,112461,304,100.0,0.33,no_of_contigs >600.0; Total_Coding_Sequences >5800.0
-SAMN42765982,FAIL,PASS,none,PASSED,126621,302,100.0,0.38,no_of_contigs >670.0; Total_Coding_Sequences >5800.0; Genome_Size >5700000.0
-SAMN42766885,PASS,PASS,none,PASSED,119508,121,100.0,0.21,none
+sample_id,historical_qualibact_qc,qualibact_qc,qualibact_compat_reasons,overall_qc,Quast.N50,Quast.# contigs (>= 0 bp),Checkm.Completeness,Checkm.Contamination,qualibact_reasons
+SAMN42764706,WARN,PASS,none,FAIL,112461,304,100.0,0.33,no_of_contigs >600.0; Total_Coding_Sequences >5800.0
+SAMN42765982,FAIL,PASS,none,WARN,126621,302,100.0,0.38,no_of_contigs >670.0; Total_Coding_Sequences >5800.0; Genome_Size >5700000.0
+SAMN42766885,PASS,PASS,none,FAIL,119508,121,100.0,0.21,none

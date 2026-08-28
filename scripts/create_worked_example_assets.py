@@ -109,8 +109,8 @@ def workflow_svg(path: Path):
 
 
 def outcomes_svg(path: Path, rows: list[dict[str, str]]):
-    tier_counts = Counter(row["qualibact_tier"] for row in rows)
-    compat_counts = Counter(row["qualibact_compat_tier"] for row in rows)
+    tier_counts = Counter(row["historical_qualibact_qc"] for row in rows)
+    compat_counts = Counter(row["qualibact_qc"] for row in rows)
     sample_count = len(rows)
     body = [
         svg_text(60, 70, "Real E. coli demonstration panel", size=34, weight=700),
@@ -126,8 +126,6 @@ def outcomes_svg(path: Path, rows: list[dict[str, str]]):
         "PASS": "#2f6f5e",
         "WARN": "#b7791f",
         "FAIL": "#b42318",
-        "PASSED": "#2f6f5e",
-        "FAILED": "#b42318",
     }
     x = 70
     for label in ["PASS", "WARN", "FAIL"]:
@@ -172,8 +170,8 @@ def outcomes_svg(path: Path, rows: list[dict[str, str]]):
 
 def report_snapshot_svg(path: Path, rows: list[dict[str, str]]):
     sample_count = len(rows)
-    tier_counts = Counter(row["qualibact_tier"] for row in rows)
-    compat_counts = Counter(row["qualibact_compat_tier"] for row in rows)
+    tier_counts = Counter(row["historical_qualibact_qc"] for row in rows)
+    compat_counts = Counter(row["qualibact_qc"] for row in rows)
     compat_summary = (
         ", ".join(
             f"{compat_counts[label]} {label}"
@@ -215,17 +213,17 @@ def report_snapshot_svg(path: Path, rows: list[dict[str, str]]):
         body.append(svg_text(x, 455, header, size=17, weight=700, fill="#334155"))
     y = 490
     for row in rows:
-        compat_fill = {"PASS": "#2f6f5e", "WARN": "#b7791f", "FAIL": "#b42318"}[
-            row["qualibact_compat_tier"]
+        compat_fill = {"PASS": "#2f6f5e", "WARN": "#b7791f", "FAIL": "#b42318"}[row["qualibact_qc"]]
+        tier_fill = {"PASS": "#2f6f5e", "WARN": "#b7791f", "FAIL": "#b42318"}[
+            row["historical_qualibact_qc"]
         ]
-        tier_fill = {"PASS": "#2f6f5e", "WARN": "#b7791f", "FAIL": "#b42318"}[row["qualibact_tier"]]
         reason = row["qualibact_compat_reasons"]
         if len(reason) > 56:
             reason = reason[:53] + "..."
         values = [
             row["sample_id"],
-            row["qualibact_tier"],
-            row["qualibact_compat_tier"],
+            row["historical_qualibact_qc"],
+            row["qualibact_qc"],
             f"{int(float(row['Quast.N50'])):,}",
             row["Quast.# contigs (>= 0 bp)"],
             reason,
@@ -233,10 +231,10 @@ def report_snapshot_svg(path: Path, rows: list[dict[str, str]]):
         for x, value in zip(xs, values, strict=False):
             fill = "#1f2933"
             weight = 400
-            if value == row["qualibact_tier"]:
+            if value == row["historical_qualibact_qc"]:
                 fill = tier_fill
                 weight = 700
-            if value == row["qualibact_compat_tier"]:
+            if value == row["qualibact_qc"]:
                 fill = compat_fill
                 weight = 700
             body.append(svg_text(x, y, value, size=15, weight=weight, fill=fill))
@@ -249,10 +247,10 @@ def write_summary_table(rows: list[dict[str, str]]):
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
     columns = [
         "sample_id",
-        "qualibact_tier",
-        "qualibact_compat_tier",
+        "historical_qualibact_qc",
+        "qualibact_qc",
         "qualibact_compat_reasons",
-        "all_checks_passed",
+        "overall_qc",
         "Quast.N50",
         "Quast.# contigs (>= 0 bp)",
         "Checkm.Completeness",
@@ -261,23 +259,23 @@ def write_summary_table(rows: list[dict[str, str]]):
     ]
     csv_path = ASSET_DIR / "real_panel_summary_table.csv"
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=columns)
+        writer = csv.DictWriter(handle, fieldnames=columns, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({column: row[column] for column in columns})
 
     md_path = ASSET_DIR / "real_panel_summary_table.md"
     lines = [
-        "| Sample | QualiBact tier | Compatibility tier | speccheck binary | N50 | Contigs | CheckM completeness | CheckM contamination | Compatibility reasons |",
+        "| Sample | Historical QualiBact QC | QualiBact QC | Overall QC | N50 | Contigs | CheckM completeness | CheckM contamination | Compatibility reasons |",
         "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in rows:
         lines.append(
-            "| {sample_id} | {qualibact_tier} | {compat_tier} | {all_checks_passed} | {n50:,} | {contigs} | {comp:.1f} | {contam:.2f} | {reasons} |".format(
+            "| {sample_id} | {historical_qc} | {compat_qc} | {overall_qc} | {n50:,} | {contigs} | {comp:.1f} | {contam:.2f} | {reasons} |".format(
                 sample_id=row["sample_id"],
-                qualibact_tier=row["qualibact_tier"],
-                compat_tier=row["qualibact_compat_tier"],
-                all_checks_passed=row["all_checks_passed"],
+                historical_qc=row["historical_qualibact_qc"],
+                compat_qc=row["qualibact_qc"],
+                overall_qc=row["overall_qc"],
                 n50=int(float(row["Quast.N50"])),
                 contigs=row["Quast.# contigs (>= 0 bp)"],
                 comp=float(row["Checkm.Completeness"]),

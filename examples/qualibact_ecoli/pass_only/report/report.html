@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>speccheck QC report</title>
-    <script src="https://cdn.plot.ly/plotly-3.0.0-rc.2.min.js" charset="utf-8"></script>
     <style>
 :root {
   --bg: linear-gradient(180deg, #eef3f5 0%, #f8f6f0 100%);
@@ -22,6 +21,8 @@
   --fail-ink: #a03333;
   --warn-bg: #fff6dc;
   --warn-ink: #7a5a00;
+  --not-evaluated-bg: #edf1f5;
+  --not-evaluated-ink: #4b5b6a;
 }
 
 * {
@@ -48,7 +49,7 @@ a {
 }
 
 .page-shell {
-  max-width: 1340px;
+  max-width: 1560px;
   margin: 0 auto;
   padding: 24px 20px 48px;
 }
@@ -74,9 +75,7 @@ a {
 }
 
 .sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  position: relative;
 }
 
 .eyebrow,
@@ -140,13 +139,27 @@ a {
 }
 
 .hero-kpis {
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .kpi-card {
   padding: 12px 14px;
   border: 1px solid var(--line);
   background: var(--surface);
+}
+
+button.kpi-card {
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.kpi-card:hover,
+button.kpi-card:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(31, 95, 139, 0.14);
+  outline: none;
 }
 
 .kpi-pass {
@@ -159,6 +172,10 @@ a {
 
 .kpi-fail {
   background: var(--fail-bg);
+}
+
+.kpi-not-evaluated {
+  background: var(--not-evaluated-bg);
 }
 
 .kpi-label {
@@ -181,42 +198,140 @@ a {
   color: var(--muted);
 }
 
-.report-main {
+.run-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 14px 0 0;
+}
+
+.run-context div {
+  display: flex;
+  gap: 7px;
+}
+
+.run-context dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.run-context dd {
+  margin: 0;
+}
+
+.report-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
   margin-top: 18px;
+}
+
+.report-layout.sidebar-collapsed {
+  grid-template-columns: 52px minmax(0, 1fr);
+}
+
+.report-main {
   display: grid;
   gap: 16px;
 }
 
-.report-nav {
+.report-main > section,
+.tool-diagnostic {
+  scroll-margin-top: 18px;
+}
+
+.report-sidebar {
   position: sticky;
-  top: 154px;
+  top: 16px;
   z-index: 15;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0 0;
-  padding: 10px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 10px 24px rgba(31, 41, 51, 0.07);
   backdrop-filter: blur(8px);
 }
 
-.report-nav a {
-  padding: 7px 10px;
-  border: 1px solid var(--line);
+.sidebar-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
   background: var(--surface-muted);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sidebar-collapsed .sidebar-toggle {
+  justify-content: center;
+}
+
+.sidebar-collapsed .sidebar-toggle-label,
+.sidebar-collapsed .report-nav {
+  display: none;
+}
+
+.report-nav {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+}
+
+.report-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 9px;
+  border-left: 3px solid transparent;
   color: var(--ink);
   font-size: 0.86rem;
   font-weight: 650;
   text-decoration: none;
 }
 
+.report-nav a strong {
+  min-width: 1.55rem;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
 .report-nav a:hover,
-.report-nav a:focus {
-  border-color: var(--accent);
+.report-nav a:focus,
+.report-nav a.is-active {
+  border-left-color: var(--accent);
   background: var(--accent-muted);
   color: var(--accent);
+}
+
+.report-subnav {
+  display: grid;
+  gap: 1px;
+  margin: 0 0 4px 10px;
+  padding-left: 8px;
+  border-left: 1px solid var(--line);
+}
+
+.report-subnav a {
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  font-weight: 550;
+}
+
+.mobile-jump {
+  display: none;
 }
 
 .overview-grid {
@@ -263,6 +378,52 @@ a {
 
 .alert-list {
   margin: 0;
+}
+
+.workflow-steps {
+  margin: 0;
+}
+
+.review-lede {
+  margin-bottom: 12px;
+}
+
+.status-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.status-tabs button {
+  padding: 7px 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.status-tabs button span {
+  margin-left: 4px;
+  color: var(--muted);
+}
+
+.status-tabs button:hover,
+.status-tabs button:focus-visible,
+.status-tabs button.is-active {
+  border-color: var(--accent);
+  background: var(--accent-muted);
+  color: var(--accent);
+  outline: none;
+}
+
+.review-filter-summary {
+  min-height: 1.4em;
+  margin: 0 0 10px;
+  font-size: 0.88rem;
 }
 
 .software-block {
@@ -315,8 +476,278 @@ a {
   margin-top: 8px;
 }
 
+.compact-counts {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.compact-counts ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
 .chart-frame {
   margin: 12px 0 18px;
+}
+
+.chart-title {
+  margin: 20px 0 4px;
+  font-size: 1rem;
+}
+
+.inline-chart-frame {
+  padding: 12px 12px 8px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.inline-svg-chart {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  height: auto;
+}
+
+.svg-plot-background {
+  fill: var(--surface-muted);
+  stroke: var(--line);
+}
+
+.svg-grid-line {
+  stroke: #d7dde3;
+  stroke-width: 1;
+}
+
+.svg-axis-label,
+.svg-axis-title,
+.svg-tick-label,
+.svg-value-label {
+  fill: var(--ink);
+  font-family: inherit;
+}
+
+.svg-axis-title,
+.svg-axis-label,
+.svg-value-label {
+  font-size: 13px;
+}
+
+.svg-axis-title {
+  font-weight: 700;
+}
+
+.svg-tick-label {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.svg-data-point {
+  cursor: pointer;
+  stroke: #fff;
+  stroke-width: 1.5;
+  transition: stroke-width 120ms ease;
+}
+
+.svg-data-point:hover,
+.svg-data-point:focus {
+  outline: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
+.svg-data-point.qc-point-not-evaluated {
+  fill: var(--surface);
+  stroke: #66778a;
+  stroke-width: 2;
+}
+
+.svg-bar {
+  cursor: default;
+}
+
+.svg-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.svg-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.svg-chart-legend .legend-marker {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+}
+
+.svg-chart-legend .legend-heading {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.legend-pass {
+  border-radius: 50%;
+  background: #2b7a4b;
+}
+
+.legend-warn {
+  background: #a06f00;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.legend-fail {
+  background: #b64242;
+  transform: rotate(45deg) scale(0.86);
+}
+
+.legend-not-evaluated {
+  box-sizing: border-box;
+  border: 2px solid #66778a;
+  background: var(--surface);
+}
+
+.chart-help,
+.chart-empty {
+  margin: 7px 8px 3px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.chart-tooltip {
+  position: fixed;
+  z-index: 1000;
+  max-width: min(360px, calc(100vw - 28px));
+  padding: 8px 10px;
+  border-radius: 5px;
+  background: #17212b;
+  color: #fff;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 20%);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+.chart-tooltip[hidden] {
+  display: none;
+}
+
+.tool-diagnostic {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.tool-diagnostic-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 15px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.tool-diagnostic-summary::-webkit-details-marker {
+  display: none;
+}
+
+.tool-diagnostic-summary::after {
+  content: "+";
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.tool-diagnostic[open] > .tool-diagnostic-summary::after {
+  content: "−";
+}
+
+.tool-summary-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tool-name {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.tool-description {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.tool-status-badges {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.status-badge {
+  padding: 3px 7px;
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.status-badge-pass {
+  border-color: #b7dec8;
+  background: var(--pass-bg);
+  color: var(--pass-ink);
+}
+
+.status-badge-warn {
+  border-color: #e8d69a;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+.status-badge-fail {
+  border-color: #e5bcbc;
+  background: var(--fail-bg);
+  color: var(--fail-ink);
+}
+
+.status-badge-not-evaluated {
+  background: var(--not-evaluated-bg);
+  color: var(--not-evaluated-ink);
+}
+
+.tool-diagnostic-body {
+  border-top: 1px solid var(--line);
+}
+
+.tool-diagnostic-body .software-block {
+  margin: 0;
+  border: 0;
 }
 
 .report-charts > p,
@@ -325,18 +756,6 @@ a {
   max-width: 78ch;
 }
 
-.report-charts div[style*="height"] {
-  width: 100% !important;
-  max-width: 100% !important;
-  border: 1px solid var(--line);
-  background: var(--surface);
-}
-
-.report-charts .js-plotly-plot,
-.report-charts .plot-container,
-.report-charts .svg-container,
-.report-charts .plotly,
-.report-charts .plotly-graph-div,
 .report-charts .table-container {
   width: 100% !important;
   max-width: 100% !important;
@@ -466,6 +885,15 @@ a {
   background: #f2f6fa;
 }
 
+.sample-review-row {
+  cursor: pointer;
+}
+
+.sample-review-row:focus {
+  outline: 3px solid rgba(31, 95, 139, 0.2);
+  outline-offset: -3px;
+}
+
 .qc-pass {
   background: var(--pass-bg) !important;
   color: var(--pass-ink);
@@ -481,6 +909,12 @@ a {
 .qc-warn {
   background: var(--warn-bg) !important;
   color: var(--warn-ink);
+  font-weight: 700;
+}
+
+.qc-not-evaluated {
+  background: var(--not-evaluated-bg) !important;
+  color: var(--not-evaluated-ink);
   font-weight: 700;
 }
 
@@ -502,11 +936,54 @@ a {
   font-weight: 700;
 }
 
+.qc-warn-text {
+  color: var(--warn-ink);
+  font-weight: 700;
+}
+
+.qc-not-evaluated-text {
+  color: var(--not-evaluated-ink);
+  font-weight: 700;
+}
+
 .metric-summary-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-top: 12px;
+}
+
+.metric-species-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 12px;
+  align-items: center;
+  margin: 12px 0 16px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-muted);
+}
+
+.metric-species-filter label {
+  font-weight: 700;
+}
+
+.metric-species-filter select {
+  min-width: min(280px, 100%);
+  padding: 7px 32px 7px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.metric-species-filter p {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .metric-summary-card {
@@ -532,10 +1009,7 @@ a {
   word-break: break-word;
 }
 
-.plotly-graph-div {
-  min-height: 520px;
-}
-
+.section-disclosure > summary,
 .heavy-section summary {
   display: flex;
   align-items: center;
@@ -546,10 +1020,12 @@ a {
   padding: 4px 0;
 }
 
+.section-disclosure > summary::-webkit-details-marker,
 .heavy-section summary::-webkit-details-marker {
   display: none;
 }
 
+.section-disclosure > summary::after,
 .heavy-section summary::after {
   content: "Open";
   flex: 0 0 auto;
@@ -562,19 +1038,136 @@ a {
   text-transform: uppercase;
 }
 
+.section-disclosure[open] > summary::after,
 .heavy-section[open] summary::after {
   content: "Close";
 }
 
+.section-disclosure > summary strong,
 .heavy-section summary strong {
   display: block;
   color: var(--ink);
   font-size: 1.2rem;
 }
 
+.section-disclosure-body {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.provenance-section {
+  margin: 18px 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.download-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.download-actions a {
+  padding: 8px 11px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .summary-hint {
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.sample-detail-dialog {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 24px 70px rgba(31, 41, 51, 0.3);
+}
+
+.sample-detail-dialog::backdrop {
+  background: rgba(31, 41, 51, 0.48);
+}
+
+.sample-detail-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.sample-detail-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.dialog-close {
+  padding: 7px 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-muted);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sample-detail-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 18px;
+}
+
+.sample-detail-content section {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.sample-detail-content h3 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+}
+
+.sample-detail-content dl {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.sample-detail-content dl div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sample-detail-content dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.sample-detail-content dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.86rem;
 }
 
 .report-footer {
@@ -589,11 +1182,92 @@ a {
   margin: 0;
 }
 
+@media (max-width: 1100px) {
+  .report-layout,
+  .report-layout.sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .report-sidebar {
+    display: none;
+  }
+
+  .mobile-jump {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 8px 20px rgba(31, 41, 51, 0.08);
+  }
+
+  .mobile-jump label {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .mobile-jump select {
+    width: 100%;
+    min-width: 0;
+    padding: 7px 9px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+  }
+}
+
 @media (max-width: 920px) {
   .hero-kpis,
   .hero-card,
   .overview-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+    font-size: 10pt;
+  }
+
+  .page-shell {
+    max-width: none;
+    padding: 0;
+  }
+
+  .report-sidebar,
+  .mobile-jump,
+  .status-tabs,
+  .download-actions,
+  .table-tools,
+  .table-pagination,
+  .chart-tooltip,
+  .heavy-section summary::after {
+    display: none !important;
+  }
+
+  .report-header,
+  .panel,
+  .software-block,
+  .metric-summary-card {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+
+  .table-container {
+    overflow: visible;
+  }
+
+  .table {
+    min-width: 0;
+    font-size: 8pt;
   }
 }
 
@@ -612,154 +1286,225 @@ a {
     position: static;
   }
 
-  .report-nav {
-    position: static;
-  }
-
-  .hero-kpis,
   .overview-grid {
     grid-template-columns: 1fr;
+  }
+
+  .metric-summary-grid,
+  .sample-detail-content {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-diagnostic-summary {
+    align-items: flex-start;
+  }
+
+  .tool-description {
+    display: none;
   }
 
   .table {
     min-width: 620px;
   }
 
-  .plotly-graph-div {
-    min-height: 440px;
-  }
 }
 
     </style>
 </head>
 <body>
     <div class="page-shell">
-        <header class="report-header sticky-header">
+        <header id="overview" class="report-header sticky-header">
             <div class="eyebrow">speccheck quality control report</div>
                 <h1>QC Report <span>speccheck 1.3.0</span></h1>
             <p class="report-intro">
                 Summary of assembled sample QC results, criteria checks, and software-specific diagnostics.
             </p>
             <div class="hero-card hero-kpis">
-                <div class="kpi-card kpi-neutral">
+
+                <button type="button" class="kpi-card kpi-neutral kpi-filter" data-status-filter="ALL">
                     <span class="kpi-label">Samples</span>
                     <strong class="kpi-value">2</strong>
-                </div>
-                <div class="kpi-card kpi-pass">
+                </button>
+
+
+                <button type="button" class="kpi-card kpi-pass kpi-filter" data-status-filter="PASS">
                     <span class="kpi-label">PASS</span>
                     <strong class="kpi-value">2</strong>
-                </div>
-                <div class="kpi-card kpi-warn">
+                </button>
+
+
+                <button type="button" class="kpi-card kpi-warn kpi-filter" data-status-filter="WARN">
                     <span class="kpi-label">WARN</span>
                     <strong class="kpi-value">0</strong>
-                </div>
-                <div class="kpi-card kpi-fail">
+                </button>
+
+
+                <button type="button" class="kpi-card kpi-fail kpi-filter" data-status-filter="FAIL">
                     <span class="kpi-label">FAIL</span>
                     <strong class="kpi-value">0</strong>
-                </div>
+                </button>
+
+
+                <button type="button" class="kpi-card kpi-not-evaluated kpi-filter" data-status-filter="NOT_EVALUATED">
+                    <span class="kpi-label">NOT EVALUATED</span>
+                    <strong class="kpi-value">0</strong>
+                </button>
+
+
                 <div class="kpi-card kpi-neutral">
                     <span class="kpi-label">Pass rate</span>
                     <strong class="kpi-value">100.0%</strong>
                 </div>
-                <div class="kpi-card kpi-neutral">
-                    <span class="kpi-label">Threshold source</span>
-                    <strong class="kpi-value">Unavailable</strong>
-                </div>
-                <div class="kpi-card kpi-neutral">
-                    <span class="kpi-label">Species mix</span>
-                    <strong class="kpi-value">Escherichia coli</strong>
-                </div>
+
             </div>
-            <p class="hero-summary">There are 2 samples included with <span class='qc-pass-text'>2 passing</span> and <span class='qc-fail-text'>0 failing</span> (100.00% pass rate).</p>
+
+            <dl class="run-context">
+
+                <div><dt>Species</dt><dd>Escherichia coli</dd></div>
+
+            </dl>
+
         </header>
 
-        <nav class="report-nav" aria-label="Report sections">
-            <a href="#sample-review">Sample review</a>
-            <a href="#exceptions">Warnings and failures</a>
-            <a href="#metric-summary">Metric summaries</a>
-            <a href="#status-matrix">Status matrix</a>
-            <a href="#software-diagnostics">Software diagnostics</a>
-            <a href="#full-detail">Full detail</a>
-        </nav>
+        <div class="mobile-jump">
+            <label for="report-jump">Jump to</label>
+            <select id="report-jump">
+                <option value="#overview">Overview</option>
+                <option value="#sample-review">Review queue (0)</option>
+                <option value="#metric-summary">Cohort metrics</option>
+                <option value="#software-diagnostics">Tool diagnostics</option>
 
-        <main class="report-main">
-            <section id="exceptions" class="overview-grid">
+                <option value="#tool-checkm">CheckM</option>
+
+                <option value="#tool-quast">QUAST</option>
+
+                <option value="#tool-speciator">Speciator</option>
+
+                <option value="#tool-sylph">Sylph</option>
+
+                <option value="#full-detail">Data and provenance</option>
+            </select>
+        </div>
+
+        <div class="report-layout" id="report-layout">
+            <aside class="report-sidebar">
+                <button type="button" class="sidebar-toggle" aria-expanded="true" aria-label="Collapse report navigation">
+                    <span aria-hidden="true">←</span><span class="sidebar-toggle-label">Collapse</span>
+                </button>
+                <nav class="report-nav" aria-label="Report sections">
+                    <a href="#overview" data-section-link><span>Overview</span></a>
+                    <a href="#sample-review" data-section-link>
+                        <span>Review queue</span><strong>0</strong>
+                    </a>
+                    <a href="#metric-summary" data-section-link><span>Cohort metrics</span></a>
+                    <a href="#software-diagnostics" data-section-link><span>Tool diagnostics</span></a>
+
+                    <div class="report-subnav">
+
+                        <a href="#tool-checkm" data-section-link>
+                            <span>CheckM</span>
+                        </a>
+
+                        <a href="#tool-quast" data-section-link>
+                            <span>QUAST</span>
+                        </a>
+
+                        <a href="#tool-speciator" data-section-link>
+                            <span>Speciator</span>
+                        </a>
+
+                        <a href="#tool-sylph" data-section-link>
+                            <span>Sylph</span>
+                        </a>
+
+                    </div>
+
+                    <a href="#full-detail" data-section-link><span>Data and provenance</span></a>
+                </nav>
+            </aside>
+
+            <main class="report-main">
+            <section id="sample-review" class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Action first</div>
+                        <h2>Review queue</h2>
+                    </div>
+                </div>
+                <p class="review-lede"><strong>0 of 2 samples require review.</strong> Select a row for its key metrics, tool statuses and failed checks.</p>
+
+                <div class="status-tabs" role="group" aria-label="Filter samples by QC status" data-default-filter="ALL">
+                    <button type="button" data-status-filter="NEEDS_REVIEW">Needs review <span>0</span></button>
+                    <button type="button" data-status-filter="FAIL">FAIL <span>0</span></button>
+                    <button type="button" data-status-filter="WARN">WARN <span>0</span></button>
+                    <button type="button" data-status-filter="NOT_EVALUATED">Not evaluated <span>0</span></button>
+                    <button type="button" data-status-filter="PASS">PASS <span>2</span></button>
+                    <button type="button" data-status-filter="ALL">All <span>2</span></button>
+                </div>
+                <p id="review-filter-summary" class="review-filter-summary" aria-live="polite"></p>
+
+                <div class="table-tools"><label for="sample-review-table-filter">Filter</label><input id="sample-review-table-filter" class="table-filter" type="search" placeholder="Filter rows" data-target="sample-review-table" /></div><div class="table-container"><table id="sample-review-table" class="table report-table js-sort-filter"><thead><tr><th data-type="string">Sample</th><th data-type="status">Overall QC</th><th data-type="status">Speccheck QC</th><th data-type="status">QualiBact QC</th><th data-type="string">Reason summary</th><th data-type="string">Species</th><th data-type="numeric">N50</th><th data-type="numeric">Contigs</th></tr></thead><tbody><tr data-qc-status="PASS" data-sample-id="SAMN42766885" class="sample-review-row" tabindex="0" role="button" aria-label="Open details for SAMN42766885"><td class="">SAMN42766885</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="">none</td><td class="">Escherichia coli</td><td class="">120,461</td><td class="">184</td></tr><tr data-qc-status="PASS" data-sample-id="SAMN42766886" class="sample-review-row" tabindex="0" role="button" aria-label="Open details for SAMN42766886"><td class="">SAMN42766886</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="">none</td><td class="">Escherichia coli</td><td class="">172,285</td><td class="">159</td></tr></tbody></table></div>
+            </section>
+
+            <section id="review-reasons" class="overview-grid">
                 <article class="panel prose">
-                    <h2>Warnings and failures</h2>
+                    <h2>Top review reasons</h2>
 
                     <p>No recurring warning or failure reasons were detected.</p>
 
                 </article>
                 <article class="panel prose">
-                    <h2>Software in report</h2>
-                    <p>Software included in this report:</p><ul><li><b><a href="#checkm">CheckM</a></b>: CheckM assesses assembly completeness and contamination using conserved marker genes. (<a href="https://github.com/Ecogenomics/CheckM">website</a>) (<a href="https://genome.cshlp.org/content/25/7/1043">ref</a>)</li><li><b><a href="#quast">QUAST</a></b>: QUAST evaluates assembly contiguity, size, GC content, and related assembly metrics. (<a href="https://quast.sourceforge.net/">website</a>) (<a href="https://doi.org/10.1093/bioinformatics/btt086">ref</a>)</li><li><b><a href="#speciator">Speciator</a></b>: Speciator assigns assembled genomes to species. (<a href="https://cgps.gitbook.io/pathogenwatch/technical-descriptions/species-assignment/speciator">website</a>)</li><li><b><a href="#sylph">Sylph</a></b>: Sylph estimates dominant species composition and abundance across samples. (<a href="https://github.com/bluenote-1577/sylph">website</a>) (<a href="https://www.nature.com/articles/s41587-024-02412-y">ref</a>)</li></ul>
+                    <h2>How to use this report</h2>
+                    <ol class="workflow-steps">
+                        <li>Start with FAIL and WARN samples in the review queue.</li>
+                        <li>Open a sample row to inspect its metrics and failed checks.</li>
+                        <li>Use tool diagnostics only when a reason needs investigation.</li>
+                    </ol>
                 </article>
             </section>
 
-            <section id="sample-review" class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Review</div>
-                        <h2>Sample review table</h2>
-                    </div>
-                </div>
-                <p>The first table keeps the sample review surface concise for large runs.</p>
-                <div class="table-tools"><label for="sample-review-table-filter">Filter</label><input id="sample-review-table-filter" class="table-filter" type="search" placeholder="Filter rows" data-target="sample-review-table" /></div><div class="table-container"><table id="sample-review-table" class="table report-table js-sort-filter"><thead><tr><th data-type="string">sample_id</th><th data-type="string">Overall QC</th><th data-type="status">all_checks_passed</th><th data-type="string">QualiBact compat tier</th><th data-type="string">Species</th><th data-type="string">Species confidence</th><th data-type="numeric">N50</th><th data-type="numeric">Contigs</th><th data-type="numeric">Genome size</th><th data-type="numeric">GC %</th><th data-type="numeric">Completeness</th><th data-type="numeric">Contamination</th><th data-type="string">Top species</th><th data-type="numeric">Top abundance</th><th data-type="string">Reason summary</th></tr></thead><tbody><tr><td class="">SAMN42766885</td><td class="">PASS</td><td class="qc-pass">PASSED</td><td class="">PASS</td><td class="">Escherichia coli</td><td class="">good</td><td class="">120,461</td><td class="">184</td><td class="">5,043,262</td><td class="">50.42</td><td class="">100</td><td class="">0.21</td><td class="">Escherichia coli</td><td class="">0.95</td><td class="">none</td></tr><tr><td class="">SAMN42766886</td><td class="">PASS</td><td class="qc-pass">PASSED</td><td class="">PASS</td><td class="">Escherichia coli</td><td class="">good</td><td class="">172,285</td><td class="">159</td><td class="">5,269,811</td><td class="">50.70</td><td class="">100</td><td class="">0.50</td><td class="">Escherichia coli</td><td class="">0.95</td><td class="">none</td></tr></tbody></table></div>
-            </section>
-
-            <section class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Exceptions</div>
-                        <h2>Top failure reasons</h2>
-                    </div>
-                </div>
-                <p>No recurring failure reasons were detected.</p>
-            </section>
-
             <section id="metric-summary" class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Metrics</div>
-                        <h2>Compact summary tables</h2>
-                    </div>
-                </div>
-                <p>Compact summary tables are rendered in a built-in qualifyr-style layout for quick comparison across samples.</p><section class="metric-summary-grid"><article class="metric-summary-card"><h3>Species assignment</h3><div class="table-container"><table id="metric-summary-1" class="table report-table js-sort-filter"><thead><tr><th data-type="string">Metric</th><th data-type="string">Most common</th><th data-type="numeric">Unique values</th><th data-type="numeric">Missing</th><th data-type="string">Min</th><th data-type="string">Median</th><th data-type="string">Max</th></tr></thead><tbody><tr><td class="">Speciator.speciesName</td><td class="">Escherichia coli</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">Speciator.confidence</td><td class="">good</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">qualibact_compat_tier</td><td class="">PASS</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">Sylph.top_species</td><td class="">Escherichia coli</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">Sylph.top_taxonomic_abundance</td><td class=""></td><td class=""></td><td class="">0</td><td class="">0.95</td><td class="">0.95</td><td class="">0.95</td></tr></tbody></table></div></article><article class="metric-summary-card"><h3>Assembly quality</h3><div class="table-container"><table id="metric-summary-2" class="table report-table js-sort-filter"><thead><tr><th data-type="string">Metric</th><th data-type="string">Min</th><th data-type="string">Median</th><th data-type="string">Max</th><th data-type="numeric">Missing</th></tr></thead><tbody><tr><td class="">Quast.N50</td><td class="">120,461</td><td class="">146,373</td><td class="">172,285</td><td class="">0</td></tr><tr><td class="">Quast.# contigs (&gt;= 0 bp)</td><td class="">159</td><td class="">171.50</td><td class="">184</td><td class="">0</td></tr><tr><td class="">Quast.Total length</td><td class="">5,043,262</td><td class="">5,156,536.50</td><td class="">5,269,811</td><td class="">0</td></tr><tr><td class="">Quast.GC (%)</td><td class="">50.42</td><td class="">50.56</td><td class="">50.70</td><td class="">0</td></tr><tr><td class="">Quast.Largest contig</td><td class="">578,018</td><td class="">631,280</td><td class="">684,542</td><td class="">0</td></tr></tbody></table></div></article><article class="metric-summary-card"><h3>Completeness and contamination</h3><div class="table-container"><table id="metric-summary-3" class="table report-table js-sort-filter"><thead><tr><th data-type="string">Metric</th><th data-type="string">Min</th><th data-type="string">Median</th><th data-type="string">Max</th><th data-type="numeric">Missing</th></tr></thead><tbody><tr><td class="">Checkm.Completeness</td><td class="">100</td><td class="">100</td><td class="">100</td><td class="">0</td></tr><tr><td class="">Checkm.Contamination</td><td class="">0.21</td><td class="">0.35</td><td class="">0.50</td><td class="">0</td></tr><tr><td class="">Checkm.GC</td><td class="">50.42</td><td class="">50.56</td><td class="">50.70</td><td class="">0</td></tr><tr><td class="">Checkm.Genome size (bp)</td><td class="">5,043,262</td><td class="">5,156,536.50</td><td class="">5,269,811</td><td class="">0</td></tr></tbody></table></div></article><article class="metric-summary-card"><h3>Coverage and abundance</h3><div class="table-container"><table id="metric-summary-4" class="table report-table js-sort-filter"><thead><tr><th data-type="string">Metric</th><th data-type="status">Min</th><th data-type="status">Median</th><th data-type="status">Max</th><th data-type="numeric">Missing</th></tr></thead><tbody><tr><td class="">Sylph.number_of_genomes</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="">0</td></tr></tbody></table></div></article></section>
+                <details class="section-disclosure">
+                    <summary>
+                        <span><span class="eyebrow">Cohort</span><strong>Cohort metrics</strong></span>
+                        <span class="summary-hint">Four compact distribution summaries</span>
+                    </summary>
+                    <div class="section-disclosure-body"><p>Compact summary tables are rendered in a built-in qualifyr-style layout for quick comparison across samples.</p><section class="metric-summary-grid"><article class="metric-summary-card"><h3>Species assignment</h3><div class="table-container"><table id="metric-summary-all-1" class="table report-table"><thead><tr><th data-type="string">Metric</th><th data-type="string">Most common</th><th data-type="numeric">Unique values</th><th data-type="numeric">Missing</th><th data-type="string">Min</th><th data-type="string">Median</th><th data-type="string">Max</th></tr></thead><tbody><tr><td class="">Speciator.speciesName</td><td class="">Escherichia coli</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">Speciator.confidence</td><td class="">good</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">qualibact_qc</td><td class="qc-pass">PASS</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">Sylph.top_species</td><td class="">Escherichia coli</td><td class="">1</td><td class="">0</td><td class=""></td><td class=""></td><td class=""></td></tr><tr><td class="">Sylph.top_abundance_percent</td><td class=""></td><td class=""></td><td class="">0</td><td class="">95</td><td class="">95</td><td class="">95</td></tr></tbody></table></div></article><article class="metric-summary-card"><h3>Assembly quality</h3><div class="table-container"><table id="metric-summary-all-2" class="table report-table"><thead><tr><th data-type="string">Metric</th><th data-type="string">Min</th><th data-type="string">Median</th><th data-type="string">Max</th><th data-type="numeric">Missing</th></tr></thead><tbody><tr><td class="">Quast.N50</td><td class="">120,461</td><td class="">146,373</td><td class="">172,285</td><td class="">0</td></tr><tr><td class="">Quast.# contigs (&gt;= 0 bp)</td><td class="">159</td><td class="">171.50</td><td class="">184</td><td class="">0</td></tr><tr><td class="">Quast.Total length (&gt;= 0 bp)</td><td class="">5,043,262</td><td class="">5,156,536.50</td><td class="">5,269,811</td><td class="">0</td></tr><tr><td class="">Quast.GC (%)</td><td class="">50.42</td><td class="">50.56</td><td class="">50.70</td><td class="">0</td></tr><tr><td class="">Quast.Largest contig</td><td class="">578,018</td><td class="">631,280</td><td class="">684,542</td><td class="">0</td></tr></tbody></table></div></article><article class="metric-summary-card"><h3>Completeness and contamination</h3><div class="table-container"><table id="metric-summary-all-3" class="table report-table"><thead><tr><th data-type="string">Metric</th><th data-type="string">Min</th><th data-type="string">Median</th><th data-type="string">Max</th><th data-type="numeric">Missing</th></tr></thead><tbody><tr><td class="">Checkm.Completeness</td><td class="">100</td><td class="">100</td><td class="">100</td><td class="">0</td></tr><tr><td class="">Checkm.Contamination</td><td class="">0.21</td><td class="">0.35</td><td class="">0.50</td><td class="">0</td></tr><tr><td class="">Checkm.GC_Content</td><td class="">50.42</td><td class="">50.56</td><td class="">50.70</td><td class="">0</td></tr><tr><td class="">Checkm.Genome_Size</td><td class="">5,043,262</td><td class="">5,156,536.50</td><td class="">5,269,811</td><td class="">0</td></tr></tbody></table></div></article><article class="metric-summary-card"><h3>Coverage and abundance</h3><div class="table-container"><table id="metric-summary-all-4" class="table report-table"><thead><tr><th data-type="string">Metric</th><th data-type="status">Min</th><th data-type="status">Median</th><th data-type="status">Max</th><th data-type="numeric">Missing</th></tr></thead><tbody><tr><td class="">Sylph.number_of_genomes</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="">0</td></tr></tbody></table></div></article></section></div>
+                </details>
             </section>
 
-            <section id="status-matrix" class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Status</div>
-                        <h2>QC status matrix</h2>
-                    </div>
-                </div>
-                <p>This table shows the overall QC status for each sample. Click headers to sort and use the filter box to search rows.</p><div class="table-tools"><label for="summary-table-filter">Filter</label><input id="summary-table-filter" class="table-filter" type="search" placeholder="Filter rows" data-target="summary-table" /></div><div class="table-container"><table id="summary-table" class="table report-table js-sort-filter"><thead><tr><th data-type="string">sample_id</th><th data-type="status">Checkm</th><th data-type="status">Quast</th><th data-type="status">Speciator</th><th data-type="status">Sylph</th><th data-type="status">all_checks_passed</th><th data-type="status">QC_PASS</th></tr></thead><tbody><tr><td class="">SAMN42766885</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMN42766886</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td></tr></tbody></table></div>
-            </section>
-
-
-            <section class="panel prose">
-                <div class="section-heading">
-                    <div>
-                        <div class="eyebrow">Review table</div>
-                        <h2>Qualifyr-style sample view</h2>
-                    </div>
-                </div>
-                <p>This compact table uses a qualifyr-like layout for fast sample review.</p><div class="table-tools"><label for="qualifyr-style-table-filter">Filter</label><input id="qualifyr-style-table-filter" class="table-filter" type="search" placeholder="Filter rows" data-target="qualifyr-style-table" /></div><div class="table-container"><table id="qualifyr-style-table" class="table report-table js-sort-filter"><thead><tr><th data-type="string">sample_id</th><th data-type="string">qualibact_compat_tier</th><th data-type="status">qualibact_compat_passed</th><th data-type="string">Speciator.speciesName</th><th data-type="string">Speciator.confidence</th><th data-type="numeric">Quast.N50</th><th data-type="numeric">Quast.# contigs (&gt;= 0 bp)</th><th data-type="numeric">Quast.Total length</th><th data-type="numeric">Checkm.Completeness</th><th data-type="numeric">Checkm.Contamination</th><th data-type="status">all_checks_passed</th><th data-type="string">qualibact_compat_reasons</th></tr></thead><tbody><tr><td class="">SAMN42766885</td><td class="">PASS</td><td class="qc-pass">PASSED</td><td class="">Escherichia coli</td><td class="">good</td><td class="">120,461</td><td class="">184</td><td class="">5,043,262</td><td class="">100</td><td class="">0.21</td><td class="qc-pass">PASSED</td><td class="">none</td></tr><tr><td class="">SAMN42766886</td><td class="">PASS</td><td class="qc-pass">PASSED</td><td class="">Escherichia coli</td><td class="">good</td><td class="">172,285</td><td class="">159</td><td class="">5,269,811</td><td class="">100</td><td class="">0.50</td><td class="qc-pass">PASSED</td><td class="">none</td></tr></tbody></table></div>
-            </section>
-
-
-            <section id="software-diagnostics" class="panel prose report-charts">
+            <section id="software-diagnostics" class="panel prose report-charts diagnostics-section">
                 <div class="section-heading">
                     <div>
                         <div class="eyebrow">Diagnostics</div>
-                        <h2>Software-specific plots</h2>
+                        <h2>Tool diagnostics</h2>
                     </div>
                 </div>
-                <section class="software-block"><div class="software-kicker">Assembly integrity</div><h2 id="checkm">CheckM</h2><p class="software-lede"><a href="https://github.com/Ecogenomics/CheckM" target="_blank"><strong>CheckM</strong></a> estimates completeness and contamination from lineage-specific single-copy markers. <a href="https://genome.cshlp.org/content/25/7/1043" target="_blank">Citation</a>.</p><div class="note-panel"><p>Interpretation focuses on marker completeness, contamination, GC content, and estimated genome size relative to the expected organism profile.</p></div><div class="status-note pass"><p><strong>Pass:</strong> all samples passed the CheckM QC checks.</p></div><div class="chart-frame"><div style="height:700px; width:100%;">                            <div id="540ed5eb-467e-4fd0-bc77-f7f5be8546d2" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("540ed5eb-467e-4fd0-bc77-f7f5be8546d2")) {                    Plotly.newPlot(                        "540ed5eb-467e-4fd0-bc77-f7f5be8546d2",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eContamination=%{x}\u003cbr\u003eCompleteness=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"4XoUrkfhyj8AAAAAAADgPw=="},"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAWUAAAAAAAABZQA=="},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eContamination=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"f8","bdata":"4XoUrkfhyj8AAAAAAADgPw=="},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eCompleteness=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"f8","bdata":"AAAAAAAAWUAAAAAAAABZQA=="},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":700,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Contamination vs completeness"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Contamination"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"Completeness"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div><div class="chart-frame"><div style="height:700px; width:100%;">                            <div id="5a2dbe32-7bc1-4cd8-bdc0-2fdf04b6927e" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("5a2dbe32-7bc1-4cd8-bdc0-2fdf04b6927e")) {                    Plotly.newPlot(                        "5a2dbe32-7bc1-4cd8-bdc0-2fdf04b6927e",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eGenome_Size=%{x}\u003cbr\u003eGC_Content=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAgA89U0EAAADATBpUQQ=="},"xaxis":"x","y":{"dtype":"f8","bdata":"L26jAbw1SUCMuWsJ+VhJQA=="},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eGenome_Size=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"f8","bdata":"AAAAgA89U0EAAADATBpUQQ=="},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eGC_Content=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"f8","bdata":"L26jAbw1SUCMuWsJ+VhJQA=="},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":700,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Estimated genome size vs GC content"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Genome_Size"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"GC_Content"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div><div class="chart-frame"><div style="height:700px; width:100%;">                            <div id="9ae9e75a-569b-41ee-a74c-dd1af298eebd" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("9ae9e75a-569b-41ee-a74c-dd1af298eebd")) {                    Plotly.newPlot(                        "9ae9e75a-569b-41ee-a74c-dd1af298eebd",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eTotal_Contigs=%{x}\u003cbr\u003eContig_N50=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAAAAAZ0AAAAAAAOBjQA=="},"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAANBo\u002fUAAAAAA6AcFQQ=="},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eTotal_Contigs=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"f8","bdata":"AAAAAAAAZ0AAAAAAAOBjQA=="},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eContig_N50=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"f8","bdata":"AAAAANBo\u002fUAAAAAA6AcFQQ=="},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":700,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Contig count vs N50"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Total_Contigs"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"Contig_N50"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div></section><section class="software-block"><div class="software-kicker">Assembly contiguity</div><h2 id="quast">QUAST</h2><p class="software-lede"><a href="https://quast.sourceforge.net/" target="_blank"><strong>QUAST</strong></a> summarizes contiguity and assembly size metrics such as N50, contig count, GC content, and total length. <a href="https://doi.org/10.1093/bioinformatics/btt086" target="_blank">Citation</a>.</p><div class="note-panel"><p>N50 captures the contig length threshold at which half of the assembly is contained in contigs of that size or longer. Larger values generally indicate better contiguity.</p></div><div class="status-note pass"><p><strong>Pass:</strong> all samples passed the QUAST assembly checks.</p></div><div class="chart-frame"><div style="height:720px; width:100%;">                            <div id="3d6a718d-07ef-4aaa-98fa-0ed1969251f1" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("3d6a718d-07ef-4aaa-98fa-0ed1969251f1")) {                    Plotly.newPlot(                        "3d6a718d-07ef-4aaa-98fa-0ed1969251f1",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eTotal length (\u003e= 0 bp)=%{x}\u003cbr\u003eN50=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAgA89U0EAAADATBpUQQ=="},"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAANBo\u002fUAAAAAA6AcFQQ=="},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eTotal length (\u003e= 0 bp)=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"f8","bdata":"AAAAgA89U0EAAADATBpUQQ=="},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eN50=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"f8","bdata":"AAAAANBo\u002fUAAAAAA6AcFQQ=="},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":720,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"N50 vs total assembly length"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Total length (\u003e= 0 bp)"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"N50"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div><div class="chart-frame"><div style="height:720px; width:100%;">                            <div id="240d3e59-9ce5-400c-8a4f-06f9d088b708" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("240d3e59-9ce5-400c-8a4f-06f9d088b708")) {                    Plotly.newPlot(                        "240d3e59-9ce5-400c-8a4f-06f9d088b708",                        [{"customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eLargest contig=%{x}\u003cbr\u003e# contigs (\u003e= 0 bp)=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"mode":"markers","name":"Escherichia coli","orientation":"v","showlegend":true,"x":{"dtype":"f8","bdata":"AAAAAPzjJEEAAAAAxKMhQQ=="},"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAZ0AAAAAAAOBjQA=="},"yaxis":"y","type":"scatter"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003eLargest contig=%{x}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"x","showlegend":false,"x":{"dtype":"f8","bdata":"AAAAAPzjJEEAAAAAxKMhQQ=="},"xaxis":"x3","yaxis":"y3","type":"violin"},{"alignmentgroup":"True","customdata":[["Escherichia coli"],["Escherichia coli"]],"hovertemplate":"\u003cb\u003e%{hovertext}\u003c\u002fb\u003e\u003cbr\u003e\u003cbr\u003e# contigs (\u003e= 0 bp)=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","hovertext":["SAMN42766885","SAMN42766886"],"legendgroup":"Escherichia coli","marker":{"color":"#1f5f8b","symbol":"circle"},"name":"Escherichia coli","offsetgroup":"Escherichia coli","scalegroup":"y","showlegend":false,"xaxis":"x2","y":{"dtype":"f8","bdata":"AAAAAAAAZ0AAAAAAAOBjQA=="},"yaxis":"y2","type":"violin"}],                        {"font":{"color":"#1f2933"},"height":720,"legend":{"title":{"text":"species"},"tracegroupgap":0},"margin":{"b":56,"l":56,"r":24,"t":64},"paper_bgcolor":"#ffffff","plot_bgcolor":"#f6f8fa","showlegend":false,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Contig count vs largest contig"},"xaxis":{"anchor":"y","domain":[0.0,0.7363],"gridcolor":"#d7dde3","title":{"text":"Largest contig"},"zerolinecolor":"#aeb8c2"},"yaxis":{"anchor":"x","domain":[0.0,0.7326],"gridcolor":"#d7dde3","title":{"text":"# contigs (\u003e= 0 bp)"},"zerolinecolor":"#aeb8c2"},"xaxis2":{"anchor":"y2","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis2":{"anchor":"x2","domain":[0.0,0.7326],"gridcolor":"#d7dde3","matches":"y","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"xaxis3":{"anchor":"y3","domain":[0.0,0.7363],"gridcolor":"#d7dde3","matches":"x","showgrid":true,"showticklabels":false,"zerolinecolor":"#aeb8c2"},"yaxis3":{"anchor":"x3","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"xaxis4":{"anchor":"y4","domain":[0.7413,1.0],"gridcolor":"#d7dde3","matches":"x2","showgrid":false,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"},"yaxis4":{"anchor":"x4","domain":[0.7426,1.0],"gridcolor":"#d7dde3","matches":"y3","showgrid":true,"showline":false,"showticklabels":false,"ticks":"","zerolinecolor":"#aeb8c2"}},                        {"responsive": true}                    )                };            </script>        </div></div></section><section class="software-block"><div class="software-kicker">Species assignment</div><h2 id="speciator">Speciator</h2><p class="software-lede"><a href="https://cgps.gitbook.io/pathogenwatch/technical-descriptions/species-assignment/speciator" target="_blank"><strong>Speciator</strong></a> assigns each assembly to a species and reports assignment confidence.</p><div class="status-note pass"><p><strong>Single-species assignment:</strong> Escherichia coli across all samples.</p></div><div class="table-container"><table class="table report-table js-sort-filter" id="speciator-results"><thead><tr><th data-type="string">Species</th><th data-type="string">Confidence</th></tr></thead><tbody><tr><td>Escherichia coli</td><td>good</td></tr><tr><td>Escherichia coli</td><td>good</td></tr></tbody></table></div><div class="chart-frame"><div style="height:560px; width:100%;">                            <div id="85e4e6b2-f207-474c-8f60-9569c792c98c" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("85e4e6b2-f207-474c-8f60-9569c792c98c")) {                    Plotly.newPlot(                        "85e4e6b2-f207-474c-8f60-9569c792c98c",                        [{"domain":{"x":[0.0,1.0],"y":[0.0,1.0]},"hovertemplate":"Species=%{label}\u003cbr\u003eCount=%{value}\u003cextra\u003e\u003c\u002fextra\u003e","labels":["Escherichia coli"],"legendgroup":"","name":"","showlegend":true,"values":{"dtype":"i1","bdata":"Ag=="},"type":"pie"}],                        {"font":{"color":"#1f2933"},"height":560,"hovermode":"closest","legend":{"tracegroupgap":0},"margin":{"b":24,"l":24,"r":24,"t":64},"paper_bgcolor":"#ffffff","piecolorway":["#1f5f8b","#667085","#2f6f5e","#8a6f3d"],"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"Species distribution"}},                        {"responsive": true}                    )                };            </script>        </div></div></section><section class="software-block"><div class="software-kicker">Taxonomic abundance</div><h2 id="sylph">Sylph</h2><p class="software-lede"><a href="https://github.com/bluenote-1577/sylph" target="_blank"><strong>Sylph</strong></a> summarizes dominant species calls and abundance-style signals from the sample set. <a href="https://www.nature.com/articles/s41587-024-02412-y" target="_blank">Citation</a>.</p><div class="status-note pass"><p><strong>Pass:</strong> all samples passed the Sylph checks.</p></div><div class="table-container"><table class="table report-table"><thead><tr><th>Sample</th><th>Top species</th><th>Top species ANI</th><th># genomes</th><th>All detected species</th><th>QC</th></tr></thead><tbody><tr><td>SAMN42766885</td><td>Escherichia coli</td><td>N/A</td><td>1</td><td></td><td class="qc-pass">PASSED</td></tr><tr><td>SAMN42766886</td><td>Escherichia coli</td><td>N/A</td><td>1</td><td></td><td class="qc-pass">PASSED</td></tr></tbody></table></div></section>
+                <p>Open a tool only when a sample-level result needs investigation. Opening one tool closes the others.</p>
+                <details class="tool-diagnostic" id="tool-checkm"><summary class="tool-diagnostic-summary"><span class="tool-summary-copy"><span class="tool-name">CheckM</span><span class="tool-description">CheckM assesses assembly completeness and contamination using conserved marker genes.</span></span><span class="tool-status-badges"><span class="status-badge status-badge-pass">2 PASS</span></span></summary><div class="tool-diagnostic-body"><section class="software-block"><div class="software-kicker">Assembly integrity</div><h2 id="checkm">CheckM</h2><p class="software-lede"><a href="https://github.com/Ecogenomics/CheckM" target="_blank"><strong>CheckM</strong></a> estimates completeness and contamination from lineage-specific single-copy markers. <a href="https://genome.cshlp.org/content/25/7/1043" target="_blank">Citation</a>.</p><div class="note-panel"><p>Interpretation focuses on marker completeness, contamination, GC content, and estimated genome size relative to the expected organism profile.</p></div><div class="status-note pass"><p><strong>Pass:</strong> all samples passed the CheckM QC checks.</p></div><h3 class="chart-title">Contamination vs completeness</h3><div class="chart-frame inline-chart-frame"><div class="svg-chart-legend" aria-label="QC status legend"><span class="legend-heading">QC status</span><span><i class="legend-marker legend-pass"></i><strong>2</strong> PASS</span><span><i class="legend-marker legend-warn"></i><strong>0</strong> WARN</span><span><i class="legend-marker legend-fail"></i><strong>0</strong> FAIL</span><span><i class="legend-marker legend-not-evaluated"></i><strong>0</strong> NOT EVALUATED</span></div><svg class="inline-svg-chart scatter-chart" viewBox="0 0 760 440" role="img" aria-label="Contamination vs completeness"><rect class="svg-plot-background" x="78" y="34" width="652" height="342" /><line class="svg-grid-line" x1="78.00" y1="34" x2="78.00" y2="376" /><text class="svg-tick-label" x="78.00" y="398" text-anchor="middle">0.2</text><line class="svg-grid-line" x1="78" y1="376.00" x2="730" y2="376.00" /><text class="svg-tick-label" x="66" y="380.00" text-anchor="end">92</text><line class="svg-grid-line" x1="208.40" y1="34" x2="208.40" y2="376" /><text class="svg-tick-label" x="208.40" y="398" text-anchor="middle">0.3</text><line class="svg-grid-line" x1="78" y1="307.60" x2="730" y2="307.60" /><text class="svg-tick-label" x="66" y="311.60" text-anchor="end">95</text><line class="svg-grid-line" x1="338.80" y1="34" x2="338.80" y2="376" /><text class="svg-tick-label" x="338.80" y="398" text-anchor="middle">0.3</text><line class="svg-grid-line" x1="78" y1="239.20" x2="730" y2="239.20" /><text class="svg-tick-label" x="66" y="243.20" text-anchor="end">98</text><line class="svg-grid-line" x1="469.20" y1="34" x2="469.20" y2="376" /><text class="svg-tick-label" x="469.20" y="398" text-anchor="middle">0.4</text><line class="svg-grid-line" x1="78" y1="170.80" x2="730" y2="170.80" /><text class="svg-tick-label" x="66" y="174.80" text-anchor="end">102</text><line class="svg-grid-line" x1="599.60" y1="34" x2="599.60" y2="376" /><text class="svg-tick-label" x="599.60" y="398" text-anchor="middle">0.5</text><line class="svg-grid-line" x1="78" y1="102.40" x2="730" y2="102.40" /><text class="svg-tick-label" x="66" y="106.40" text-anchor="end">105</text><line class="svg-grid-line" x1="730.00" y1="34" x2="730.00" y2="376" /><text class="svg-tick-label" x="730.00" y="398" text-anchor="middle">0.5</text><line class="svg-grid-line" x1="78" y1="34.00" x2="730" y2="34.00" /><text class="svg-tick-label" x="66" y="38.00" text-anchor="end">108</text><circle class="svg-data-point qc-point-pass" fill="#2b7a4b" data-qc-status="PASS" data-sample-id="SAMN42766885" data-tooltip="SAMN42766885 | Escherichia coli | Contamination (%): 0.2 | Completeness (%): 100 | QC: PASS" tabindex="0" role="button" aria-label="SAMN42766885 | Escherichia coli | Contamination (%): 0.2 | Completeness (%): 100 | QC: PASS" cx="112.93" cy="205.00" r="5.5"><title>SAMN42766885 | Escherichia coli | Contamination (%): 0.2 | Completeness (%): 100 | QC: PASS</title></circle><circle class="svg-data-point qc-point-pass" fill="#2b7a4b" data-qc-status="PASS" data-sample-id="SAMN42766886" data-tooltip="SAMN42766886 | Escherichia coli | Contamination (%): 0.5 | Completeness (%): 100 | QC: PASS" tabindex="0" role="button" aria-label="SAMN42766886 | Escherichia coli | Contamination (%): 0.5 | Completeness (%): 100 | QC: PASS" cx="695.07" cy="205.00" r="5.5"><title>SAMN42766886 | Escherichia coli | Contamination (%): 0.5 | Completeness (%): 100 | QC: PASS</title></circle><text class="svg-axis-title" x="404.00" y="426" text-anchor="middle">Contamination (%)</text><text class="svg-axis-title" transform="translate(18 205.00) rotate(-90)" text-anchor="middle">Completeness (%)</text></svg><p class="chart-help">Colour and shape indicate QC status. Hover for values. Select a point to open the sample details.</p></div></section></div></details><details class="tool-diagnostic" id="tool-quast"><summary class="tool-diagnostic-summary"><span class="tool-summary-copy"><span class="tool-name">QUAST</span><span class="tool-description">QUAST evaluates assembly contiguity, size, GC content, and related assembly metrics.</span></span><span class="tool-status-badges"><span class="status-badge status-badge-pass">2 PASS</span></span></summary><div class="tool-diagnostic-body"><section class="software-block"><div class="software-kicker">Assembly contiguity</div><h2 id="quast">QUAST</h2><p class="software-lede"><a href="https://quast.sourceforge.net/" target="_blank"><strong>QUAST</strong></a> summarizes contiguity and assembly size metrics such as N50, contig count, GC content, and total length. <a href="https://doi.org/10.1093/bioinformatics/btt086" target="_blank">Citation</a>.</p><div class="note-panel"><p>N50 captures the contig length threshold at which half of the assembly is contained in contigs of that size or longer. Larger values generally indicate better contiguity.</p></div><div class="status-note pass"><p><strong>Pass:</strong> all samples passed the QUAST assembly checks.</p></div><h3 class="chart-title">N50 vs total assembly length</h3><div class="chart-frame inline-chart-frame"><div class="svg-chart-legend" aria-label="QC status legend"><span class="legend-heading">QC status</span><span><i class="legend-marker legend-pass"></i><strong>2</strong> PASS</span><span><i class="legend-marker legend-warn"></i><strong>0</strong> WARN</span><span><i class="legend-marker legend-fail"></i><strong>0</strong> FAIL</span><span><i class="legend-marker legend-not-evaluated"></i><strong>0</strong> NOT EVALUATED</span></div><svg class="inline-svg-chart scatter-chart" viewBox="0 0 760 440" role="img" aria-label="N50 vs total assembly length"><rect class="svg-plot-background" x="78" y="34" width="652" height="342" /><line class="svg-grid-line" x1="78.00" y1="34" x2="78.00" y2="376" /><text class="svg-tick-label" x="78.00" y="398" text-anchor="middle">5.0M</text><line class="svg-grid-line" x1="78" y1="376.00" x2="730" y2="376.00" /><text class="svg-tick-label" x="66" y="380.00" text-anchor="end">117k</text><line class="svg-grid-line" x1="208.40" y1="34" x2="208.40" y2="376" /><text class="svg-tick-label" x="208.40" y="398" text-anchor="middle">5.1M</text><line class="svg-grid-line" x1="78" y1="307.60" x2="730" y2="307.60" /><text class="svg-tick-label" x="66" y="311.60" text-anchor="end">129k</text><line class="svg-grid-line" x1="338.80" y1="34" x2="338.80" y2="376" /><text class="svg-tick-label" x="338.80" y="398" text-anchor="middle">5.1M</text><line class="svg-grid-line" x1="78" y1="239.20" x2="730" y2="239.20" /><text class="svg-tick-label" x="66" y="243.20" text-anchor="end">141k</text><line class="svg-grid-line" x1="469.20" y1="34" x2="469.20" y2="376" /><text class="svg-tick-label" x="469.20" y="398" text-anchor="middle">5.2M</text><line class="svg-grid-line" x1="78" y1="170.80" x2="730" y2="170.80" /><text class="svg-tick-label" x="66" y="174.80" text-anchor="end">152k</text><line class="svg-grid-line" x1="599.60" y1="34" x2="599.60" y2="376" /><text class="svg-tick-label" x="599.60" y="398" text-anchor="middle">5.2M</text><line class="svg-grid-line" x1="78" y1="102.40" x2="730" y2="102.40" /><text class="svg-tick-label" x="66" y="106.40" text-anchor="end">164k</text><line class="svg-grid-line" x1="730.00" y1="34" x2="730.00" y2="376" /><text class="svg-tick-label" x="730.00" y="398" text-anchor="middle">5.3M</text><line class="svg-grid-line" x1="78" y1="34.00" x2="730" y2="34.00" /><text class="svg-tick-label" x="66" y="38.00" text-anchor="end">175k</text><circle class="svg-data-point qc-point-pass" fill="#2b7a4b" data-qc-status="PASS" data-sample-id="SAMN42766885" data-tooltip="SAMN42766885 | Escherichia coli | Total assembly length (bp): 5.0M | N50 (bp): 120k | QC: PASS" tabindex="0" role="button" aria-label="SAMN42766885 | Escherichia coli | Total assembly length (bp): 5.0M | N50 (bp): 120k | QC: PASS" cx="112.93" cy="357.68" r="5.5"><title>SAMN42766885 | Escherichia coli | Total assembly length (bp): 5.0M | N50 (bp): 120k | QC: PASS</title></circle><circle class="svg-data-point qc-point-pass" fill="#2b7a4b" data-qc-status="PASS" data-sample-id="SAMN42766886" data-tooltip="SAMN42766886 | Escherichia coli | Total assembly length (bp): 5.3M | N50 (bp): 172k | QC: PASS" tabindex="0" role="button" aria-label="SAMN42766886 | Escherichia coli | Total assembly length (bp): 5.3M | N50 (bp): 172k | QC: PASS" cx="695.07" cy="52.32" r="5.5"><title>SAMN42766886 | Escherichia coli | Total assembly length (bp): 5.3M | N50 (bp): 172k | QC: PASS</title></circle><text class="svg-axis-title" x="404.00" y="426" text-anchor="middle">Total assembly length (bp)</text><text class="svg-axis-title" transform="translate(18 205.00) rotate(-90)" text-anchor="middle">N50 (bp)</text></svg><p class="chart-help">Colour and shape indicate QC status. Hover for values. Select a point to open the sample details.</p></div></section></div></details><details class="tool-diagnostic" id="tool-speciator"><summary class="tool-diagnostic-summary"><span class="tool-summary-copy"><span class="tool-name">Speciator</span><span class="tool-description">Speciator assigns assembled genomes to species.</span></span><span class="tool-status-badges"><span class="status-badge status-badge-pass">2 PASS</span></span></summary><div class="tool-diagnostic-body"><section class="software-block"><div class="software-kicker">Species assignment</div><h2 id="speciator">Speciator</h2><p class="software-lede"><a href="https://cgps.gitbook.io/pathogenwatch/technical-descriptions/species-assignment/speciator" target="_blank"><strong>Speciator</strong></a> assigns each assembly to a species and reports assignment confidence.</p><div class="status-note pass"><p><strong>Single-species assignment:</strong> Escherichia coli across all samples.</p></div><p>No Speciator exceptions require review.</p><h3 class="chart-title">Species distribution by Speciator QC</h3><div class="chart-frame inline-chart-frame"><div class="svg-chart-legend" aria-label="QC status legend"><span class="legend-heading">QC status</span><span><i class="legend-marker legend-pass"></i><strong>2</strong> PASS</span><span><i class="legend-marker legend-warn"></i><strong>0</strong> WARN</span><span><i class="legend-marker legend-fail"></i><strong>0</strong> FAIL</span><span><i class="legend-marker legend-not-evaluated"></i><strong>0</strong> NOT EVALUATED</span></div><svg class="inline-svg-chart species-bar-chart" viewBox="0 0 760 118" role="img" aria-labelledby="species-chart-title species-chart-desc"><title id="species-chart-title">Species distribution by Speciator QC</title><desc id="species-chart-desc">Horizontal stacked bars show the number of samples assigned to each species, coloured by QC status.</desc><text class="svg-axis-label svg-category-label" x="198" y="68" text-anchor="end">Escherichia coli<title>Escherichia coli</title></text><rect class="svg-bar qc-bar-pass" x="210.00" y="52" width="492.00" height="24" fill="#2b7a4b" data-tooltip="Escherichia coli | PASS: 2 sample(s)"><title>Escherichia coli | PASS: 2 sample(s)</title></rect><text class="svg-value-label" x="710.00" y="69">2</text></svg></div></section></div></details><details class="tool-diagnostic" id="tool-sylph"><summary class="tool-diagnostic-summary"><span class="tool-summary-copy"><span class="tool-name">Sylph</span><span class="tool-description">Sylph estimates dominant species composition and abundance across samples.</span></span><span class="tool-status-badges"><span class="status-badge status-badge-pass">2 PASS</span></span></summary><div class="tool-diagnostic-body"><section class="software-block"><div class="software-kicker">Taxonomic abundance</div><h2 id="sylph">Sylph</h2><p class="software-lede"><a href="https://github.com/bluenote-1577/sylph" target="_blank"><strong>Sylph</strong></a> summarizes dominant species calls and abundance-style signals from the sample set. <a href="https://www.nature.com/articles/s41587-024-02412-y" target="_blank">Citation</a>.</p><div class="status-note pass"><p><strong>Pass:</strong> all samples passed the Sylph checks.</p></div><div class="compact-counts"><strong>Dominant calls:</strong><ul><li>Escherichia coli: 2 sample(s)</li></ul></div><p>No Sylph exceptions require review.</p></section></div></details>
             </section>
 
             <section id="full-detail" class="panel prose">
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">Export and audit</div>
+                        <h2>Data and provenance</h2>
+                    </div>
+                </div>
+                <div class="download-actions" aria-label="Report downloads">
+                    <a href="report.csv" download>Download concise CSV</a>
+                    <a href="report.full.csv" download>Download full CSV</a>
+                </div>
+                <details class="heavy-section provenance-section">
+                    <summary>
+                        <span>
+                            <span class="eyebrow">Methods</span>
+                            <strong>Software and citations</strong>
+                        </span>
+                        <span class="summary-hint">Tools represented in this report</span>
+                    </summary>
+                    <div class="section-disclosure-body"><p>Software included in this report:</p><ul><li><b><a href="#checkm">CheckM</a></b>: CheckM assesses assembly completeness and contamination using conserved marker genes. (<a href="https://github.com/Ecogenomics/CheckM">website</a>) (<a href="https://genome.cshlp.org/content/25/7/1043">ref</a>)</li><li><b><a href="#quast">QUAST</a></b>: QUAST evaluates assembly contiguity, size, GC content, and related assembly metrics. (<a href="https://quast.sourceforge.net/">website</a>) (<a href="https://doi.org/10.1093/bioinformatics/btt086">ref</a>)</li><li><b><a href="#speciator">Speciator</a></b>: Speciator assigns assembled genomes to species. (<a href="https://cgps.gitbook.io/pathogenwatch/technical-descriptions/species-assignment/speciator">website</a>)</li><li><b><a href="#sylph">Sylph</a></b>: Sylph estimates dominant species composition and abundance across samples. (<a href="https://github.com/bluenote-1577/sylph">website</a>) (<a href="https://www.nature.com/articles/s41587-024-02412-y">ref</a>)</li></ul></div>
+                </details>
                 <details class="heavy-section">
                     <summary>
                         <span>
@@ -769,11 +1514,26 @@ a {
                         <span class="summary-hint">Open only when you need every parser, metadata, and provenance column.</span>
                     </summary>
                     <p>Full parser, metadata, and provenance columns are preserved here. For large runs, use the filter box and pagination controls rather than scrolling the whole table at once.</p>
-                    <div class="table-tools"><label for="full-detail-table-filter">Filter</label><input id="full-detail-table-filter" class="table-filter" type="search" placeholder="Filter rows" data-target="full-detail-table" /></div><div class="table-container"><table id="full-detail-table" class="table report-table js-sort-filter"><thead><tr><th data-type="string">sample_id</th><th data-type="status">Checkm.Completeness.check</th><th data-type="status">Checkm.Contamination.check</th><th data-type="status">Quast.# contigs (&gt;= 0 bp).check</th><th data-type="status">Quast.GC (%).check</th><th data-type="status">Quast.N50.check</th><th data-type="status">Quast.Total length (&gt;= 0 bp).check</th><th data-type="numeric">Checkm.# contigs</th><th data-type="numeric">Checkm.Completeness</th><th data-type="numeric">Checkm.Contamination</th><th data-type="numeric">Checkm.GC</th><th data-type="numeric">Checkm.Genome size (bp)</th><th data-type="numeric">Checkm.N50 (scaffolds)</th><th data-type="numeric">Checkm.Total_Coding_Sequences</th><th data-type="status">Checkm.all_checks_passed</th><th data-type="numeric">Quast.# contigs (&gt;= 0 bp)</th><th data-type="numeric">Quast.GC (%)</th><th data-type="numeric">Quast.Largest contig</th><th data-type="numeric">Quast.N50</th><th data-type="numeric">Quast.Total length</th><th data-type="numeric">Quast.Total length (&gt;= 0 bp)</th><th data-type="status">Quast.all_checks_passed</th><th data-type="status">Speciator.all_checks_passed</th><th data-type="string">Speciator.confidence</th><th data-type="string">Speciator.speciesName</th><th data-type="status">Sylph.all_checks_passed</th><th data-type="numeric">Sylph.number_of_genomes</th><th data-type="string">Sylph.top_species</th><th data-type="numeric">Sylph.top_taxonomic_abundance</th><th data-type="string">qualibact_compat_tier</th><th data-type="status">qualibact_compat_passed</th><th data-type="string">qualibact_compat_reasons</th><th data-type="string">qualibact_compat_warn_policy</th><th data-type="string">qualibact_compat_source</th><th data-type="numeric">qualibact_compat_metrics_evaluated</th><th data-type="numeric">qualibact_compat_metrics_missing</th><th data-type="string">overall_qc</th><th data-type="string">species</th><th data-type="string">species_confidence</th><th data-type="string">reason_summary</th><th data-type="status">all_checks_passed</th></tr></thead><tbody><tr><td class="">SAMN42766885</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="">184</td><td class="">100</td><td class="">0.21</td><td class="">50.42</td><td class="">5,043,262</td><td class="">120,461</td><td class="">4,844</td><td class="qc-pass">PASSED</td><td class="">184</td><td class="">50.42</td><td class="">684,542</td><td class="">120,461</td><td class="">5,043,262</td><td class="">5,043,262</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="">good</td><td class="">Escherichia coli</td><td class="qc-pass">PASSED</td><td class="">1</td><td class="">Escherichia coli</td><td class="">0.95</td><td class="">PASS</td><td class="qc-pass">PASSED</td><td class="">none</td><td class="">warn-as-warn</td><td class="">Pinned QualiBact scheme for Escherichia coli</td><td class="">8</td><td class="">0</td><td class="">PASS</td><td class="">Escherichia coli</td><td class="">good</td><td class="">none</td><td class="qc-pass">PASSED</td></tr><tr><td class="">SAMN42766886</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="">159</td><td class="">100</td><td class="">0.50</td><td class="">50.70</td><td class="">5,269,811</td><td class="">172,285</td><td class="">5,050</td><td class="qc-pass">PASSED</td><td class="">159</td><td class="">50.70</td><td class="">578,018</td><td class="">172,285</td><td class="">5,269,811</td><td class="">5,269,811</td><td class="qc-pass">PASSED</td><td class="qc-pass">PASSED</td><td class="">good</td><td class="">Escherichia coli</td><td class="qc-pass">PASSED</td><td class="">1</td><td class="">Escherichia coli</td><td class="">0.95</td><td class="">PASS</td><td class="qc-pass">PASSED</td><td class="">none</td><td class="">warn-as-warn</td><td class="">Pinned QualiBact scheme for Escherichia coli</td><td class="">8</td><td class="">0</td><td class="">PASS</td><td class="">Escherichia coli</td><td class="">good</td><td class="">none</td><td class="qc-pass">PASSED</td></tr></tbody></table></div>
+                    <div class="table-tools"><label for="full-detail-table-filter">Filter</label><input id="full-detail-table-filter" class="table-filter" type="search" placeholder="Filter rows" data-target="full-detail-table" /></div><div class="table-container"><table id="full-detail-table" class="table report-table js-sort-filter"><thead><tr><th data-type="string">sample_id</th><th data-type="status">overall_qc</th><th data-type="status">speccheck_qc</th><th data-type="status">qualibact_qc</th><th data-type="string">historical_qualibact_qc</th><th data-type="string">reason_summary</th><th data-type="string">species</th><th data-type="string">species_confidence</th><th data-type="numeric">n50</th><th data-type="numeric">contigs</th><th data-type="numeric">genome_size</th><th data-type="numeric">gc_percent</th><th data-type="numeric">completeness</th><th data-type="numeric">contamination</th><th data-type="string">depth</th><th data-type="string">top_species</th><th data-type="numeric">top_abundance_percent</th><th data-type="string">threshold_source</th><th data-type="string">report_schema_version</th><th data-type="status">Speciator.qc_status</th><th data-type="string">Speciator.confidence</th><th data-type="string">Speciator.speciesName</th><th data-type="status">Sylph.qc_status</th><th data-type="numeric">Sylph.number_of_genomes</th><th data-type="numeric">Sylph.top_abundance_percent</th><th data-type="string">Sylph.top_species</th><th data-type="status">Quast.qc_status</th><th data-type="numeric">Quast.# contigs (&gt;= 0 bp)</th><th data-type="status">Quast.# contigs (&gt;= 0 bp).status</th><th data-type="numeric">Quast.GC (%)</th><th data-type="status">Quast.GC (%).status</th><th data-type="numeric">Quast.Largest contig</th><th data-type="numeric">Quast.N50</th><th data-type="status">Quast.N50.status</th><th data-type="numeric">Quast.Total length (&gt;= 0 bp)</th><th data-type="status">Quast.Total length (&gt;= 0 bp).status</th><th data-type="status">Checkm.qc_status</th><th data-type="numeric">Checkm.Completeness</th><th data-type="status">Checkm.Completeness.status</th><th data-type="numeric">Checkm.Contamination</th><th data-type="status">Checkm.Contamination.status</th><th data-type="numeric">Checkm.Contig_N50</th><th data-type="numeric">Checkm.GC_Content</th><th data-type="numeric">Checkm.Genome_Size</th><th data-type="numeric">Checkm.Total_Coding_Sequences</th><th data-type="numeric">Checkm.Total_Contigs</th><th data-type="string">qualibact_compat_reasons</th><th data-type="string">qualibact_compat_source</th><th data-type="numeric">qualibact_compat_metrics_evaluated</th><th data-type="numeric">qualibact_compat_metrics_missing</th></tr></thead><tbody><tr><td class="">SAMN42766885</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class=""></td><td class="">none</td><td class="">Escherichia coli</td><td class="">good</td><td class="">120,461</td><td class="">184</td><td class="">5,043,262</td><td class="">50.42</td><td class="">100</td><td class="">0.21</td><td class=""></td><td class="">Escherichia coli</td><td class="">95</td><td class=""></td><td class="">1.0</td><td class="qc-pass">PASS</td><td class="">good</td><td class="">Escherichia coli</td><td class="qc-pass">PASS</td><td class="">1</td><td class="">95</td><td class="">Escherichia coli</td><td class="qc-pass">PASS</td><td class="">184</td><td class="qc-pass">PASS</td><td class="">50.42</td><td class="qc-pass">PASS</td><td class="">684,542</td><td class="">120,461</td><td class="qc-pass">PASS</td><td class="">5,043,262</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="">100</td><td class="qc-pass">PASS</td><td class="">0.21</td><td class="qc-pass">PASS</td><td class="">120,461</td><td class="">50.42</td><td class="">5,043,262</td><td class="">4,844</td><td class="">184</td><td class="">none</td><td class="">Pinned QualiBact scheme for Escherichia coli</td><td class="">8</td><td class="">0</td></tr><tr><td class="">SAMN42766886</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class=""></td><td class="">none</td><td class="">Escherichia coli</td><td class="">good</td><td class="">172,285</td><td class="">159</td><td class="">5,269,811</td><td class="">50.70</td><td class="">100</td><td class="">0.50</td><td class=""></td><td class="">Escherichia coli</td><td class="">95</td><td class=""></td><td class="">1.0</td><td class="qc-pass">PASS</td><td class="">good</td><td class="">Escherichia coli</td><td class="qc-pass">PASS</td><td class="">1</td><td class="">95</td><td class="">Escherichia coli</td><td class="qc-pass">PASS</td><td class="">159</td><td class="qc-pass">PASS</td><td class="">50.70</td><td class="qc-pass">PASS</td><td class="">578,018</td><td class="">172,285</td><td class="qc-pass">PASS</td><td class="">5,269,811</td><td class="qc-pass">PASS</td><td class="qc-pass">PASS</td><td class="">100</td><td class="qc-pass">PASS</td><td class="">0.50</td><td class="qc-pass">PASS</td><td class="">172,285</td><td class="">50.70</td><td class="">5,269,811</td><td class="">5,050</td><td class="">159</td><td class="">none</td><td class="">Pinned QualiBact scheme for Escherichia coli</td><td class="">8</td><td class="">0</td></tr></tbody></table></div>
                 </details>
             </section>
-        </main>
+            </main>
+        </div>
     </div>
+
+
+    <dialog id="sample-detail-dialog" class="sample-detail-dialog" aria-labelledby="sample-detail-title">
+        <div class="sample-detail-header">
+            <div>
+                <div class="eyebrow">Sample detail</div>
+                <h2 id="sample-detail-title"></h2>
+            </div>
+            <form method="dialog"><button type="submit" class="dialog-close" aria-label="Close sample details">Close</button></form>
+        </div>
+        <div id="sample-detail-content" class="sample-detail-content"></div>
+    </dialog>
+    <script id="sample-details-data" type="application/json">{"SAMN42766885": {"overview": [{"label": "Overall QC", "value": "PASS"}, {"label": "Speccheck QC", "value": "PASS"}, {"label": "QualiBact QC", "value": "PASS"}, {"label": "Species", "value": "Escherichia coli"}, {"label": "Species confidence", "value": "good"}], "metrics": [{"label": "N50", "value": "120,461"}, {"label": "Contigs", "value": "184"}, {"label": "Genome size", "value": "5,043,262"}, {"label": "GC (%)", "value": "50.42"}, {"label": "Completeness", "value": "100"}, {"label": "Contamination", "value": "0.21"}, {"label": "Top species", "value": "Escherichia coli"}, {"label": "Top abundance (%)", "value": "95"}], "tools": [{"label": "Checkm", "value": "PASS"}, {"label": "Quast", "value": "PASS"}, {"label": "Speciator", "value": "PASS"}, {"label": "Sylph", "value": "PASS"}], "checks": [], "provenance": [{"label": "QualiBact threshold source", "value": "Pinned QualiBact scheme for Escherichia coli"}, {"label": "Report schema", "value": "1.0"}]}, "SAMN42766886": {"overview": [{"label": "Overall QC", "value": "PASS"}, {"label": "Speccheck QC", "value": "PASS"}, {"label": "QualiBact QC", "value": "PASS"}, {"label": "Species", "value": "Escherichia coli"}, {"label": "Species confidence", "value": "good"}], "metrics": [{"label": "N50", "value": "172,285"}, {"label": "Contigs", "value": "159"}, {"label": "Genome size", "value": "5,269,811"}, {"label": "GC (%)", "value": "50.70"}, {"label": "Completeness", "value": "100"}, {"label": "Contamination", "value": "0.50"}, {"label": "Top species", "value": "Escherichia coli"}, {"label": "Top abundance (%)", "value": "95"}], "tools": [{"label": "Checkm", "value": "PASS"}, {"label": "Quast", "value": "PASS"}, {"label": "Speciator", "value": "PASS"}, {"label": "Sylph", "value": "PASS"}], "checks": [], "provenance": [{"label": "QualiBact threshold source", "value": "Pinned QualiBact scheme for Escherichia coli"}, {"label": "Report schema", "value": "1.0"}]}}</script>
+
 
     <footer class="report-footer">
         <p>Produced with <a href="https://github.com/happykhan/speccheck">speccheck</a> version 1.3.0</p>
@@ -789,15 +1549,15 @@ a {
                     return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
                 }
                 if (type === "status") {
-                    if (raw === "PASSED" || raw === "PASS") return 2;
+                    if (raw === "PASS") return 3;
                     if (raw === "NOT_EVALUATED" || raw === "WARN") return 1;
-                    if (raw === "FAILED" || raw === "FAIL") return 0;
+                    if (raw === "FAIL") return 0;
                 }
                 return raw.toLowerCase();
             };
 
             const visibleRows = (table) => Array.from(table.querySelectorAll("tbody tr"))
-                .filter((row) => row.dataset.filterHidden !== "true");
+                .filter((row) => row.dataset.searchHidden !== "true" && row.dataset.statusHidden !== "true");
 
             const applyPagination = (table) => {
                 const pageSize = Number(table.dataset.pageSize || 0);
@@ -858,7 +1618,7 @@ a {
                     if (!table) return;
                     table.querySelectorAll("tbody tr").forEach((row) => {
                         const text = row.innerText.toLowerCase();
-                        row.dataset.filterHidden = text.includes(term) ? "false" : "true";
+                        row.dataset.searchHidden = text.includes(term) ? "false" : "true";
                     });
                     table.dataset.currentPage = "1";
                     applyPagination(table);
@@ -878,6 +1638,212 @@ a {
                 });
                 applyPagination(table);
             });
+
+            const reviewTable = document.getElementById("sample-review-table");
+            const statusButtons = Array.from(document.querySelectorAll("[data-status-filter]"));
+            const statusTabs = document.querySelector(".status-tabs");
+            const filterSummary = document.getElementById("review-filter-summary");
+
+            const setReviewStatus = (status) => {
+                if (!reviewTable) return;
+                let visibleCount = 0;
+                reviewTable.querySelectorAll("tbody tr").forEach((row) => {
+                    const rowStatus = row.dataset.qcStatus || "";
+                    const visible = status === "ALL"
+                        || (status === "NEEDS_REVIEW" && ["FAIL", "WARN", "NOT_EVALUATED"].includes(rowStatus))
+                        || rowStatus === status;
+                    row.dataset.statusHidden = visible ? "false" : "true";
+                    if (visible) visibleCount += 1;
+                });
+                reviewTable.dataset.currentPage = "1";
+                applyPagination(reviewTable);
+                statusButtons.forEach((button) => {
+                    const active = button.dataset.statusFilter === status;
+                    button.classList.toggle("is-active", active);
+                    if (button.closest(".status-tabs")) button.setAttribute("aria-pressed", String(active));
+                });
+                if (filterSummary) {
+                    const label = {
+                        NEEDS_REVIEW: "requiring review",
+                        FAIL: "with FAIL status",
+                        WARN: "with WARN status",
+                        NOT_EVALUATED: "not evaluated",
+                        PASS: "with PASS status",
+                        ALL: "in this report",
+                    }[status];
+                    filterSummary.textContent = `Showing ${visibleCount} sample${visibleCount === 1 ? "" : "s"} ${label}.`;
+                }
+            };
+
+            statusButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    setReviewStatus(button.dataset.statusFilter);
+                    document.getElementById("sample-review")?.scrollIntoView({ block: "start" });
+                });
+            });
+            setReviewStatus(statusTabs?.dataset.defaultFilter || "ALL");
+
+            const metricSpeciesFilter = document.getElementById("metric-species-filter");
+            const metricSpeciesSummary = document.getElementById("metric-species-summary");
+            metricSpeciesFilter?.addEventListener("change", () => {
+                const selected = metricSpeciesFilter.value;
+                document.querySelectorAll("[data-metric-species]").forEach((view) => {
+                    view.hidden = view.dataset.metricSpecies !== selected;
+                });
+                const option = metricSpeciesFilter.selectedOptions[0];
+                if (metricSpeciesSummary && option) {
+                    const count = Number(option.dataset.sampleCount || 0);
+                    const scope = selected === "all" ? "all species" : option.textContent.replace(/ \(\d+ samples?\)$/, "");
+                    metricSpeciesSummary.textContent = `Showing ${count} sample${count === 1 ? "" : "s"} for ${scope}.`;
+                }
+            });
+
+            const dialog = document.getElementById("sample-detail-dialog");
+            const detailTitle = document.getElementById("sample-detail-title");
+            const detailContent = document.getElementById("sample-detail-content");
+            const detailsNode = document.getElementById("sample-details-data");
+            const sampleDetails = detailsNode ? JSON.parse(detailsNode.textContent) : {};
+            const sectionNames = {
+                overview: "QC overview",
+                metrics: "Key metrics",
+                tools: "Tool status",
+                checks: "Warnings and failed checks",
+                provenance: "Provenance",
+            };
+
+            const openSampleDetails = (sampleId) => {
+                const detail = sampleDetails[sampleId];
+                if (!dialog || !detail) return;
+                detailTitle.textContent = sampleId;
+                detailContent.replaceChildren();
+                Object.entries(sectionNames).forEach(([key, heading]) => {
+                    const fields = detail[key] || [];
+                    if (!fields.length) return;
+                    const section = document.createElement("section");
+                    const title = document.createElement("h3");
+                    const list = document.createElement("dl");
+                    title.textContent = heading;
+                    fields.forEach((field) => {
+                        const wrapper = document.createElement("div");
+                        const term = document.createElement("dt");
+                        const value = document.createElement("dd");
+                        term.textContent = field.label;
+                        value.textContent = field.value;
+                        if (["PASS", "WARN", "FAIL", "NOT_EVALUATED"].includes(field.value)) {
+                            value.className = `detail-status qc-${field.value.toLowerCase().replace("_", "-")}`;
+                        }
+                        wrapper.append(term, value);
+                        list.append(wrapper);
+                    });
+                    section.append(title, list);
+                    detailContent.append(section);
+                });
+                dialog.showModal();
+            };
+
+            document.querySelectorAll(".sample-review-row").forEach((row) => {
+                row.addEventListener("click", () => openSampleDetails(row.dataset.sampleId));
+                row.addEventListener("keydown", (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openSampleDetails(row.dataset.sampleId);
+                    }
+                });
+            });
+
+            const chartTooltip = document.createElement("div");
+            chartTooltip.className = "chart-tooltip";
+            chartTooltip.hidden = true;
+            chartTooltip.setAttribute("role", "tooltip");
+            document.body.append(chartTooltip);
+
+            const placeChartTooltip = (event) => {
+                const gap = 14;
+                const bounds = chartTooltip.getBoundingClientRect();
+                chartTooltip.style.left = `${Math.min(event.clientX + gap, window.innerWidth - bounds.width - gap)}px`;
+                chartTooltip.style.top = `${Math.min(event.clientY + gap, window.innerHeight - bounds.height - gap)}px`;
+            };
+            const showChartTooltip = (target, event) => {
+                chartTooltip.textContent = target.dataset.tooltip || "";
+                chartTooltip.hidden = false;
+                placeChartTooltip(event);
+            };
+            const hideChartTooltip = () => {
+                chartTooltip.hidden = true;
+            };
+
+            document.querySelectorAll("[data-tooltip]").forEach((target) => {
+                target.addEventListener("pointerenter", (event) => showChartTooltip(target, event));
+                target.addEventListener("pointermove", placeChartTooltip);
+                target.addEventListener("pointerleave", hideChartTooltip);
+                target.addEventListener("focus", () => {
+                    const bounds = target.getBoundingClientRect();
+                    showChartTooltip(target, {
+                        clientX: bounds.left + (bounds.width / 2),
+                        clientY: bounds.top + (bounds.height / 2),
+                    });
+                });
+                target.addEventListener("blur", hideChartTooltip);
+            });
+
+            document.querySelectorAll(".svg-data-point").forEach((point) => {
+                point.addEventListener("click", () => openSampleDetails(point.dataset.sampleId));
+                point.addEventListener("keydown", (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openSampleDetails(point.dataset.sampleId);
+                    }
+                });
+            });
+            dialog?.addEventListener("click", (event) => {
+                const bounds = dialog.getBoundingClientRect();
+                const outside = event.clientX < bounds.left || event.clientX > bounds.right
+                    || event.clientY < bounds.top || event.clientY > bounds.bottom;
+                if (outside) dialog.close();
+            });
+
+            document.querySelectorAll(".tool-diagnostic").forEach((diagnostic) => {
+                diagnostic.addEventListener("toggle", () => {
+                    if (!diagnostic.open) return;
+                    document.querySelectorAll(".tool-diagnostic[open]").forEach((other) => {
+                        if (other !== diagnostic) other.open = false;
+                    });
+                });
+            });
+
+            const layout = document.getElementById("report-layout");
+            const sidebarToggle = document.querySelector(".sidebar-toggle");
+            sidebarToggle?.addEventListener("click", () => {
+                const collapsed = layout.classList.toggle("sidebar-collapsed");
+                sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+                sidebarToggle.setAttribute("aria-label", collapsed ? "Expand report navigation" : "Collapse report navigation");
+                sidebarToggle.querySelector("[aria-hidden]").textContent = collapsed ? "→" : "←";
+            });
+
+            const jump = document.getElementById("report-jump");
+            jump?.addEventListener("change", () => {
+                const target = document.querySelector(jump.value);
+                if (target instanceof HTMLDetailsElement) target.open = true;
+                target?.scrollIntoView({ block: "start" });
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach((link) => {
+                link.addEventListener("click", () => {
+                    const target = document.querySelector(link.getAttribute("href"));
+                    if (target instanceof HTMLDetailsElement) target.open = true;
+                });
+            });
+
+            if ("IntersectionObserver" in window) {
+                const links = Array.from(document.querySelectorAll("[data-section-link]"));
+                const sections = links.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+                const observer = new IntersectionObserver((entries) => {
+                    const visible = entries.filter((entry) => entry.isIntersecting).sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+                    if (!visible) return;
+                    links.forEach((link) => link.classList.toggle("is-active", link.getAttribute("href") === `#${visible.target.id}`));
+                }, { rootMargin: "-15% 0px -70% 0px", threshold: [0, 0.1, 0.5] });
+                sections.forEach((section) => observer.observe(section));
+            }
         })();
     </script>
 
