@@ -86,15 +86,22 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if git rev-parse "v${RELEASE_VERSION}" >/dev/null 2>&1; then
-            echo "Tag v${RELEASE_VERSION} already exists"
-            exit 1
+            TAG_COMMIT=$(git rev-parse "v${RELEASE_VERSION}^{}")
+            HEAD_COMMIT=$(git rev-parse HEAD)
+            if [ "$TAG_COMMIT" != "$HEAD_COMMIT" ]; then
+              echo "Tag v${RELEASE_VERSION} exists at $TAG_COMMIT, not $HEAD_COMMIT"
+              exit 1
+            fi
+            echo "Tag v${RELEASE_VERSION} already identifies this commit"
+          else
+            git tag -a "v${RELEASE_VERSION}" -m "speccheck ${RELEASE_VERSION}"
+            git push origin "v${RELEASE_VERSION}"
           fi
-          git tag -a "v${RELEASE_VERSION}" -m "speccheck ${RELEASE_VERSION}"
-          git push origin "v${RELEASE_VERSION}"
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
 
       # ------------------------------------------------------------------ #
