@@ -10,7 +10,7 @@ import pandas as pd
 from speccheck.report_tables import status_label
 
 STATUS_COLOURS = {
-    "PASS": "#2b7a4b",
+    "PASS": "#2b7a4b",  # nosec B105
     "WARN": "#a06f00",
     "FAIL": "#b64242",
     "NOT_EVALUATED": "#66778a",
@@ -207,7 +207,12 @@ def render_scatter_chart(
             ]
         )
 
-    status_order = {"PASS": 0, "NOT_EVALUATED": 1, "WARN": 2, "FAIL": 3}
+    status_order = {
+        "PASS": 0,  # nosec B105
+        "NOT_EVALUATED": 1,
+        "WARN": 2,
+        "FAIL": 3,
+    }
     numeric = numeric.assign(
         _status_order=numeric["status"].map(status_order).fillna(1)
     ).sort_values("_status_order", kind="stable")

@@ -492,7 +492,9 @@ def build_large_run_summary_table(df, interactive_tables=True):
     if "overall_qc" in summary_df.columns:
         ranks = (
             summary_df["overall_qc"]
-            .map({"FAIL": 0, "WARN": 1, "NOT_EVALUATED": 2, "PASS": 3})
+            .map(
+                {"FAIL": 0, "WARN": 1, "NOT_EVALUATED": 2, "PASS": 3}  # nosec B105
+            )
             .fillna(4)
         )
         summary_df = (
