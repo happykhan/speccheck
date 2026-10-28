@@ -1,10 +1,5 @@
 from speccheck.plot_modules.svg_charts import render_scatter_chart
-from speccheck.report_tables import status_label
-
-
-def _status_series(df):
-    column = "qc_status" if "qc_status" in df.columns else "all_checks_passed"
-    return df[column].map(status_label)
+from speccheck.report_tables import tool_status_note
 
 
 class Plot_Checkm:
@@ -36,29 +31,7 @@ class Plot_Checkm:
         )
 
     def _status_html(self):
-        status = _status_series(self.df)
-        passed_mask = status == "PASS"
-        if passed_mask.sum() == len(self.df):
-            return (
-                '<div class="status-note pass"><p><strong>Pass:</strong> '
-                "all samples passed the CheckM QC checks.</p></div>"
-            )
-
-        items = []
-        for col in self.df.columns:
-            if col.endswith((".check", ".status")):
-                fail_count = int((self.df[col].map(status_label) == "FAIL").sum())
-                if fail_count > 0:
-                    col_name = col.split(".")[0]
-                    items.append(f"<li>{fail_count} sample(s) failed the {col_name} check.</li>")
-        if not items:
-            items.append(
-                "<li>At least one sample failed, but no specific sub-check count was available.</li>"
-            )
-        return (
-            '<div class="status-note fail"><p><strong>Attention:</strong> '
-            "one or more samples failed CheckM QC.</p><ul>" + "".join(items) + "</ul></div>"
-        )
+        return tool_status_note(self.df, "CheckM")
 
     def plot(self):
         summary = self.summary()

@@ -20,11 +20,11 @@ from speccheck.report_tables import (
     format_numeric,
     get_failure_reasons,
     make_sample_counts,
-    normalize_status,
     render_metric_summary_tables,
     safe_anchor,
     status_label,
     summary_table,
+    tool_status_series,
 )
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -90,30 +90,32 @@ def build_report_context(
     interactive_tables=True,
     qualifyr_style=False,
 ):
+    merged_dict = {
+        key: dict(value) if isinstance(value, dict) else {} for key, value in merged_dict.items()
+    }
     software_modules = load_modules_with_checks()
     report_context = {"software_charts": "", "software_navigation": []}
-    for idx, (key, value) in enumerate(merged_dict.items(), start=1):
-        if not isinstance(value, dict):
-            merged_dict[key] = {}
+    for idx, key in enumerate(merged_dict, start=1):
         if "sample_id" not in merged_dict[key] or pd.isna(merged_dict[key]["sample_id"]):
             merged_dict[key]["sample_id"] = f"sample{idx}"
 
     df = pd.DataFrame.from_dict(merged_dict, orient="index")
+    if "sample_id" not in df:
+        df["sample_id"] = pd.Series(dtype=str)
     if "all_checks_passed" in df.columns:
         overall_status = df["all_checks_passed"].copy()
         df.drop(columns=["all_checks_passed"], inplace=True)
     else:
         overall_status = None
 
-    if species not in df.columns:
-        df[species] = "Unknown"
-
-    software_dict = {}
     groups = df.columns.to_series().str.split(".").str[0]
     unique_groups = [group for group in groups.unique() if group in software_modules]
+    species_values = df.get(species, pd.Series("Unknown", index=df.index))
+
+    software_dict = {}
     for software in unique_groups:
         group_df = df[[col for col in df.columns if col.startswith(software)]].copy()
-        group_df = group_df.join(df[species].rename("species"))
+        group_df = group_df.join(species_values.rename("species"))
         group_df = group_df.join(df["sample_id"].rename("sample_id"))
         group_df.columns = group_df.columns.str.replace(f"{software}.", "", regex=False)
         group_df.index = group_df["sample_id"]
@@ -147,14 +149,19 @@ def build_report_context(
     report_df = df.copy()
     if overall_status is not None:
         report_df["all_checks_passed"] = overall_status
-    else:
-        report_df["all_checks_passed"] = report_df.apply(
-            lambda row: all(
-                normalize_status(value) is not False
-                for column, value in row.items()
-                if column.endswith("all_checks_passed")
-            ),
-            axis=1,
+    if "overall_qc" not in report_df:
+        status_columns = [
+            column
+            for column in report_df
+            if column in {"speccheck_qc", "speccheck_overall_status", "qualibact_qc"}
+            or column.endswith((".qc_status", "all_checks_passed", ".status", ".check"))
+        ]
+        report_df["overall_qc"] = (
+            report_df[status_columns].apply(
+                lambda row: combine_qc_statuses(*row) or "NOT_EVALUATED", axis=1
+            )
+            if status_columns
+            else "NOT_EVALUATED"
         )
     report_df = report_df.reset_index(drop=True)
 
@@ -303,17 +310,7 @@ def _build_run_context(report_df):
 
 def _status_counts(frame):
     counts = dict.fromkeys(("PASS", "WARN", "FAIL", "NOT_EVALUATED"), 0)
-    if "qc_status" in frame.columns:
-        labels = frame["qc_status"].map(status_label)
-    elif "all_checks_passed" in frame.columns:
-        labels = frame["all_checks_passed"].map(status_label)
-    else:
-        status_columns = [
-            column for column in frame.columns if column.endswith((".status", ".check"))
-        ]
-        if not status_columns:
-            return counts
-        labels = frame[status_columns].apply(lambda row: combine_qc_statuses(*row.tolist()), axis=1)
+    labels = tool_status_series(frame)
     for status in counts:
         counts[status] = int((labels == status).sum())
     return counts
@@ -361,7 +358,14 @@ def _display_report_value(value):
 def _build_sample_details_json(report_df):
     concise = build_concise_report_frame(report_df)
     tool_status_columns = [column for column in report_df.columns if column.endswith(".qc_status")]
-    check_status_columns = [column for column in report_df.columns if column.endswith(".status")]
+    check_status_columns = [
+        column
+        for column in report_df.columns
+        if column.endswith(".status")
+        or (
+            column.endswith(".check") and column.removesuffix(".check") + ".status" not in report_df
+        )
+    ]
     details = {}
     for index, concise_row in concise.iterrows():
         sample_id = str(concise_row["sample_id"])
@@ -376,13 +380,13 @@ def _build_sample_details_json(report_df):
             ("Reason", concise_row["reason_summary"]),
         ]
         metric_fields = [
-            ("N50", concise_row["n50"]),
+            ("N50 (bp)", concise_row["n50"]),
             ("Contigs", concise_row["contigs"]),
-            ("Genome size", concise_row["genome_size"]),
+            ("Genome size (bp)", concise_row["genome_size"]),
             ("GC (%)", concise_row["gc_percent"]),
-            ("Completeness", concise_row["completeness"]),
-            ("Contamination", concise_row["contamination"]),
-            ("Depth", concise_row["depth"]),
+            ("Completeness (%)", concise_row["completeness"]),
+            ("Contamination (%)", concise_row["contamination"]),
+            ("Depth (×)", concise_row["depth"]),
             ("Top species", concise_row["top_species"]),
             ("Top abundance (%)", concise_row["top_abundance_percent"]),
         ]
@@ -396,7 +400,7 @@ def _build_sample_details_json(report_df):
             check_status = status_label(source_row[column])
             if check_status in {"", "PASS"}:
                 continue
-            metric_column = column.removesuffix(".status")
+            metric_column = column.removesuffix(".status").removesuffix(".check")
             metric_value = source_row.get(metric_column, "")
             value = check_status
             if not pd.isna(metric_value) and str(metric_value) != "":
@@ -406,6 +410,11 @@ def _build_sample_details_json(report_df):
             ("Threshold source", concise_row["threshold_source"]),
             ("QualiBact threshold source", source_row.get("qualibact_compat_source", "")),
             ("Report schema", concise_row["report_schema_version"]),
+            ("Collection version", source_row.get("speccheck_version", "")),
+            ("Assembly type", source_row.get("speccheck_assembly_type", "")),
+            ("Criteria SHA-256", source_row.get("speccheck_criteria_sha256", "")),
+            ("Input file count", source_row.get("speccheck_input_file_count", "")),
+            ("Checks not evaluated", source_row.get("speccheck_not_evaluated_count", "")),
         ]
 
         def clean(fields):

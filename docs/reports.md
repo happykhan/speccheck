@@ -110,7 +110,7 @@ The HTML report includes:
 - collapsed cohort-level metric summaries with all-species and per-species views;
 - collapsed per-tool diagnostics with exception-only result tables;
 - lightweight inline SVG charts with hover values and sample-detail links;
-- a collapsible data and provenance area for citations and the full-width table;
+- a collapsible data and provenance area for citations and the audit table;
 - persistent desktop navigation and a compact mobile jump menu.
 
 Generate an HTML report with:
@@ -125,7 +125,7 @@ speccheck summary qc_collect \
 
 Select FAIL, WARN, NOT_EVALUATED, PASS, or all samples using the review tabs.
 Interactive tables can be sorted by clicking headers, filtered with the search
-box, and paged in groups of at most 25 rows. Opening one tool diagnostic closes
+box, and paged in groups of 10, 25 or 50 rows (10 by default). Opening one tool diagnostic closes
 the others, so charts and secondary evidence do not dominate the page. Chart
 points use the same PASS/WARN/FAIL/NOT_EVALUATED colours as the rest of the report;
 selecting a point opens that sample's detail view. The HTML contains its CSS,
@@ -174,3 +174,47 @@ docker run --rm \
   happykhan/speccheck \
   summary /data --output /output --plot
 ```
+
+## Reviewing the HTML report
+
+The review queue initially shows FAIL, WARN and NOT EVALUATED samples, or all
+samples when none require review. Status buttons and the text filter work
+together; the count describes matching samples across all pages. An empty result
+explains how to clear the filter. Tables default to 10 rows per page, with
+10/25/50-row choices, first/previous/next/last navigation and direct page entry
+(press Enter or select Go). Controls sit above the table. Search all columns or
+choose a particular column using the In selector; search includes all pages.
+Select a column heading to sort; headings and sample detail buttons also work
+with the keyboard.
+
+The review queue initially shows six key columns, and the audit table shows
+eight. Use Columns to show or hide extra fields, Show all to reveal everything,
+and Reset columns to return to the starting view. The sample identifier stays
+visible. Table height is capped at the smaller of 32rem and 60% of the viewport,
+with internal scrolling and pinned column headings. Static reports and CSV
+exports retain all rows and columns.
+
+Long reasons have three-line previews in the interactive queue. Open a sample
+for the complete reason, metric units, tool statuses, individual checks and
+available collection provenance, including the criteria checksum. The full table
+and CSV exports retain the complete values. Static reports show the complete
+reasons directly and omit interactive controls.
+
+Tool summaries distinguish PASS, WARN, FAIL and NOT EVALUATED. Missing tool
+statuses are not assumed to pass. For imported inputs without a native sample
+status, available tool/check statuses supply the summary; inputs with no QC
+status evidence are NOT EVALUATED. An absent species field does not imply a
+Speciator run. None of these display rules change collection thresholds.
+
+Keep `report.html`, `report.csv` and `report.full.csv` together when sharing or
+archiving a report: the HTML contains its own styles, scripts and SVG charts,
+while download links point to the neighbouring CSV files. Citations link to
+external websites. With JavaScript disabled, all sample rows remain in the HTML;
+use the CSVs for filtering and sorting. Print styles include all table rows and
+complete reasons in open sections. Interactive reports expand disclosures for
+printing and restore their previous state afterwards; in static reports, open
+the sections you want to print first. Wide audit tables are best exported as CSV
+rather than printed.
+
+See [report validation](report-validation.md) for the tested inputs, checks and
+browser limitations.

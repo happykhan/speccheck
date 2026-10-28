@@ -88,6 +88,51 @@ def combine_qc_statuses(*values):
     return ""
 
 
+def tool_status_series(frame):
+    """Resolve tool statuses without treating absent evidence as a pass."""
+    columns = [column for column in ("qc_status", "all_checks_passed") if column in frame]
+    columns += [
+        column
+        for column in frame
+        if column.endswith(".status")
+        or (column.endswith(".check") and column.removesuffix(".check") + ".status" not in frame)
+    ]
+    if not columns:
+        return pd.Series("NOT_EVALUATED", index=frame.index, dtype=object)
+    return frame[columns].apply(lambda row: combine_qc_statuses(*row) or "NOT_EVALUATED", axis=1)
+
+
+def tool_status_note(frame, name):
+    """Describe actual PASS/WARN/FAIL/NOT_EVALUATED counts for a diagnostic."""
+    if frame.empty:
+        return '<p class="chart-empty">No tool results were available.</p>'
+    counts = tool_status_series(frame).value_counts()
+    tone = "fail" if counts.get("FAIL", 0) else "warn" if counts.get("WARN", 0) else ""
+    if counts.get("PASS", 0) == len(frame):
+        tone = "pass"
+    summary = ", ".join(
+        f"{int(counts.get(status, 0))} {status.replace('_', ' ')}"
+        for status in ("PASS", "WARN", "FAIL", "NOT_EVALUATED")
+    )
+    items = []
+    for column in frame:
+        if not column.endswith((".check", ".status")):
+            continue
+        if column.endswith(".check") and column.removesuffix(".check") + ".status" in frame:
+            continue
+        labels = frame[column].map(status_label)
+        for status in ("FAIL", "WARN", "NOT_EVALUATED"):
+            count = int((labels == status).sum())
+            if count:
+                metric = column.removesuffix(".check").removesuffix(".status")
+                items.append(f"<li>{escape(metric)}: {count} {status.replace('_', ' ')}.</li>")
+    checks = f"<ul>{''.join(items)}</ul>" if items else ""
+    return (
+        f'<div class="status-note {tone}"><p><strong>{escape(name)} QC:</strong> '
+        f"{summary}.</p>{checks}</div>"
+    )
+
+
 def safe_anchor(value):
     return "".join(char.lower() if char.isalnum() else "-" for char in value).strip("-")
 
@@ -120,10 +165,12 @@ def dataframe_to_interactive_table(
     table_id,
     searchable=True,
     interactive=True,
-    page_size=50,
+    page_size=10,
     row_status_column=None,
     row_id_column=None,
     clickable_rows=False,
+    preview_columns=(),
+    visible_columns=None,
 ):
     rendered_df = df.copy()
     column_types = {}
@@ -136,10 +183,14 @@ def dataframe_to_interactive_table(
         else:
             rendered_df[column] = rendered_df[column].fillna("").astype(str)
 
-    thead = "".join(
-        f'<th data-type="{column_types[column]}">{escape(str(column))}</th>'
-        for column in rendered_df.columns
-    )
+    headings = []
+    for column in rendered_df.columns:
+        label = escape(str(column))
+        content = (
+            f'<button type="button" class="table-sort">{label}</button>' if interactive else label
+        )
+        headings.append(f'<th scope="col" data-type="{column_types[column]}">{content}</th>')
+    thead = "".join(headings)
     rows = []
     for _, row in rendered_df.iterrows():
         cells = []
@@ -154,53 +205,96 @@ def dataframe_to_interactive_table(
                 css_class = "qc-warn"
             elif raw_value == "NOT_EVALUATED":
                 css_class = "qc-not-evaluated"
-            cells.append(f'<td class="{css_class}">{escape(str(raw_value))}</td>')
+            content = escape(str(raw_value))
+            if clickable_rows and column == row_id_column:
+                content = (
+                    f'<button type="button" class="sample-open" '
+                    f'aria-label="Open details for {content}">{content}</button>'
+                )
+            if column in preview_columns:
+                content = (
+                    f'<span class="cell-preview" title="{escape(str(raw_value))}">{content}</span>'
+                )
+            cells.append(f'<td class="{css_class}">{content}</td>')
         attributes = []
         if row_status_column and row_status_column in rendered_df.columns:
             attributes.append(f'data-qc-status="{escape(str(row[row_status_column]))}"')
         if row_id_column and row_id_column in rendered_df.columns:
             attributes.append(f'data-sample-id="{escape(str(row[row_id_column]))}"')
         if clickable_rows:
-            attributes.extend(
-                [
-                    'class="sample-review-row"',
-                    'tabindex="0"',
-                    'role="button"',
-                    f'aria-label="Open details for {escape(str(row[row_id_column]))}"',
-                ]
-            )
+            attributes.append('class="sample-review-row"')
         row_attributes = f" {' '.join(attributes)}" if attributes else ""
         rows.append(f"<tr{row_attributes}>{''.join(cells)}</tr>")
 
     filter_box = ""
     if searchable and interactive:
+        options = '<option value="all">All columns</option>' + "".join(
+            f'<option value="{index}">{escape(str(column))}</option>'
+            for index, column in enumerate(rendered_df.columns)
+        )
         filter_box = (
-            f'<div class="table-tools"><label for="{table_id}-filter">Filter</label>'
+            f'<div class="table-tools"><label for="{table_id}-filter">Search</label>'
             f'<input id="{table_id}-filter" class="table-filter" type="search" '
-            f'placeholder="Filter rows" data-target="{table_id}" /></div>'
+            f'placeholder="Search rows" data-target="{table_id}" />'
+            f'<label for="{table_id}-search-column">In</label>'
+            f'<select id="{table_id}-search-column" class="table-search-column" '
+            f'data-target="{table_id}">{options}</select></div>'
         )
 
     table_class = "table report-table"
     if interactive:
         table_class += " js-sort-filter"
 
+    column_picker = ""
+    if interactive and len(rendered_df.columns) > 4:
+        choices = []
+        for index, column in enumerate(rendered_df.columns):
+            checked = visible_columns is None or column in visible_columns or index == 0
+            choices.append(
+                f'<label><input type="checkbox" class="table-column-toggle" '
+                f'value="{index}" {"checked" if checked else ""} '
+                f"{'disabled' if index == 0 else ''} />{escape(str(column))}</label>"
+            )
+        column_picker = (
+            f'<details class="table-columns" data-target="{table_id}">'
+            '<summary class="table-columns-summary">Columns</summary>'
+            '<div class="table-column-actions"><button type="button" class="table-columns-all">Show all</button>'
+            '<button type="button" class="table-columns-reset">Reset columns</button></div>'
+            f'<div class="table-column-options">{"".join(choices)}</div></details>'
+        )
+
     pagination = ""
     page_size_attr = ""
-    if interactive and page_size and len(rendered_df) > page_size:
+    if interactive and page_size:
         page_size_attr = f' data-page-size="{int(page_size)}" data-current-page="1"'
+        sizes = sorted({10, 25, 50, int(page_size)})
+        options = "".join(
+            f'<option value="{size}" {"selected" if size == page_size else ""}>{size}</option>'
+            for size in sizes
+        )
         pagination = (
             f'<div class="table-pagination" data-target="{table_id}">'
+            f'<label for="{table_id}-page-size">Rows</label>'
+            f'<select id="{table_id}-page-size" class="table-page-size">{options}</select>'
+            '<span class="table-page-status" aria-live="polite"></span>'
+            '<div class="table-page-buttons">'
+            '<button type="button" class="table-page-first">First</button>'
             '<button type="button" class="table-page-prev">Previous</button>'
-            '<span class="table-page-status"></span>'
+            f'<label for="{table_id}-page-number">Page</label>'
+            f'<input id="{table_id}-page-number" class="table-page-number" type="number" min="1" value="1" />'
+            '<span class="table-page-total"></span>'
+            '<button type="button" class="table-page-go">Go</button>'
             '<button type="button" class="table-page-next">Next</button>'
-            "</div>"
+            '<button type="button" class="table-page-last">Last</button></div></div>'
         )
 
     return (
-        f'{filter_box}<div class="table-container">'
+        f'{filter_box}{column_picker}{pagination}<div class="table-container{(" table-scroll" if interactive else "")}" role="region" tabindex="0" '
+        f'aria-label="{escape(table_id.replace("-", " "))} scrollable table">'
         f'<table id="{table_id}" class="{table_class}"{page_size_attr}>'
         f"<thead><tr>{thead}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
-        f"{pagination}"
+        f'<p class="table-empty" data-target="{table_id}" role="status" '
+        f"{'hidden' if len(rendered_df) else ''}>No matching rows. Clear the text filter or choose another status.</p>"
     )
 
 
@@ -529,10 +623,12 @@ def build_large_run_summary_table(df, interactive_tables=True):
         summary_df,
         table_id="sample-review-table",
         interactive=interactive_tables,
-        page_size=25,
+        page_size=10,
         row_status_column="Overall QC",
         row_id_column="Sample",
         clickable_rows=interactive_tables,
+        preview_columns=("Reason summary",) if interactive_tables else (),
+        visible_columns=("Sample", "Overall QC", "Reason summary", "Species", "N50", "Contigs"),
     )
 
 
@@ -565,7 +661,18 @@ def build_full_detail_table(df, interactive_tables=True):
         df,
         table_id="full-detail-table",
         interactive=interactive_tables,
-        page_size=25,
+        visible_columns=(
+            "sample_id",
+            "overall_qc",
+            "speccheck_qc",
+            "qualibact_qc",
+            "reason_summary",
+            "species",
+            "n50",
+            "contigs",
+        ),
+        preview_columns=tuple(df.columns) if interactive_tables else (),
+        page_size=10,
     )
 
 

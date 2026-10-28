@@ -466,7 +466,7 @@ def test_thousand_sample_review_table_remains_paginated_and_compact():
 
     html = build_large_run_summary_table(frame, interactive_tables=True)
 
-    assert 'data-page-size="25"' in html
+    assert 'data-page-size="10"' in html
     assert html.count('class="sample-review-row"') == 1000
     assert 'data-qc-status="FAIL"' in html
     assert 'data-qc-status="PASS"' in html
