@@ -1,8 +1,10 @@
 from html import escape
 
-import pandas as pd
-
-from speccheck.report_tables import dataframe_to_interactive_table, status_label
+from speccheck.report_tables import (
+    dataframe_to_interactive_table,
+    tool_status_note,
+    tool_status_series,
+)
 
 
 class Plot_Sylph:
@@ -24,32 +26,10 @@ class Plot_Sylph:
         }
 
     def _status_html(self):
-        status = self._statuses()
-        passed_mask = status == "PASS"
-        if passed_mask.sum() == len(self.df):
-            return (
-                '<div class="status-note pass"><p><strong>Pass:</strong> '
-                "all samples passed the Sylph checks.</p></div>"
-            )
-
-        items = []
-        for col in self.df.columns:
-            if col.endswith((".check", ".status")):
-                fail_count = int((self.df[col].map(status_label) == "FAIL").sum())
-                if fail_count > 0:
-                    col_name = col.split(".")[0]
-                    items.append(f"<li>{fail_count} sample(s) failed the {col_name} check.</li>")
-        return (
-            '<div class="status-note fail"><p><strong>Attention:</strong> '
-            "one or more samples failed Sylph QC.</p><ul>" + "".join(items) + "</ul></div>"
-        )
+        return tool_status_note(self.df, "Sylph")
 
     def _statuses(self):
-        if "qc_status" in self.df:
-            return self.df["qc_status"].map(status_label)
-        if "all_checks_passed" in self.df:
-            return self.df["all_checks_passed"].map(status_label)
-        return pd.Series("PASS", index=self.df.index)
+        return tool_status_series(self.df)
 
     def plot(self):
         summary = self.summary()

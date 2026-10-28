@@ -260,10 +260,18 @@ def _row_overall_qc_label(row):
 
 def _row_speccheck_qc_label(row):
     if pd.notna(row.get("speccheck_qc")):
-        return status_label(row.get("speccheck_qc"))
+        return status_label(row.get("speccheck_qc")) or "NOT_EVALUATED"
     if pd.notna(row.get("speccheck_overall_status")):
-        return status_label(row.get("speccheck_overall_status"))
-    return status_label(row.get("all_checks_passed"))
+        return status_label(row.get("speccheck_overall_status")) or "NOT_EVALUATED"
+    label = status_label(row.get("all_checks_passed"))
+    if label:
+        return label
+    checks = [
+        value
+        for column, value in row.items()
+        if column.endswith((".qc_status", ".all_checks_passed", ".status", ".check"))
+    ]
+    return combine_qc_statuses(*checks) or "NOT_EVALUATED"
 
 
 def _row_reason_summary(row):

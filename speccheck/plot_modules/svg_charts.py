@@ -7,7 +7,7 @@ from math import isfinite
 
 import pandas as pd
 
-from speccheck.report_tables import status_label
+from speccheck.report_tables import status_label, tool_status_series
 
 STATUS_COLOURS = {
     "PASS": "#2b7a4b",  # nosec B105
@@ -44,11 +44,7 @@ def _scale(value: float, start: float, end: float, low: float, high: float) -> f
 
 
 def _status_series(frame: pd.DataFrame) -> pd.Series:
-    if "qc_status" in frame:
-        return frame["qc_status"].map(status_label)
-    if "all_checks_passed" in frame:
-        return frame["all_checks_passed"].map(status_label)
-    return pd.Series("NOT_EVALUATED", index=frame.index)
+    return tool_status_series(frame)
 
 
 def _status_legend(status_counts: pd.Series) -> str:

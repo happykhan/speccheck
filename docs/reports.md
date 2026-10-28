@@ -174,3 +174,36 @@ docker run --rm \
   happykhan/speccheck \
   summary /data --output /output --plot
 ```
+
+## Reviewing the HTML report
+
+The review queue initially shows FAIL, WARN and NOT EVALUATED samples, or all
+samples when none require review. Status buttons and the text filter work
+together; the count describes matching samples across all pages. An empty result
+explains how to clear the filter. Select a column heading to sort; headings and
+sample detail buttons also work with the keyboard.
+
+Long reasons have three-line previews in the interactive queue. Open a sample
+for the complete reason, metric units, tool statuses, individual checks and
+available collection provenance, including the criteria checksum. The full table
+and CSV exports retain the complete values. Static reports show the complete
+reasons directly and omit interactive controls.
+
+Tool summaries distinguish PASS, WARN, FAIL and NOT EVALUATED. Missing tool
+statuses are not assumed to pass. For imported inputs without a native sample
+status, available tool/check statuses supply the summary; inputs with no QC
+status evidence are NOT EVALUATED. An absent species field does not imply a
+Speciator run. None of these display rules change collection thresholds.
+
+Keep `report.html`, `report.csv` and `report.full.csv` together when sharing or
+archiving a report: the HTML contains its own styles, scripts and SVG charts,
+while download links point to the neighbouring CSV files. Citations link to
+external websites. With JavaScript disabled, all sample rows remain in the HTML;
+use the CSVs for filtering and sorting. Print styles include all table rows and
+complete reasons in open sections. Interactive reports expand disclosures for
+printing and restore their previous state afterwards; in static reports, open
+the sections you want to print first. Wide audit tables are best exported as CSV
+rather than printed.
+
+See [report validation](report-validation.md) for the tested inputs, checks and
+browser limitations.

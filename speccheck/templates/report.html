@@ -8,7 +8,7 @@
 {{ embedded_styles }}
     </style>
 </head>
-<body>
+<body{% if not interactive_tables %} class="static-report"{% endif %}>
     <div class="page-shell">
         <header id="overview" class="report-header sticky-header">
             <div class="eyebrow">speccheck quality control report</div>
@@ -44,6 +44,7 @@
 {% endif %}
         </header>
 
+{% if interactive_tables %}
         <div class="mobile-jump">
             <label for="report-jump">Jump to</label>
             <select id="report-jump">
@@ -58,11 +59,14 @@
             </select>
         </div>
 
+{% endif %}
         <div class="report-layout" id="report-layout">
             <aside class="report-sidebar">
+{% if interactive_tables %}
                 <button type="button" class="sidebar-toggle" aria-expanded="true" aria-label="Collapse report navigation">
                     <span aria-hidden="true">←</span><span class="sidebar-toggle-label">Collapse</span>
                 </button>
+{% endif %}
                 <nav class="report-nav" aria-label="Report sections">
                     <a href="#overview" data-section-link><span>Overview</span></a>
                     <a href="#sample-review" data-section-link>
@@ -91,7 +95,9 @@
                         <h2>Review queue</h2>
                     </div>
                 </div>
-                <p class="review-lede"><strong>{{ review_status_counts.NEEDS_REVIEW }} of {{ review_status_counts.ALL }} samples require review.</strong> Select a row for its key metrics, tool statuses and failed checks.</p>
+                <p class="review-lede"><strong>{{ review_status_counts.NEEDS_REVIEW }} of {{ review_status_counts.ALL }} samples require review.</strong>{% if interactive_tables %} Select a row for its key metrics, tool statuses and failed checks.{% else %} Key metrics and individual checks are available in the full merged table.{% endif %}</p>
+                <p class="status-help">Overall QC is the worst evaluated result from Speccheck QC and optional QualiBact compatibility. Historical QualiBact QC is context only. NOT EVALUATED means no evaluated result is available; it is not a pass. A missing optional compatibility result does not override an evaluated native result.</p>
+                <noscript><p class="status-note">JavaScript is disabled. All sample rows and tables remain available; use the CSV files for filtering and sorting.</p></noscript>
 {% if interactive_tables %}
                 <div class="status-tabs" role="group" aria-label="Filter samples by QC status" data-default-filter="{% if review_status_counts.NEEDS_REVIEW %}NEEDS_REVIEW{% else %}ALL{% endif %}">
                     <button type="button" data-status-filter="NEEDS_REVIEW">Needs review <span>{{ review_status_counts.NEEDS_REVIEW }}</span></button>
@@ -123,7 +129,7 @@
                     <h2>How to use this report</h2>
                     <ol class="workflow-steps">
                         <li>Start with FAIL and WARN samples in the review queue.</li>
-                        <li>Open a sample row to inspect its metrics and failed checks.</li>
+                        <li>{% if interactive_tables %}Open a sample row{% else %}Open the full merged table{% endif %} to inspect metrics and individual checks.</li>
                         <li>Use tool diagnostics only when a reason needs investigation.</li>
                     </ol>
                 </article>
@@ -146,8 +152,12 @@
                         <h2>Tool diagnostics</h2>
                     </div>
                 </div>
-                <p>Open a tool only when a sample-level result needs investigation. Opening one tool closes the others.</p>
+                <p>Open a tool when a sample-level result needs investigation.{% if interactive_tables %} Opening one tool closes the others.{% endif %}</p>
+{% if software_navigation %}
                 {{ software_charts }}
+{% else %}
+                <p>No supported tool diagnostics were available. Review the full merged table for supplied metrics and statuses.</p>
+{% endif %}
             </section>
 
             <section id="full-detail" class="panel prose">
@@ -157,6 +167,7 @@
                         <h2>Data and provenance</h2>
                     </div>
                 </div>
+                <p>Keep this HTML file beside <code>report.csv</code> and <code>report.full.csv</code> to use the download links. Charts, styles and table controls work offline.</p>
                 <div class="download-actions" aria-label="Report downloads">
                     <a href="report.csv" download>Download concise CSV</a>
                     <a href="report.full.csv" download>Download full CSV</a>
@@ -211,12 +222,14 @@
             const parseValue = (value, type) => {
                 const raw = value.trim();
                 if (type === "numeric") {
+                    if (!raw) return Number.NEGATIVE_INFINITY;
                     const parsed = Number(raw.replace(/,/g, ""));
                     return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
                 }
                 if (type === "status") {
                     if (raw === "PASS") return 3;
-                    if (raw === "NOT_EVALUATED" || raw === "WARN") return 1;
+                    if (raw === "NOT_EVALUATED") return 2;
+                    if (raw === "WARN") return 1;
                     if (raw === "FAIL") return 0;
                 }
                 return raw.toLowerCase();
@@ -227,8 +240,24 @@
 
             const applyPagination = (table) => {
                 const pageSize = Number(table.dataset.pageSize || 0);
-                if (!pageSize) return;
                 const rows = visibleRows(table);
+                const empty = document.querySelector(`.table-empty[data-target="${table.id}"]`);
+                if (empty) empty.hidden = rows.length !== 0;
+                if (table.id === "sample-review-table") {
+                    const summary = document.getElementById("review-filter-summary");
+                    const labels = {
+                        NEEDS_REVIEW: "requiring review", FAIL: "with FAIL status", WARN: "with WARN status",
+                        NOT_EVALUATED: "not evaluated", PASS: "with PASS status", ALL: "in this report",
+                    };
+                    const term = document.getElementById("sample-review-table-filter")?.value.trim();
+                    if (summary) summary.textContent = `Showing ${rows.length} sample${rows.length === 1 ? "" : "s"} ${labels[table.dataset.statusFilter || "ALL"]}${term ? " matching the text filter" : ""}.`;
+                }
+                if (!pageSize) {
+                    table.querySelectorAll("tbody tr").forEach((row) => {
+                        row.hidden = row.dataset.searchHidden === "true" || row.dataset.statusHidden === "true";
+                    });
+                    return;
+                }
                 const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
                 let currentPage = Number(table.dataset.currentPage || 1);
                 currentPage = Math.min(Math.max(currentPage, 1), totalPages);
@@ -255,18 +284,23 @@
                 if (next) next.disabled = currentPage >= totalPages;
             };
 
-            document.querySelectorAll("table.js-sort-filter thead th").forEach((header, index) => {
-                header.addEventListener("click", () => {
+            document.querySelectorAll("table.js-sort-filter thead th").forEach((header) => {
+                const index = Array.from(header.parentElement.children).indexOf(header);
+                header.querySelector(".table-sort").addEventListener("click", () => {
                     const table = header.closest("table");
                     const tbody = table.querySelector("tbody");
                     const rows = Array.from(tbody.querySelectorAll("tr"));
                     const currentDirection = header.dataset.direction === "asc" ? "desc" : "asc";
-                    table.querySelectorAll("thead th").forEach((th) => delete th.dataset.direction);
+                    table.querySelectorAll("thead th").forEach((th) => {
+                        delete th.dataset.direction;
+                        th.removeAttribute("aria-sort");
+                    });
                     header.dataset.direction = currentDirection;
+                    header.setAttribute("aria-sort", currentDirection === "asc" ? "ascending" : "descending");
                     const type = header.dataset.type || "string";
                     rows.sort((left, right) => {
-                        const leftValue = parseValue(left.children[index].innerText, type);
-                        const rightValue = parseValue(right.children[index].innerText, type);
+                        const leftValue = parseValue(left.children[index].textContent, type);
+                        const rightValue = parseValue(right.children[index].textContent, type);
                         if (leftValue < rightValue) return currentDirection === "asc" ? -1 : 1;
                         if (leftValue > rightValue) return currentDirection === "asc" ? 1 : -1;
                         return 0;
@@ -283,7 +317,7 @@
                     const table = document.getElementById(input.dataset.target);
                     if (!table) return;
                     table.querySelectorAll("tbody tr").forEach((row) => {
-                        const text = row.innerText.toLowerCase();
+                        const text = row.textContent.toLowerCase();
                         row.dataset.searchHidden = text.includes(term) ? "false" : "true";
                     });
                     table.dataset.currentPage = "1";
@@ -308,37 +342,24 @@
             const reviewTable = document.getElementById("sample-review-table");
             const statusButtons = Array.from(document.querySelectorAll("[data-status-filter]"));
             const statusTabs = document.querySelector(".status-tabs");
-            const filterSummary = document.getElementById("review-filter-summary");
 
             const setReviewStatus = (status) => {
                 if (!reviewTable) return;
-                let visibleCount = 0;
+                reviewTable.dataset.statusFilter = status;
                 reviewTable.querySelectorAll("tbody tr").forEach((row) => {
                     const rowStatus = row.dataset.qcStatus || "";
                     const visible = status === "ALL"
                         || (status === "NEEDS_REVIEW" && ["FAIL", "WARN", "NOT_EVALUATED"].includes(rowStatus))
                         || rowStatus === status;
                     row.dataset.statusHidden = visible ? "false" : "true";
-                    if (visible) visibleCount += 1;
                 });
                 reviewTable.dataset.currentPage = "1";
                 applyPagination(reviewTable);
                 statusButtons.forEach((button) => {
                     const active = button.dataset.statusFilter === status;
                     button.classList.toggle("is-active", active);
-                    if (button.closest(".status-tabs")) button.setAttribute("aria-pressed", String(active));
+                    button.setAttribute("aria-pressed", String(active));
                 });
-                if (filterSummary) {
-                    const label = {
-                        NEEDS_REVIEW: "requiring review",
-                        FAIL: "with FAIL status",
-                        WARN: "with WARN status",
-                        NOT_EVALUATED: "not evaluated",
-                        PASS: "with PASS status",
-                        ALL: "in this report",
-                    }[status];
-                    filterSummary.textContent = `Showing ${visibleCount} sample${visibleCount === 1 ? "" : "s"} ${label}.`;
-                }
             };
 
             statusButtons.forEach((button) => {
@@ -409,12 +430,6 @@
 
             document.querySelectorAll(".sample-review-row").forEach((row) => {
                 row.addEventListener("click", () => openSampleDetails(row.dataset.sampleId));
-                row.addEventListener("keydown", (event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        openSampleDetails(row.dataset.sampleId);
-                    }
-                });
             });
 
             const chartTooltip = document.createElement("div");
@@ -470,7 +485,7 @@
 
             document.querySelectorAll(".tool-diagnostic").forEach((diagnostic) => {
                 diagnostic.addEventListener("toggle", () => {
-                    if (!diagnostic.open) return;
+                    if (!diagnostic.open || window.matchMedia("print").matches) return;
                     document.querySelectorAll(".tool-diagnostic[open]").forEach((other) => {
                         if (other !== diagnostic) other.open = false;
                     });
@@ -486,10 +501,21 @@
                 sidebarToggle.querySelector("[aria-hidden]").textContent = collapsed ? "→" : "←";
             });
 
+            let printDetails = [];
+            window.addEventListener("beforeprint", () => {
+                printDetails = Array.from(document.querySelectorAll("details"), (detail) => [detail, detail.open]);
+                printDetails.forEach(([detail]) => { detail.open = true; });
+            });
+            window.addEventListener("afterprint", () => {
+                printDetails.forEach(([detail, wasOpen]) => { detail.open = wasOpen; });
+                printDetails = [];
+            });
+
             const jump = document.getElementById("report-jump");
             jump?.addEventListener("change", () => {
                 const target = document.querySelector(jump.value);
                 if (target instanceof HTMLDetailsElement) target.open = true;
+                target?.querySelector(":scope > details")?.setAttribute("open", "");
                 target?.scrollIntoView({ block: "start" });
             });
 
@@ -497,6 +523,7 @@
                 link.addEventListener("click", () => {
                     const target = document.querySelector(link.getAttribute("href"));
                     if (target instanceof HTMLDetailsElement) target.open = true;
+                    target?.querySelector(":scope > details")?.setAttribute("open", "");
                 });
             });
 

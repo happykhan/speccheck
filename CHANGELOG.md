@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- fix HTML filtering for small reports and sorting/search across multiple tables
+- distinguish warning, failed and missing tool evidence without assuming PASS
+- render partial inputs safely and keep absent statuses in report totals
+- add keyboard sorting/sample controls, complete provenance details, mobile
+  reason previews and print disclosure restoration
+- add report regression coverage and documented workflow/browser validation
+
 ## 1.3.0 - 2026-08-28
 
 - added direct collection from canonical `GHRU-assembly` output trees

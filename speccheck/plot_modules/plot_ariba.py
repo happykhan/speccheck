@@ -1,6 +1,4 @@
-import pandas as pd
-
-from speccheck.report_tables import dataframe_to_interactive_table, status_label
+from speccheck.report_tables import dataframe_to_interactive_table, tool_status_series
 
 
 class Plot_Ariba:
@@ -31,14 +29,7 @@ class Plot_Ariba:
         )
         if len(self.df) > 0:
             total_samples = len(self.df)
-            if "qc_status" in self.df:
-                statuses = self.df["qc_status"].map(status_label)
-            elif "all_checks_passed" in self.df:
-                statuses = self.df["all_checks_passed"].map(status_label)
-            elif "percent.check" in self.df:
-                statuses = self.df["percent.check"].map(status_label)
-            else:
-                statuses = pd.Series("PASS", index=self.df.index)
+            statuses = tool_status_series(self.df)
             passed_samples = int((statuses == "PASS").sum())
             warn_samples = int((statuses == "WARN").sum())
             failed_samples = int((statuses == "FAIL").sum())
