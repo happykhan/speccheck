@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- keep tables compact with 10-row defaults, bounded scrolling, page-size and
+  page-jump controls, column-specific search and selectable visible columns
+
 - fix HTML filtering for small reports and sorting/search across multiple tables
 - distinguish warning, failed and missing tool evidence without assuming PASS
 - render partial inputs safely and keep absent statuses in report totals

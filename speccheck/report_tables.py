@@ -165,11 +165,12 @@ def dataframe_to_interactive_table(
     table_id,
     searchable=True,
     interactive=True,
-    page_size=50,
+    page_size=10,
     row_status_column=None,
     row_id_column=None,
     clickable_rows=False,
     preview_columns=(),
+    visible_columns=None,
 ):
     rendered_df = df.copy()
     column_types = {}
@@ -211,7 +212,9 @@ def dataframe_to_interactive_table(
                     f'aria-label="Open details for {content}">{content}</button>'
                 )
             if column in preview_columns:
-                content = f'<span class="cell-preview" title="{content}">{content}</span>'
+                content = (
+                    f'<span class="cell-preview" title="{escape(str(raw_value))}">{content}</span>'
+                )
             cells.append(f'<td class="{css_class}">{content}</td>')
         attributes = []
         if row_status_column and row_status_column in rendered_df.columns:
@@ -225,36 +228,73 @@ def dataframe_to_interactive_table(
 
     filter_box = ""
     if searchable and interactive:
+        options = '<option value="all">All columns</option>' + "".join(
+            f'<option value="{index}">{escape(str(column))}</option>'
+            for index, column in enumerate(rendered_df.columns)
+        )
         filter_box = (
-            f'<div class="table-tools"><label for="{table_id}-filter">Filter</label>'
+            f'<div class="table-tools"><label for="{table_id}-filter">Search</label>'
             f'<input id="{table_id}-filter" class="table-filter" type="search" '
-            f'placeholder="Filter rows" data-target="{table_id}" /></div>'
+            f'placeholder="Search rows" data-target="{table_id}" />'
+            f'<label for="{table_id}-search-column">In</label>'
+            f'<select id="{table_id}-search-column" class="table-search-column" '
+            f'data-target="{table_id}">{options}</select></div>'
         )
 
     table_class = "table report-table"
     if interactive:
         table_class += " js-sort-filter"
 
+    column_picker = ""
+    if interactive and len(rendered_df.columns) > 4:
+        choices = []
+        for index, column in enumerate(rendered_df.columns):
+            checked = visible_columns is None or column in visible_columns or index == 0
+            choices.append(
+                f'<label><input type="checkbox" class="table-column-toggle" '
+                f'value="{index}" {"checked" if checked else ""} '
+                f"{'disabled' if index == 0 else ''} />{escape(str(column))}</label>"
+            )
+        column_picker = (
+            f'<details class="table-columns" data-target="{table_id}">'
+            '<summary class="table-columns-summary">Columns</summary>'
+            '<div class="table-column-actions"><button type="button" class="table-columns-all">Show all</button>'
+            '<button type="button" class="table-columns-reset">Reset columns</button></div>'
+            f'<div class="table-column-options">{"".join(choices)}</div></details>'
+        )
+
     pagination = ""
     page_size_attr = ""
-    if interactive and page_size and len(rendered_df) > page_size:
+    if interactive and page_size:
         page_size_attr = f' data-page-size="{int(page_size)}" data-current-page="1"'
+        sizes = sorted({10, 25, 50, int(page_size)})
+        options = "".join(
+            f'<option value="{size}" {"selected" if size == page_size else ""}>{size}</option>'
+            for size in sizes
+        )
         pagination = (
             f'<div class="table-pagination" data-target="{table_id}">'
-            '<button type="button" class="table-page-prev">Previous</button>'
+            f'<label for="{table_id}-page-size">Rows</label>'
+            f'<select id="{table_id}-page-size" class="table-page-size">{options}</select>'
             '<span class="table-page-status" aria-live="polite"></span>'
+            '<div class="table-page-buttons">'
+            '<button type="button" class="table-page-first">First</button>'
+            '<button type="button" class="table-page-prev">Previous</button>'
+            f'<label for="{table_id}-page-number">Page</label>'
+            f'<input id="{table_id}-page-number" class="table-page-number" type="number" min="1" value="1" />'
+            '<span class="table-page-total"></span>'
+            '<button type="button" class="table-page-go">Go</button>'
             '<button type="button" class="table-page-next">Next</button>'
-            "</div>"
+            '<button type="button" class="table-page-last">Last</button></div></div>'
         )
 
     return (
-        f'{filter_box}<div class="table-container" role="region" tabindex="0" '
+        f'{filter_box}{column_picker}{pagination}<div class="table-container{(" table-scroll" if interactive else "")}" role="region" tabindex="0" '
         f'aria-label="{escape(table_id.replace("-", " "))} scrollable table">'
         f'<table id="{table_id}" class="{table_class}"{page_size_attr}>'
         f"<thead><tr>{thead}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
         f'<p class="table-empty" data-target="{table_id}" role="status" '
         f"{'hidden' if len(rendered_df) else ''}>No matching rows. Clear the text filter or choose another status.</p>"
-        f"{pagination}"
     )
 
 
@@ -583,11 +623,12 @@ def build_large_run_summary_table(df, interactive_tables=True):
         summary_df,
         table_id="sample-review-table",
         interactive=interactive_tables,
-        page_size=25,
+        page_size=10,
         row_status_column="Overall QC",
         row_id_column="Sample",
         clickable_rows=interactive_tables,
         preview_columns=("Reason summary",) if interactive_tables else (),
+        visible_columns=("Sample", "Overall QC", "Reason summary", "Species", "N50", "Contigs"),
     )
 
 
@@ -620,7 +661,18 @@ def build_full_detail_table(df, interactive_tables=True):
         df,
         table_id="full-detail-table",
         interactive=interactive_tables,
-        page_size=25,
+        visible_columns=(
+            "sample_id",
+            "overall_qc",
+            "speccheck_qc",
+            "qualibact_qc",
+            "reason_summary",
+            "species",
+            "n50",
+            "contigs",
+        ),
+        preview_columns=tuple(df.columns) if interactive_tables else (),
+        page_size=10,
     )
 
 

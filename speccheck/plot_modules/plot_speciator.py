@@ -48,7 +48,7 @@ class Plot_Speciator:
                     exceptions.reset_index(),
                     "speciator-exceptions",
                     interactive=self.df.attrs.get("interactive_tables", True),
-                    page_size=25,
+                    page_size=10,
                 )
             )
 

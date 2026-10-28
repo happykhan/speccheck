@@ -190,7 +190,7 @@
                         </span>
                         <span class="summary-hint">Open only when you need every parser, metadata, and provenance column.</span>
                     </summary>
-                    <p>Full parser, metadata, and provenance columns are preserved here. For large runs, use the filter box and pagination controls rather than scrolling the whole table at once.</p>
+                    <p>Start with the key review columns. Use Columns to reveal parser, metadata and provenance fields. Search all columns or a selected column, and use the page controls to browse results.</p>
                     {{ full_detail_table }}
                 </details>
             </section>
@@ -282,6 +282,14 @@
                 }
                 if (previous) previous.disabled = currentPage <= 1;
                 if (next) next.disabled = currentPage >= totalPages;
+                const first = controls.querySelector(".table-page-first");
+                const last = controls.querySelector(".table-page-last");
+                const page = controls.querySelector(".table-page-number");
+                const total = controls.querySelector(".table-page-total");
+                if (first) first.disabled = currentPage <= 1;
+                if (last) last.disabled = currentPage >= totalPages;
+                if (page) { page.value = String(currentPage); page.max = String(totalPages); }
+                if (total) total.textContent = `of ${totalPages}`;
             };
 
             document.querySelectorAll("table.js-sort-filter thead th").forEach((header) => {
@@ -311,17 +319,22 @@
                 });
             });
 
-            document.querySelectorAll(".table-filter").forEach((input) => {
-                input.addEventListener("input", () => {
-                    const term = input.value.trim().toLowerCase();
+            const searchTable = (table) => {
+                const input = document.getElementById(`${table.id}-filter`);
+                const column = document.getElementById(`${table.id}-search-column`);
+                const term = (input?.value || "").trim().toLowerCase();
+                table.querySelectorAll("tbody tr").forEach((row) => {
+                    const text = column && column.value !== "all"
+                        ? row.children[Number(column.value)].textContent : row.textContent;
+                    row.dataset.searchHidden = text.toLowerCase().includes(term) ? "false" : "true";
+                });
+                table.dataset.currentPage = "1";
+                applyPagination(table);
+            };
+            document.querySelectorAll(".table-filter, .table-search-column").forEach((input) => {
+                input.addEventListener(input.classList.contains("table-filter") ? "input" : "change", () => {
                     const table = document.getElementById(input.dataset.target);
-                    if (!table) return;
-                    table.querySelectorAll("tbody tr").forEach((row) => {
-                        const text = row.textContent.toLowerCase();
-                        row.dataset.searchHidden = text.includes(term) ? "false" : "true";
-                    });
-                    table.dataset.currentPage = "1";
-                    applyPagination(table);
+                    if (table) searchTable(table);
                 });
             });
 
@@ -336,7 +349,56 @@
                     table.dataset.currentPage = String(Number(table.dataset.currentPage || 1) + 1);
                     applyPagination(table);
                 });
+                controls.querySelector(".table-page-first")?.addEventListener("click", () => {
+                    table.dataset.currentPage = "1";
+                    applyPagination(table);
+                });
+                controls.querySelector(".table-page-last")?.addEventListener("click", () => {
+                    table.dataset.currentPage = String(Math.max(1, Math.ceil(visibleRows(table).length / Number(table.dataset.pageSize))));
+                    applyPagination(table);
+                });
+                controls.querySelector(".table-page-size")?.addEventListener("change", (event) => {
+                    table.dataset.pageSize = event.target.value;
+                    table.dataset.currentPage = "1";
+                    applyPagination(table);
+                });
+                const pageNumber = controls.querySelector(".table-page-number");
+                const jumpToPage = () => {
+                    table.dataset.currentPage = String(Math.trunc(Number(pageNumber.value)) || 1);
+                    applyPagination(table);
+                };
+                pageNumber?.addEventListener("change", jumpToPage);
+                pageNumber?.addEventListener("keydown", (event) => {
+                    if (event.key === "Enter") { event.preventDefault(); jumpToPage(); }
+                });
+                controls.querySelector(".table-page-go")?.addEventListener("click", jumpToPage);
                 applyPagination(table);
+            });
+
+            document.querySelectorAll(".table-columns").forEach((picker) => {
+                const table = document.getElementById(picker.dataset.target);
+                if (!table) return;
+                const toggles = Array.from(picker.querySelectorAll(".table-column-toggle"));
+                const update = () => {
+                    const headers = Array.from(table.querySelectorAll("thead th"));
+                    toggles.forEach((toggle, index) => {
+                        headers[index].hidden = !toggle.checked;
+                        table.querySelectorAll("tbody tr").forEach((row) => {
+                            row.children[index].hidden = !toggle.checked;
+                        });
+                    });
+                    picker.querySelector(".table-columns-summary").textContent = `Columns (${toggles.filter((toggle) => toggle.checked).length} of ${toggles.length})`;
+                };
+                toggles.forEach((toggle) => toggle.addEventListener("change", update));
+                picker.querySelector(".table-columns-all").addEventListener("click", () => {
+                    toggles.forEach((toggle) => { toggle.checked = true; });
+                    update();
+                });
+                picker.querySelector(".table-columns-reset").addEventListener("click", () => {
+                    toggles.forEach((toggle) => { toggle.checked = toggle.defaultChecked; });
+                    update();
+                });
+                update();
             });
 
             const reviewTable = document.getElementById("sample-review-table");
@@ -515,7 +577,7 @@
             jump?.addEventListener("change", () => {
                 const target = document.querySelector(jump.value);
                 if (target instanceof HTMLDetailsElement) target.open = true;
-                target?.querySelector(":scope > details")?.setAttribute("open", "");
+                target?.querySelector(":scope > details.section-disclosure")?.setAttribute("open", "");
                 target?.scrollIntoView({ block: "start" });
             });
 
@@ -523,7 +585,7 @@
                 link.addEventListener("click", () => {
                     const target = document.querySelector(link.getAttribute("href"));
                     if (target instanceof HTMLDetailsElement) target.open = true;
-                    target?.querySelector(":scope > details")?.setAttribute("open", "");
+                    target?.querySelector(":scope > details.section-disclosure")?.setAttribute("open", "");
                 });
             });
 

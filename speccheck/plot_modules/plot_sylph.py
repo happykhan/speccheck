@@ -71,7 +71,7 @@ class Plot_Sylph:
                     exceptions.reset_index(),
                     "sylph-exceptions",
                     interactive=self.df.attrs.get("interactive_tables", True),
-                    page_size=25,
+                    page_size=10,
                 )
             )
         html_fragment += "</section>"

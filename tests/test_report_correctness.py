@@ -203,3 +203,22 @@ def test_sample_details_include_legacy_failed_checks_once():
     )
     details = json.loads(context["sample_details_json"])
     assert details["a"]["checks"] == [{"label": "Checkm.Completeness", "value": "FAIL (90)"}]
+
+
+def test_large_tables_have_compact_navigation_and_column_search():
+    frame = pd.DataFrame({f"field_{i}": range(70) for i in range(20)})
+    html = dataframe_to_interactive_table(frame, "wide", visible_columns=("field_0", "field_1"))
+    assert 'data-page-size="10"' in html
+    assert 'class="table-page-size"' in html
+    assert 'class="table-page-number"' in html
+    assert 'class="table-page-first"' in html
+    assert 'class="table-page-last"' in html
+    assert 'class="table-search-column"' in html
+    assert 'class="table-columns"' in html
+    assert html.count('class="table-column-toggle"') == 20
+    assert 'value="2"  ' in html
+    assert html.index('class="table-pagination"') < html.index("<table ")
+    assert 'class="table-container table-scroll"' in html
+    static = dataframe_to_interactive_table(frame, "static", interactive=False)
+    assert 'class="table-column-toggle"' not in static
+    assert 'class="table-search-column"' not in static

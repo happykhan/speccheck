@@ -62,7 +62,7 @@ class Plot_Ariba:
                         exceptions.reset_index(),
                         "ariba-exceptions",
                         interactive=self.df.attrs.get("interactive_tables", True),
-                        page_size=25,
+                        page_size=10,
                     )
                 )
         else:

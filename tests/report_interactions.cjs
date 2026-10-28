@@ -14,7 +14,7 @@ class Element {
         this.attributes = {};
         this.children = [];
         this.value = '';
-        this.classList = {toggle() {}};
+        this.classList = {toggle() {}, contains: () => false};
     }
     addEventListener(name, callback) { this.events[name] = callback; }
     setAttribute(name, value) { this.attributes[name] = value; }
@@ -22,7 +22,7 @@ class Element {
     get innerText() { return this.hidden ? '' : this.textContent; }
     append(row) { this.children.push(row); }
     scrollIntoView() {}
-    fire(name) { this.events[name](); }
+    fire(name, details = {}) { this.events[name]({target:this, preventDefault() {}, ...details}); }
 }
 
 function table(id, rows, pageSize) {
@@ -55,7 +55,18 @@ for (const size of [4, 80]) {
     const review = table('sample-review-table', Array.from({length:size}, (_, i) => [`sample-${i}`, size-i, statuses[i%4]]), size > 25 ? 25 : 0);
     const full = table('full-detail-table', [['zeta',30,'PASS'], ['alpha',2,'WARN'], ['beta',10,'FAIL']], 0);
     const tables = [review, full];
-    const filters = tables.map(item => { const filter = new Element('', {target:item.id}); filter.id = `${item.id}-filter`; return filter; });
+    const filters = tables.map(item => {
+        const filter = new Element('', {target:item.id});
+        filter.id = `${item.id}-filter`;
+        filter.classList.contains = name => name === 'table-filter';
+        return filter;
+    });
+    const searchColumns = tables.map(item => {
+        const select = new Element('', {target:item.id});
+        select.id = `${item.id}-search-column`;
+        select.value = 'all';
+        return select;
+    });
     const empties = tables.map(item => new Element('', {target:item.id}));
     const summary = new Element();
     const tabs = new Element('', {defaultFilter:'NEEDS_REVIEW'});
@@ -68,8 +79,25 @@ for (const size of [4, 80]) {
     const previous = new Element();
     const next = new Element();
     const pageStatus = new Element();
-    controls.querySelector = selector => ({'.table-page-prev':previous, '.table-page-next':next, '.table-page-status':pageStatus})[selector];
-    const nodes = Object.fromEntries([...tables, ...filters].map(item => [item.id, item]));
+    const pageSize = new Element();
+    const pageNumber = new Element();
+    const first = new Element();
+    const last = new Element();
+    const pageTotal = new Element();
+    const picker = new Element('', {target:full.id});
+    const toggles = full.headers.map((_, index) => {
+        const toggle = new Element();
+        toggle.checked = index < 2;
+        toggle.defaultChecked = toggle.checked;
+        return toggle;
+    });
+    const columnSummary = new Element();
+    const showAll = new Element();
+    const reset = new Element();
+    picker.querySelectorAll = () => toggles;
+    picker.querySelector = selector => ({'.table-columns-summary':columnSummary, '.table-columns-all':showAll, '.table-columns-reset':reset})[selector];
+    controls.querySelector = selector => ({'.table-page-prev':previous, '.table-page-next':next, '.table-page-status':pageStatus, '.table-page-size':pageSize, '.table-page-number':pageNumber, '.table-page-first':first, '.table-page-last':last, '.table-page-total':pageTotal})[selector];
+    const nodes = Object.fromEntries([...tables, ...filters, ...searchColumns].map(item => [item.id, item]));
     nodes['review-filter-summary'] = summary;
     nodes['sample-review'] = new Element();
     const document = {
@@ -85,7 +113,8 @@ for (const size of [4, 80]) {
         querySelectorAll(selector) {
             return ({
                 'table.js-sort-filter thead th': tables.flatMap(item => item.headers),
-                '.table-filter': filters,
+                '.table-filter, .table-search-column': [...filters, ...searchColumns],
+                '.table-columns': [picker],
                 '.table-pagination': size > 25 ? [controls] : [],
                 '[data-status-filter]':buttons,
                 '.sample-review-row': review.rows,
@@ -101,6 +130,22 @@ for (const size of [4, 80]) {
     assert.ok(printDetails.every(detail => detail.open));
     windowEvents.afterprint();
     assert.deepEqual(printDetails.map(detail => detail.open), [true, false]);
+    assert.equal(full.headers[2].hidden, true);
+    assert.ok(full.rows.every(row => row.children[2].hidden));
+    showAll.fire('click');
+    assert.equal(full.headers[2].hidden, false);
+    reset.fire('click');
+    assert.equal(full.headers[2].hidden, true);
+    assert.equal(columnSummary.textContent, 'Columns (2 of 3)');
+    searchColumns[1].value = '1';
+    filters[1].value = 'zeta';
+    filters[1].fire('input');
+    assert.ok(full.rows.every(row => row.hidden), 'column search must exclude matches from other columns');
+    searchColumns[1].value = 'all';
+    searchColumns[1].fire('change');
+    assert.deepEqual(full.rows.filter(row => !row.hidden).map(row => row.children[0].textContent), ['zeta']);
+    filters[1].value = '';
+    filters[1].fire('input');
     const shown = () => review.rows.filter(row => !row.hidden);
     assert.ok(shown().every(row => row.dataset.qcStatus !== 'PASS'));
     buttons.find(button => button.dataset.statusFilter === 'PASS').fire('click');
@@ -134,6 +179,26 @@ for (const size of [4, 80]) {
         assert.equal(pageStatus.textContent, '1-1 of 1');
         assert.equal(next.disabled, true);
         assert.equal(previous.disabled, true);
+        filters[0].value = '';
+        filters[0].fire('input');
+        pageSize.value = '10';
+        pageSize.fire('change');
+        assert.equal(shown().length, 10);
+        assert.equal(pageStatus.textContent, '1-10 of 80');
+        last.fire('click');
+        assert.equal(pageStatus.textContent, '71-80 of 80');
+        assert.equal(last.disabled, true);
+        first.fire('click');
+        assert.equal(pageStatus.textContent, '1-10 of 80');
+        pageNumber.value = '999';
+        pageNumber.fire('change');
+        assert.equal(pageNumber.value, '8');
+        pageNumber.value = '2';
+        pageNumber.fire('keydown', {key:'Enter'});
+        assert.equal(pageStatus.textContent, '11-20 of 80');
+        pageNumber.value = '-5';
+        pageNumber.fire('change');
+        assert.equal(pageNumber.value, '1');
     }
 }
 console.log('Small and paginated reports: combined filters, empty state, page reset, second-table sorting and aria-sort passed.');

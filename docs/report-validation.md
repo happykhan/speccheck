@@ -22,11 +22,13 @@ empty direct reports, static mode, missing metric statuses and reason previews.
 `tests/report_interactions.cjs` executes the generated inline script with a DOM
 double using Node.js. It tests small/paginated tables, combined status/text
 filters, empty results, page reset, second-table numeric sorting, `aria-sort`, and
-print disclosure restoration. It is separate from the visible browser checks.
+print disclosure restoration. It also checks scoped column search, column
+visibility/reset, row-count selection, first/last navigation and page-entry
+bounds. It is separate from the visible browser checks.
 
 ## Automated results
 
-The baseline suite passed 121 tests. The final suite passed 153 tests with 88%
+The baseline suite passed 121 tests. The final suite passed 154 tests with 88%
 overall coverage. Ruff lint and formatting, strict documentation build,
 wheel/sdist builds, Twine metadata validation and Bandit passed; Bandit reported
 zero issues. A clean environment installed the built wheel and exercised the
@@ -87,6 +89,8 @@ Visible checks used the Codex in-app browser on macOS, at its desktop viewport
 and a 390 × 844 viewport. Checked status/text filtering, empty results, pagination
 (including locating a sample on a hidden page), keyboard sorting in the full
 merged table, keyboard opening/closing of sample details, disclosure navigation,
+10/25/50-row controls, first/last navigation, page entry by Enter/Go, column
+search and showing/resetting all 85 audit columns,
 static mode, long reasons and hostile text. No console errors or warnings were
 observed on the inspected final pages. Mobile tables scroll within their
 containers; the document did not overflow horizontally. The full reason remained
