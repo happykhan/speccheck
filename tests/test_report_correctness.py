@@ -83,7 +83,7 @@ def test_report_context_agrees_across_counts_and_review_table():
 def test_empty_direct_report_is_valid(tmp_path):
     path = tmp_path / "empty.html"
     plot_charts({}, "species", output_html_path=path)
-    html = path.read_text()
+    html = path.read_text(encoding="utf-8")
     assert "0 of 0 samples require review" in html
     assert "No supported tool diagnostics were available" in html
 
@@ -96,7 +96,7 @@ def test_detail_json_cannot_close_script_and_retains_units(tmp_path):
         "species",
         output_html_path=path,
     )
-    html = path.read_text()
+    html = path.read_text(encoding="utf-8")
     payload = re.search(
         r'<script id="sample-details-data" type="application/json">(.*?)</script>', html, re.S
     ).group(1)
@@ -133,7 +133,7 @@ def test_static_report_has_no_nonfunctional_navigation_or_detail_prompts(tmp_pat
         output_html_path=path,
         interactive_tables=False,
     )
-    html = path.read_text()
+    html = path.read_text(encoding="utf-8")
     assert '<body class="static-report">' in html
     assert '<select id="report-jump">' not in html
     assert 'class="sidebar-toggle"' not in html
@@ -151,7 +151,7 @@ def test_metrics_only_summary_has_complete_not_evaluated_counts(tmp_path):
     summary(str(inputs), str(output), "Speciator.speciesName", "sample_id", None, plot=True)
     report = pd.read_csv(output / "report.csv")
     assert report.overall_qc.tolist() == ["NOT_EVALUATED"]
-    assert "1 of 1 samples require review" in (output / "report.html").read_text()
+    assert "1 of 1 samples require review" in (output / "report.html").read_text(encoding="utf-8")
 
 
 def test_table_interactions_execute_generated_script(tmp_path):
